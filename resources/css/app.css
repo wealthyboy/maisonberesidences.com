@@ -1,11 +1,381 @@
-@import 'tailwindcss';
+@import 'bootstrap/dist/css/bootstrap.min.css';
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+:root {
+    --maison-ink: #171512;
+    --maison-muted: #6f6a61;
+    --maison-cream: #f7f2ea;
+    --maison-paper: #fffdf8;
+    --maison-gold: #b28b48;
+    --maison-deep: #262052;
+}
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    color: var(--maison-ink);
+    font-family: "Instrument Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--maison-paper);
+}
+
+a {
+    text-decoration: none;
+}
+
+a,
+button,
+[role="button"],
+label,
+select,
+input[type="checkbox"],
+input[type="radio"],
+input[type="date"],
+input[type="submit"],
+input[type="button"],
+.form-check-input,
+.form-select,
+.btn {
+    cursor: pointer;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea {
+    cursor: text;
+}
+
+.font-serif {
+    font-family: Georgia, "Times New Roman", serif;
+}
+
+.maison-nav {
+    min-height: 76px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(18, 16, 13, 0.2);
+    backdrop-filter: blur(16px);
+}
+
+.maison-nav .navbar-brand {
+    color: #ffffff;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.35rem, 2.2vw, 2rem);
+    letter-spacing: 0.2em;
+}
+
+.maison-nav .nav-link {
+    color: rgba(255, 255, 255, 0.84);
+    font-weight: 700;
+}
+
+.maison-nav .nav-link:hover,
+.maison-nav .nav-link:focus {
+    color: #ffffff;
+}
+
+.maison-nav .dropdown-menu {
+    display: block;
+    min-width: 230px;
+    margin-top: 0.9rem;
+    padding: 0.65rem;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 0;
+    background: rgba(18, 16, 13, 0.94);
+    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.22);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px);
+    transition: opacity 220ms ease, transform 220ms ease, visibility 220ms ease;
+    visibility: hidden;
+}
+
+.maison-nav .dropdown-menu.show {
+    animation: maison-dropdown-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+    visibility: visible;
+}
+
+.maison-nav .dropdown-item {
+    padding: 0.72rem 0.85rem;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.maison-nav .dropdown-item:hover,
+.maison-nav .dropdown-item:focus {
+    color: var(--maison-deep);
+    background: #dfbd6d;
+}
+
+.maison-toggler {
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+@keyframes maison-dropdown-in {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.hero-section {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+    color: #ffffff;
+    background: #0e0d0c;
+}
+
+.hero-section::before,
+.hero-section::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    pointer-events: none;
+}
+
+.hero-section::before {
+    background:
+        linear-gradient(90deg, rgba(8, 7, 6, 0.72) 0%, rgba(8, 7, 6, 0.36) 48%, rgba(8, 7, 6, 0.16) 100%),
+        radial-gradient(circle at center, rgba(255, 255, 255, 0) 0%, rgba(0, 0, 0, 0.35) 70%);
+    z-index: 1;
+}
+
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    padding-top: 7rem;
+    padding-bottom: 9rem;
+}
+
+.eyebrow {
+    color: #dfbd6d;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+}
+
+.hero-title {
+    max-width: 790px;
+    margin-top: 1.25rem;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(3.5rem, 9vw, 8.6rem);
+    line-height: 0.92;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.hero-copy {
+    max-width: 620px;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: clamp(1rem, 1.6vw, 1.18rem);
+    line-height: 1.8;
+}
+
+.btn-maison {
+    --bs-btn-bg: #ffffff;
+    --bs-btn-border-color: #ffffff;
+    --bs-btn-color: var(--maison-deep);
+    --bs-btn-hover-bg: #dfbd6d;
+    --bs-btn-hover-border-color: #dfbd6d;
+    --bs-btn-hover-color: #171512;
+    padding: 0.95rem 1.35rem;
+    border-radius: 0;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.btn-outline-maison {
+    --bs-btn-color: #ffffff;
+    --bs-btn-border-color: rgba(255, 255, 255, 0.68);
+    --bs-btn-hover-bg: #ffffff;
+    --bs-btn-hover-border-color: #ffffff;
+    --bs-btn-hover-color: var(--maison-deep);
+    padding: 0.95rem 1.35rem;
+    border-radius: 0;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.booking-panel {
+    position: absolute;
+    right: 50%;
+    bottom: 2.25rem;
+    z-index: 3;
+    width: min(1080px, calc(100% - 2rem));
+    transform: translateX(50%);
+    border: 1px solid rgba(255, 255, 255, 0.34);
+    background: rgba(8, 7, 6, 0.16);
+    backdrop-filter: blur(12px);
+}
+
+.booking-panel .form-select,
+.booking-panel .form-control {
+    min-height: 74px;
+    color: #ffffff;
+    border: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 0;
+    background-color: transparent;
+    font-weight: 700;
+    text-align: center;
+}
+
+.booking-panel .form-select option {
+    color: var(--maison-ink);
+}
+
+.booking-submit {
+    width: 100%;
+    min-height: 74px;
+    color: #ffffff;
+    border: 0;
+    background: transparent;
+    font-size: 0.8rem;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.booking-submit:hover {
+    color: var(--maison-deep);
+    background: #ffffff;
+}
+
+.section-pad {
+    padding: clamp(4.5rem, 7vw, 7rem) 0;
+}
+
+.section-title {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(2.35rem, 5vw, 4.75rem);
+    line-height: 1.02;
+}
+
+.section-copy {
+    color: var(--maison-muted);
+    font-size: 1.05rem;
+    line-height: 1.85;
+}
+
+.residence-card {
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid rgba(23, 21, 18, 0.12);
+    border-radius: 0;
+    background: #ffffff;
+}
+
+.residence-card img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+}
+
+.residence-card .card-body {
+    padding: 1.35rem;
+}
+
+.feature-band {
+    color: #ffffff;
+    background: var(--maison-deep);
+}
+
+.feature-tile {
+    min-height: 210px;
+    padding: 1.4rem;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.feature-tile span {
+    display: block;
+    margin-bottom: 0.8rem;
+    color: #dfbd6d;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.gallery-image {
+    width: 100%;
+    height: 100%;
+    min-height: 260px;
+    object-fit: cover;
+}
+
+.contact-section {
+    background: var(--maison-cream);
+}
+
+.site-footer {
+    padding: 2rem 0;
+    color: rgba(255, 255, 255, 0.76);
+    background: #12100d;
+}
+
+.site-footer strong {
+    color: #ffffff;
+    font-family: Georgia, "Times New Roman", serif;
+    letter-spacing: 0.16em;
+}
+
+@media (max-width: 991.98px) {
+    .maison-nav {
+        background: rgba(18, 16, 13, 0.86);
+    }
+
+    .maison-nav .dropdown-menu {
+        display: none;
+        margin-top: 0.3rem;
+        position: static;
+    }
+
+    .maison-nav .dropdown-menu.show {
+        display: block;
+    }
+
+    .booking-panel {
+        position: relative;
+        right: auto;
+        bottom: auto;
+        width: 100%;
+        margin-top: -7rem;
+        transform: none;
+        background: rgba(18, 16, 13, 0.92);
+    }
+
+    .booking-panel .form-select,
+    .booking-panel .form-control {
+        border-right: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .hero-content {
+        padding-bottom: 12rem;
+    }
 }

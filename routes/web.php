@@ -1,7 +1,52 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ModuleController;
+use App\Http\Controllers\Admin\UploadController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Support\AdminModules;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('home');
+});
+
+Route::get('login', [LoginController::class, 'create'])->name('login');
+Route::post('login', [LoginController::class, 'store'])->name('login.store');
+Route::redirect('admin/login', '/login');
+
+Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('logout', [LoginController::class, 'destroy'])->name('logout');
+
+    Route::post('upload/image', [UploadController::class, 'image'])->name('upload.image');
+    Route::post('apartments/check-availability', [ModuleController::class, 'checkApartmentAvailability'])->name('apartments.check-availability');
+
+    Route::get('{module}', [ModuleController::class, 'index'])
+        ->where('module', AdminModules::allowedSlugs())
+        ->name('modules.show');
+
+    Route::post('{module}', [ModuleController::class, 'store'])
+        ->where('module', AdminModules::allowedSlugs())
+        ->name('modules.store');
+
+    Route::get('{module}/create', [ModuleController::class, 'create'])
+        ->where('module', AdminModules::allowedSlugs())
+        ->name('modules.create');
+
+    Route::get('{module}/{record}', [ModuleController::class, 'show'])
+        ->where('module', AdminModules::allowedSlugs())
+        ->name('modules.record.show');
+
+    Route::get('{module}/{record}/edit', [ModuleController::class, 'edit'])
+        ->where('module', AdminModules::allowedSlugs())
+        ->name('modules.record.edit');
+
+    Route::match(['put', 'patch'], '{module}/{record}', [ModuleController::class, 'update'])
+        ->where('module', AdminModules::allowedSlugs())
+        ->name('modules.record.update');
+
+    Route::delete('{module}/{record}', [ModuleController::class, 'destroy'])
+        ->where('module', AdminModules::allowedSlugs())
+        ->name('modules.record.destroy');
 });
