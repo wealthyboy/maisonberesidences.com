@@ -13,7 +13,7 @@ class LoginController extends Controller
     public function create(): View|RedirectResponse
     {
         if (Auth::check()) {
-            return Auth::user()->is_admin
+            return Auth::user()->users_permission
                 ? redirect()->route('admin.dashboard')
                 : redirect('/');
         }
@@ -36,7 +36,7 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return Auth::user()->is_admin
+        return Auth::user()->users_permission
             ? redirect()->intended(route('admin.dashboard'))
             : redirect()->intended('/');
     }

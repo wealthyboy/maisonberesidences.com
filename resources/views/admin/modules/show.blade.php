@@ -4,8 +4,9 @@
     $isProperties = $module['slug'] === 'properties';
     $isApartments = $module['slug'] === 'apartments';
     $isInvoices = $module['slug'] === 'invoices';
-    $isDatabaseBacked = $isProperties || $isApartments || $isInvoices;
-    $recordName = $model ? ($isInvoices ? $model->invoice : ($isDatabaseBacked ? $model->name : $model->title)) : null;
+    $isPages = $module['slug'] === 'pages';
+    $isDatabaseBacked = $isProperties || $isApartments || $isInvoices || $isPages;
+    $recordName = $model ? ($isInvoices ? $model->invoice : ($isPages ? $model->title : ($isDatabaseBacked ? $model->name : $model->title))) : null;
 @endphp
 
 @section('eyebrow', 'Admin module')
@@ -68,7 +69,7 @@
                     @if ($screen === 'edit')
                         @method('put')
                     @else
-                        @unless ($isInvoices)
+                        @unless ($isInvoices || $isPages)
                             <div class="border-b border-zinc-200 pb-2 lg:col-span-2">
                                 <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-zinc-500">{{ Illuminate\Support\Str::singular($module['label']) }} details</h3>
                             </div>
@@ -114,6 +115,8 @@
                         @include('admin.modules.forms.invoice')
                     @elseif ($isApartments)
                         @include('admin.modules.forms.apartment')
+                    @elseif ($isPages)
+                        @include('admin.modules.forms.page')
                     @elseif ($isProperties)
                         <div class="border-b border-zinc-200 pb-2 lg:col-span-2">
                             <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-zinc-500">Property details</h3>
@@ -217,14 +220,14 @@
                 <dl class="mt-6 grid gap-4 md:grid-cols-3">
                     <div class="rounded-md border border-zinc-200 p-4">
                         <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Status</dt>
-                        <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $isInvoices ? ($model->sent ? 'Sent' : 'Draft') : ucfirst($model->status ?? 'draft') }}</dd>
+                        <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $isInvoices ? ($model->sent ? 'Sent' : 'Draft') : ($isPages ? 'Published' : ucfirst($model->status ?? 'draft')) }}</dd>
                     </div>
                     <div class="rounded-md border border-zinc-200 p-4">
                         <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Module</dt>
                         <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $module['label'] }}</dd>
                     </div>
                     <div class="rounded-md border border-zinc-200 p-4">
-                        <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">{{ $isProperties ? 'Location' : ($isApartments ? 'Property' : ($isInvoices ? 'Customer' : 'Published')) }}</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">{{ $isProperties ? 'Location' : ($isApartments ? 'Property' : ($isInvoices ? 'Customer' : ($isPages ? 'Slug' : 'Published'))) }}</dt>
                         <dd class="mt-2 text-sm font-semibold text-zinc-950">
                             @if ($isProperties)
                                 {{ trim(($model->city ?? '') . ', ' . ($model->country ?? ''), ', ') ?: 'Not set' }}
@@ -232,6 +235,8 @@
                                 {{ $model->property->name ?? 'No property' }}
                             @elseif ($isInvoices)
                                 {{ $model->full_name }}
+                            @elseif ($isPages)
+                                {{ $model->slug }}
                             @else
                                 {{ $model->published_at ? $model->published_at->format('M j, Y') : 'Not set' }}
                             @endif
@@ -363,7 +368,7 @@
                                             @if ($isInvoices)
                                                 {{ $recordItem->invoice }}
                                             @else
-                                                {{ $isDatabaseBacked ? $recordItem->name : $recordItem->title }}
+                                                {{ $isPages ? $recordItem->title : ($isDatabaseBacked ? $recordItem->name : $recordItem->title) }}
                                             @endif
                                         </div>
                                         <div class="mt-1 text-xs text-zinc-500">
@@ -373,6 +378,8 @@
                                                 {{ $recordItem->property->name ?? 'No property' }}
                                             @elseif ($isProperties)
                                                 {{ $recordItem->city ?: 'No city' }}{{ $recordItem->country ? ', ' . $recordItem->country : '' }}
+                                            @elseif ($isPages)
+                                                {{ $recordItem->teaser ? Illuminate\Support\Str::limit($recordItem->teaser, 90) : 'No teaser entered.' }}
                                             @else
                                                 {{ $recordItem->summary ? Illuminate\Support\Str::limit($recordItem->summary, 90) : 'No summary entered.' }}
                                             @endif

@@ -58,8 +58,18 @@ class Apartment extends Model
         return $this->belongsTo(Property::class);
     }
 
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     public function images()
     {
         return $this->morphMany(Image::class, 'imageable')->orderBy('image_id')->orderBy('id');
+    }
+
+    public function invoiceItems()
+    {
+        return $this->hasMany(InvoiceItem::class);
     }
 }

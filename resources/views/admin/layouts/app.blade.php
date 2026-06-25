@@ -96,6 +96,15 @@
 
                         <div class="flex items-center gap-2">
                             @yield('header-actions')
+                            <a
+                                href="{{ url('/') }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="inline-flex items-center gap-2 rounded-md border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:border-[#d9b44a] hover:text-[#222052]"
+                            >
+                                Visit website
+                                <x-admin.icon name="external-link" class="h-4 w-4" />
+                            </a>
                             <form method="post" action="{{ route('admin.logout') }}">
                                 @csrf
                                 <button type="submit" class="rounded-md border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:border-[#d9b44a] hover:text-[#222052]">

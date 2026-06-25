@@ -17,12 +17,19 @@ class Invoice extends Model
         'address',
         'country',
         'currency',
+        'currency_code',
+        'exchange_rate',
         'subtotal',
         'discount',
         'discount_type',
+        'coupon_code',
         'caution_fee',
         'total',
         'payment_info',
+        'payment_status',
+        'payment_reference',
+        'payment_payload',
+        'paid_at',
         'description',
         'sent',
     ];
@@ -34,7 +41,10 @@ class Invoice extends Model
             'discount' => 'decimal:2',
             'caution_fee' => 'decimal:2',
             'total' => 'decimal:2',
+            'exchange_rate' => 'decimal:6',
             'sent' => 'boolean',
+            'payment_payload' => 'array',
+            'paid_at' => 'datetime',
         ];
     }
 

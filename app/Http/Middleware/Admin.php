@@ -16,10 +16,7 @@ class Admin
             return redirect()->route('login');
         }
 
-        $hasMyshortletPermission = (bool) ($user->users_permission ?? false);
-        $hasAdminFlag = (bool) ($user->is_admin ?? false);
-
-        if (! $hasMyshortletPermission && ! $hasAdminFlag) {
+        if (! $user->users_permission) {
             abort(404);
         }
 

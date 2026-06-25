@@ -21,7 +21,7 @@
                         <span class="eyebrow text-dark">Maison Beresidences</span>
                         <h1 class="section-title mt-3">Contemporary luxury residences in Lagos.</h1>
                         <p class="section-copy">A refined short-stay apartment experience shaped around privacy, comfort, and considered hospitality.</p>
-                        <a class="btn btn-dark rounded-0 px-4 py-3" href="{{ url('/') }}">Enter Site</a>
+                        <a class="btn btn-dark rounded-0 px-4 py-3" href="{{ url('/?live=true') }}">Enter Site</a>
                     </div>
                 </div>
             </div>

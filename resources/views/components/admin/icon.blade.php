@@ -11,6 +11,9 @@
         @case('layout-dashboard')
             <rect x="3" y="3" width="7" height="8" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="12" width="7" height="9" rx="1.5" /><rect x="3" y="15" width="7" height="6" rx="1.5" />
             @break
+        @case('external-link')
+            <path d="M14 4h6v6" /><path d="M20 4l-9 9" /><path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5" />
+            @break
         @case('chart-line')
             <path d="M4 19V5" /><path d="M4 19h16" /><path d="M7 15l4-4 3 3 5-7" />
             @break

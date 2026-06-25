@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminModuleRecord;
 use App\Models\Apartment;
+use App\Models\Information;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Property;
 use App\Support\AdminModules;
 use Carbon\Carbon;
@@ -69,6 +71,14 @@ class ModuleController extends Controller
                 ->with('status', 'Invoice created.');
         }
 
+        if ($module['slug'] === 'pages') {
+            $page = Information::create($this->pageData($request));
+
+            return redirect()
+                ->route('admin.modules.record.show', [$module['slug'], $page->id])
+                ->with('status', 'Page created.');
+        }
+
         AdminModuleRecord::create($this->genericRecordData($request, $module));
 
         return redirect()
@@ -105,7 +115,7 @@ class ModuleController extends Controller
             $this->syncApartmentImages($request, $apartment);
 
             return redirect()
-                ->route('admin.modules.record.show', [$module['slug'], $apartment->id])
+                ->route('admin.modules.show', $module['slug'])
                 ->with('status', 'Apartment updated.');
         }
 
@@ -116,6 +126,15 @@ class ModuleController extends Controller
             return redirect()
                 ->route('admin.modules.record.show', [$module['slug'], $invoice->id])
                 ->with('status', 'Invoice updated.');
+        }
+
+        if ($module['slug'] === 'pages') {
+            $page = Information::findOrFail($record);
+            $page->update($this->pageData($request, $page));
+
+            return redirect()
+                ->route('admin.modules.record.show', [$module['slug'], $page->id])
+                ->with('status', 'Page updated.');
         }
 
         $recordModel = AdminModuleRecord::where('module_slug', $module['slug'])->findOrFail($record);
@@ -152,6 +171,14 @@ class ModuleController extends Controller
             return redirect()
                 ->route('admin.modules.show', $module['slug'])
                 ->with('status', 'Invoice deleted.');
+        }
+
+        if ($module['slug'] === 'pages') {
+            Information::findOrFail($record)->delete();
+
+            return redirect()
+                ->route('admin.modules.show', $module['slug'])
+                ->with('status', 'Page deleted.');
         }
 
         AdminModuleRecord::where('module_slug', $module['slug'])->findOrFail($record)->delete();
@@ -200,6 +227,10 @@ class ModuleController extends Controller
             return Invoice::with('invoiceItems.apartment')->latest()->paginate(10);
         }
 
+        if ($module['slug'] === 'pages') {
+            return Information::query()->orderBy('sort_order')->orderBy('title')->paginate(10);
+        }
+
         return AdminModuleRecord::where('module_slug', $module['slug'])->latest()->paginate(10);
     }
 
@@ -213,6 +244,7 @@ class ModuleController extends Controller
             'properties' => Property::findOrFail($record),
             'apartments' => Apartment::with(['property', 'images'])->findOrFail($record),
             'invoices' => Invoice::with('invoiceItems.apartment')->findOrFail($record),
+            'pages' => Information::findOrFail($record),
             default => AdminModuleRecord::where('module_slug', $module['slug'])->findOrFail($record),
         };
     }
@@ -228,7 +260,7 @@ class ModuleController extends Controller
 
     private function isDatabaseBacked(array $module): bool
     {
-        return in_array($module['slug'], ['properties', 'apartments', 'invoices'], true);
+        return in_array($module['slug'], ['properties', 'apartments', 'invoices', 'pages'], true);
     }
 
     public function checkApartmentAvailability(Request $request)
@@ -243,7 +275,7 @@ class ModuleController extends Controller
         $startDate = Carbon::parse($data['checkin'])->startOfDay();
         $endDate = Carbon::parse($data['checkout'])->startOfDay();
 
-        $booked = \App\Models\InvoiceItem::where('apartment_id', $data['apartment_id'])
+        $booked = InvoiceItem::where('apartment_id', $data['apartment_id'])
             ->whereNotNull('checkin')
             ->whereNotNull('checkout')
             ->when($data['invoice_id'] ?? null, fn ($query, $invoiceId) => $query->where('invoice_id', '!=', $invoiceId))
@@ -274,6 +306,37 @@ class ModuleController extends Controller
             'summary' => $data['summary'] ?? null,
             'content' => $data['content'] ?? null,
             'published_at' => $data['published_at'] ?? null,
+        ];
+    }
+
+    private function pageData(Request $request, ?Information $page = null): array
+    {
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'custom_link' => ['nullable', 'string', 'max:255'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
+            'teaser' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+        ]);
+
+        $baseSlug = Str::slug($data['title']) ?: 'page';
+        $slug = $baseSlug;
+        $counter = 2;
+
+        while (Information::query()->where('slug', $slug)->when($page, fn ($query) => $query->whereKeyNot($page->id))->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
+        return [
+            'title' => $data['title'],
+            'name' => $data['title'],
+            'slug' => $slug,
+            'custom_link' => $data['custom_link'] ?? null,
+            'sort_order' => $data['sort_order'] ?? 0,
+            'teaser' => $data['teaser'] ?? null,
+            'description' => $data['description'] ?? null,
+            'blog' => false,
         ];
     }
 
