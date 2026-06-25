@@ -10,21 +10,40 @@
         <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon_io/favicon-16x16.png') }}">
         <link rel="manifest" href="{{ asset('favicon_io/site.webmanifest') }}">
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800" rel="stylesheet" />
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <link href="https://fonts.bunny.net/css?family=cormorant-garamond:400,500,600|instrument-sans:400,500,600,700,800" rel="stylesheet" />
+        @vite(['resources/css/app.css'])
     </head>
-    <body>
-        <main class="section-pad">
-            <div class="container">
-                <div class="row min-vh-100 align-items-center">
-                    <div class="col-lg-8">
-                        <span class="eyebrow text-dark">Maison Beresidences</span>
-                        <h1 class="section-title mt-3">Contemporary luxury residences in Lagos.</h1>
-                        <p class="section-copy">A refined short-stay apartment experience shaped around privacy, comfort, and considered hospitality.</p>
-                        <a class="btn btn-dark rounded-0 px-4 py-3" href="{{ url('/?live=true') }}">Enter Site</a>
+    <body class="construction-page-body">
+        <main class="construction-page">
+            <section class="construction-copy">
+                <a class="construction-brand" href="{{ url('/') }}" aria-label="Maison Beresidences home">
+                    <span class="construction-brand-mark"><span>M</span><span>B</span></span>
+                    <span class="construction-brand-name">Maison Be <small>Residences</small></span>
+                </a>
+
+                <div class="construction-content">
+                    <p class="construction-eyebrow">Launching soon</p>
+                    <h1>Contemporary luxury residences in Lagos.</h1>
+                    <p class="construction-intro">A refined short-stay apartment experience shaped around privacy, comfort, and considered hospitality.</p>
+                    <div class="construction-contact">
+                        <p>Reservations</p>
+                        <a href="mailto:reservations@maisonberesidences.com">reservations@maisonberesidences.com</a>
                     </div>
                 </div>
-            </div>
+
+                <footer class="construction-footer">
+                    <span>Maison Be Residences</span>
+                    <span>Lagos, Nigeria</span>
+                </footer>
+            </section>
+
+            <section class="construction-visual" aria-hidden="true">
+                <div class="construction-monogram"><span>M</span><span>B</span></div>
+                <div class="construction-visual-label">
+                    <span>Private stays</span>
+                    <p>Comfort, privacy and calm.</p>
+                </div>
+            </section>
         </main>
     </body>
 </html>
