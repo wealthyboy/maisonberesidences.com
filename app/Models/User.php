@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Schema;
 
 class User extends Authenticatable
 {
@@ -53,5 +54,18 @@ class User extends Authenticatable
     public function users_permission(): HasOne
     {
         return $this->hasOne(UserPermission::class);
+    }
+
+    public function hasAdminAccess(): bool
+    {
+        if ((bool) $this->is_admin) {
+            return true;
+        }
+
+        if (! Schema::hasTable('user_permissions')) {
+            return false;
+        }
+
+        return $this->users_permission()->exists();
     }
 }

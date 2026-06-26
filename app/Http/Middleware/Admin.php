@@ -16,7 +16,7 @@ class Admin
             return redirect()->route('login');
         }
 
-        if (! $user->users_permission) {
+        if (! $user->hasAdminAccess()) {
             abort(404);
         }
 
