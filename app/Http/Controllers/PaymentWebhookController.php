@@ -19,7 +19,23 @@ class PaymentWebhookController extends Controller
     {
         $payload = $request->getContent();
 
+        Log::info('Paystack webhook received.', [
+            'ip' => $request->ip(),
+            'signature' => $request->header('x-paystack-signature'),
+            'content_type' => $request->header('content-type'),
+            'user_agent' => $request->userAgent(),
+            'input' => $request->all(),
+            'json' => $request->json()->all(),
+            'raw_payload' => $payload,
+        ]);
+
         if (! $this->paystack->webhookIsValid($payload, $request->header('x-paystack-signature'))) {
+            Log::warning('Paystack webhook rejected because signature is invalid.', [
+                'ip' => $request->ip(),
+                'signature' => $request->header('x-paystack-signature'),
+                'raw_payload' => $payload,
+            ]);
+
             return response()->json(['message' => 'Invalid signature.'], 401);
         }
 
@@ -49,7 +65,6 @@ class PaymentWebhookController extends Controller
                 || strtoupper((string) data_get($payment, 'currency')) !== $expectedCurrency
             ) {
                 Log::warning('Rejected Paystack payment verification.', ['reference' => $reference]);
-
                 return response()->json(['message' => 'Payment verification failed.'], 422);
             }
 
@@ -78,7 +93,7 @@ class PaymentWebhookController extends Controller
                 $checkout = Carbon::parse((string) data_get($booking, 'to'))->startOfDay();
 
                 $isUnavailable = $apartment->invoiceItems()
-                    ->whereHas('invoice', fn ($invoice) => $invoice->where('payment_status', 'paid'))
+                    ->whereHas('invoice', fn($invoice) => $invoice->where('payment_status', 'paid'))
                     ->where('checkin', '<', $checkout)
                     ->where('checkout', '>', $checkin)
                     ->exists();
@@ -106,7 +121,7 @@ class PaymentWebhookController extends Controller
                     'discount_type' => data_get($booking, 'discount_type'),
                     'coupon_code' => data_get($booking, 'coupon'),
                     'total' => (float) data_get($booking, 'total'),
-                    'description' => filled(data_get($booking, 'coupon')) ? 'Coupon '.data_get($booking, 'coupon').' applied.' : null,
+                    'description' => filled(data_get($booking, 'coupon')) ? 'Coupon ' . data_get($booking, 'coupon') . ' applied.' : null,
                     'payment_status' => 'paid',
                     'payment_reference' => $reference,
                     'paid_at' => now(),
@@ -178,7 +193,7 @@ class PaymentWebhookController extends Controller
         }
 
         do {
-            $number = 'MBR-'.now()->format('ymd').'-'.strtoupper(str()->random(6));
+            $number = 'MBR-' . now()->format('ymd') . '-' . strtoupper(str()->random(6));
         } while (Invoice::query()->where('invoice', $number)->exists());
 
         return $number;
