@@ -1,0 +1,29 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        if (Schema::hasTable('attributes') && Schema::hasColumn('attributes', 'price')) {
+            DB::statement('ALTER TABLE attributes MODIFY price DECIMAL(12, 2) NULL');
+        }
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        if (Schema::hasTable('attributes') && Schema::hasColumn('attributes', 'price')) {
+            DB::statement('ALTER TABLE attributes MODIFY price DECIMAL(12, 2) NOT NULL');
+        }
+    }
+};

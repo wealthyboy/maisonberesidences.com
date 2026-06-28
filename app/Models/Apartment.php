@@ -72,4 +72,9 @@ class Apartment extends Model
     {
         return $this->hasMany(InvoiceItem::class);
     }
+
+    public function attributes()
+    {
+        return $this->belongsToMany(Attribute::class, 'apartment_attribute')->withTimestamps();
+    }
 }

@@ -76,7 +76,7 @@ class ApartmentSearchController extends Controller
         $checkout = filled($filters['checkout'] ?? null) ? Carbon::parse($filters['checkout'])->startOfDay() : null;
         $currency = $request->attributes->get('currency');
 
-        $apartment->load(['images', 'property']);
+        $apartment->load(['images', 'property', 'attributes.parent']);
         $apartment->setAttribute('stay_quote', $this->quotes->quote($apartment, $checkin, $checkout, $currency));
 
         return view('apartments.show', compact('apartment', 'filters', 'currency'));

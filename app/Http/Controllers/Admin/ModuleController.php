@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminModuleRecord;
 use App\Models\Apartment;
+use App\Models\Attribute as ApartmentAttribute;
 use App\Models\Information;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
@@ -57,6 +58,7 @@ class ModuleController extends Controller
         if ($module['slug'] === 'apartments') {
             $apartment = Apartment::create($this->apartmentData($request));
             $this->syncApartmentImages($request, $apartment);
+            $this->syncApartmentAttributes($request, $apartment);
 
             return redirect()
                 ->route('admin.modules.show', $module['slug'])
@@ -113,6 +115,7 @@ class ModuleController extends Controller
             $apartment = Apartment::findOrFail($record);
             $apartment->update($this->apartmentData($request, $apartment));
             $this->syncApartmentImages($request, $apartment);
+            $this->syncApartmentAttributes($request, $apartment);
 
             return redirect()
                 ->route('admin.modules.show', $module['slug'])
@@ -201,6 +204,16 @@ class ModuleController extends Controller
             'canCreate' => $this->canCreate($module),
             'properties' => Property::orderBy('name')->get(),
             'apartments' => Apartment::orderBy('name')->get(),
+            'attributeGroups' => ApartmentAttribute::query()
+                ->whereNull('parent_id')
+                ->where('type', 'apartment_facility')
+                ->where('is_active', true)
+                ->with(['children' => fn($children) => $children
+                    ->where('type', 'apartment_facility')
+                    ->where('is_active', true)])
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 
@@ -242,7 +255,7 @@ class ModuleController extends Controller
 
         return match ($module['slug']) {
             'properties' => Property::findOrFail($record),
-            'apartments' => Apartment::with(['property', 'images'])->findOrFail($record),
+            'apartments' => Apartment::with(['property', 'images', 'attributes'])->findOrFail($record),
             'invoices' => Invoice::with('invoiceItems.apartment')->findOrFail($record),
             'pages' => Information::findOrFail($record),
             default => AdminModuleRecord::where('module_slug', $module['slug'])->findOrFail($record),
@@ -373,6 +386,7 @@ class ModuleController extends Controller
         $data = $request->validate([
             'room_name' => ['required', 'string', 'max:255'],
             'property_id' => ['required', 'exists:properties,id'],
+            'status' => ['required', 'in:draft,active,archived'],
             'floor' => ['nullable', 'string', 'max:255'],
             'room_quantity' => ['nullable', 'integer', 'min:1', 'max:1000'],
             'room_number' => ['nullable', 'integer', 'min:0', 'max:100'],
@@ -393,6 +407,8 @@ class ModuleController extends Controller
             'bedroom_5' => ['nullable', 'string', 'max:255'],
             'bedroom_6' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'attribute_ids' => ['nullable', 'array'],
+            'attribute_ids.*' => ['integer', 'exists:attributes,id'],
         ]);
 
         $name = $data['room_name'];
@@ -421,10 +437,22 @@ class ModuleController extends Controller
             'bedroom_6' => $data['bedroom_6'] ?? null,
             'description' => $data['description'] ?? null,
             'type' => 'multiple',
-            'allow' => true,
+            'allow' => $data['status'] === 'active',
             'uuid' => $apartment?->uuid ?? (string) time(),
             'slug' => $this->uniqueApartmentSlug(Str::slug($name), $apartment),
         ];
+    }
+
+    private function syncApartmentAttributes(Request $request, Apartment $apartment): void
+    {
+        $attributeIds = ApartmentAttribute::query()
+            ->whereNotNull('parent_id')
+            ->where('type', 'apartment_facility')
+            ->whereIn('id', $request->input('attribute_ids', []))
+            ->pluck('id')
+            ->all();
+
+        $apartment->attributes()->sync($attributeIds);
     }
 
     private function syncApartmentImages(Request $request, Apartment $apartment): void

@@ -69,7 +69,7 @@
                     @if ($screen === 'edit')
                         @method('put')
                     @else
-                        @unless ($isInvoices || $isPages)
+                        @unless ($isInvoices || $isPages || $isApartments)
                             <div class="border-b border-zinc-200 pb-2 lg:col-span-2">
                                 <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-zinc-500">{{ Illuminate\Support\Str::singular($module['label']) }} details</h3>
                             </div>

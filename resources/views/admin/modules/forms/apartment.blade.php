@@ -2,6 +2,7 @@
     $floors = ['1st floor', '2nd floor', '3rd floor', '4th floor', '5th floor', '6th floor', '7th floor', '8th floor', '9th floor'];
     $bedOptions = ['Single bed', 'Double bed', 'Queen bed', 'King bed', 'Extra-large double bed'];
     $toiletOptions = ['1', '1.5', '2', '2.5', '3', '3.5', '4', '4.5', '5'];
+    $selectedAttributeIds = collect(old('attribute_ids', $model?->attributes?->pluck('id')->all() ?? []))->map(fn ($id) => (string) $id)->all();
 @endphp
 
 <div class="border-b border-zinc-200 pb-2 lg:col-span-2">
@@ -19,6 +20,15 @@
         <option value="">Select property</option>
         @foreach ($properties as $property)
             <option value="{{ $property->id }}" @selected((string) old('property_id', $model->property_id ?? '') === (string) $property->id)>{{ $property->name }}</option>
+        @endforeach
+    </select>
+</label>
+
+<label class="block">
+    <span class="text-sm font-semibold text-zinc-700">Status</span>
+    <select name="status" class="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-[#d9b44a] focus:ring-2 focus:ring-[#d9b44a]/20">
+        @foreach (['active' => 'Active', 'draft' => 'Draft', 'archived' => 'Archived'] as $value => $label)
+            <option value="{{ $value }}" @selected(old('status', ($model?->allow ?? true) ? 'active' : 'draft') === $value)>{{ $label }}</option>
         @endforeach
     </select>
 </label>
@@ -155,6 +165,29 @@
         @endforeach
     </div>
 </div>
+
+@if (($attributeGroups ?? collect())->isNotEmpty())
+    <div class="border-b border-zinc-200 pb-2 pt-2 lg:col-span-2">
+        <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-zinc-500">Apartment facilities</h3>
+    </div>
+
+    <div class="grid gap-6 lg:col-span-2 md:grid-cols-2 xl:grid-cols-3">
+        @foreach ($attributeGroups as $group)
+            <section class="rounded-md border border-zinc-200 bg-white p-4">
+                <h4 class="text-sm font-semibold text-zinc-800">{{ $group->name }}</h4>
+                <div class="mt-3 space-y-3">
+                    @foreach ($group->children as $attribute)
+                        <label class="flex items-center gap-3 text-sm text-zinc-600">
+                            <input type="checkbox" name="attribute_ids[]" value="{{ $attribute->id }}" @checked(in_array((string) $attribute->id, $selectedAttributeIds, true)) class="sr-only peer">
+                            <span class="relative inline-flex h-6 w-11 shrink-0 rounded-full bg-zinc-300 transition after:absolute after:left-1 after:top-1 after:h-4 after:w-4 after:rounded-full after:bg-white after:shadow after:transition peer-checked:bg-[#222052] peer-checked:after:translate-x-5 peer-focus-visible:ring-2 peer-focus-visible:ring-[#d9b44a]/40"></span>
+                            <span>{{ $attribute->name }}</span>
+                        </label>
+                    @endforeach
+                </div>
+            </section>
+        @endforeach
+    </div>
+@endif
 
 @push('scripts')
     <style>
