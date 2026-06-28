@@ -21,6 +21,7 @@ Route::post('apartments/{apartment:slug}/availability', [ApartmentSearchControll
 Route::get('apartments/{apartment}/reserve', [ReservationController::class, 'create'])->name('reservations.create');
 Route::post('apartments/{apartment}/coupon', [ReservationController::class, 'coupon'])->name('reservations.coupon');
 Route::post('apartments/{apartment}/reserve', [ReservationController::class, 'store'])->name('reservations.store');
+Route::post('reservations/payment-confirm', [ReservationController::class, 'confirmPayment'])->name('reservations.payment-confirm');
 Route::get('reservations/payment-return', [ReservationController::class, 'paymentReturn'])->name('reservations.payment-return');
 Route::get('reservations/receipt', [ReservationController::class, 'receiptByReference'])->name('reservations.receipt-reference');
 Route::get('reservations/{invoice}/receipt', [ReservationController::class, 'receipt'])->name('reservations.receipt');

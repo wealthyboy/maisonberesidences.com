@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Services\ApartmentQuoteService;
 use App\Services\CouponService;
 use App\Services\CurrencyService;
+use App\Services\PaystackBookingService;
 use App\Services\PaystackService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +22,7 @@ class ReservationController extends Controller
         private readonly PaystackService $paystack,
         private readonly CouponService $coupons,
         private readonly CurrencyService $currencies,
+        private readonly PaystackBookingService $paystackBookings,
     ) {}
 
     public function create(Request $request, Apartment $apartment): View|RedirectResponse
@@ -165,6 +167,33 @@ class ReservationController extends Controller
             ->with('booking_error', 'Payment received. We are waiting for Paystack to confirm your booking.');
     }
 
+    public function confirmPayment(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'reference' => ['required', 'string', 'max:120'],
+            'response' => ['nullable', 'array'],
+        ]);
+
+        try {
+            $invoice = $this->paystackBookings->processReference($data['reference'], [
+                'event' => 'popup.callback',
+                'data' => [
+                    'reference' => $data['reference'],
+                    'response' => $data['response'] ?? [],
+                ],
+            ]);
+        } catch (\Throwable $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json([
+            'message' => 'Booking confirmed.',
+            'reference' => $invoice->payment_reference,
+            'invoice' => $invoice->invoice,
+            'receipt_url' => route('reservations.receipt', $invoice),
+        ]);
+    }
+
     private function stay(Request $request): ?array
     {
         $validated = $request->validate([
@@ -242,6 +271,7 @@ class ReservationController extends Controller
             'coupon_code' => $paymentCoupon['code'],
             'discount' => (float) $paymentCoupon['discount'],
             'booking' => $booking,
+            'booking_json' => json_encode($booking),
             'custom_fields' => [
                 [
                     'display_name' => 'Booking payload',

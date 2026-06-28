@@ -361,18 +361,56 @@
                         await loadScript();
 
                         const payment = payload.payment;
-                        const showConfirmation = (response) => {
-                            sessionStorage.setItem('maisonbe_booking_confirmed', payment.reference);
+                        const confirmBooking = async (response) => {
+                            const paymentReference = response?.reference || response?.trxref || payment.reference;
+                            status.textContent = 'Confirming your booking...';
+
+                            const confirmationResponse = await fetch('{{ route('reservations.payment-confirm') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                },
+                                body: JSON.stringify({
+                                    reference: paymentReference,
+                                    response,
+                                }),
+                            });
+                            const confirmationPayload = await confirmationResponse.json();
+
+                            if (!confirmationResponse.ok) {
+                                throw new Error(errorMessage(confirmationPayload));
+                            }
+
+                            return confirmationPayload;
+                        };
+
+                        const showConfirmation = async (response) => {
+                            let confirmedReference = response?.reference || response?.trxref || payment.reference;
+                            let confirmedReceiptUrl = payment.receipt_url;
+
+                            try {
+                                const confirmed = await confirmBooking(response);
+                                confirmedReference = confirmed.reference || confirmedReference;
+                                confirmedReceiptUrl = confirmed.receipt_url || confirmedReceiptUrl;
+                                sessionStorage.setItem('maisonbe_booking_confirmed', confirmedReference);
+                                status.textContent = 'Booking confirmed.';
+                            } catch (error) {
+                                setProcessing(false);
+                                status.textContent = error.message || 'Payment was received, but booking confirmation is still pending. Please contact Maison Be Reservations with your payment reference.';
+                                return;
+                            }
+
                             panels.forEach((panel) => {
                                 panel.hidden = true;
                                 panel.style.display = 'none';
                             });
                             if (reference) {
-                                const paymentReference = response?.reference || payment.reference;
-                                reference.textContent = paymentReference ? `Payment reference: ${paymentReference}` : '';
+                                reference.textContent = confirmedReference ? `Payment reference: ${confirmedReference}` : '';
                             }
-                            if (receiptLink && payment.receipt_url) {
-                                receiptLink.href = payment.receipt_url;
+                            if (receiptLink && confirmedReceiptUrl) {
+                                receiptLink.href = confirmedReceiptUrl;
                                 receiptLink.hidden = false;
                             }
                             if (confirmation) {
