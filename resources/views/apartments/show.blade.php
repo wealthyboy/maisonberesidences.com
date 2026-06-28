@@ -58,10 +58,37 @@
         <x-site-footer />
         <script>
             (() => document.addEventListener('submit', async (event) => {
-                const form = event.target.closest('[data-availability-form]'); if (!form || event.defaultPrevented) return;
-                event.preventDefault(); const panel = form.parentElement; const status = panel.querySelector('[data-availability-status]'); const bookNow = panel.querySelector('[data-book-now]');
-                status.textContent = 'Checking availability...'; bookNow.hidden = true;
-                try { const response = await fetch(form.action, { method: 'POST', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }, body: new FormData(form) }); const result = await response.json(); status.textContent = result.message || 'We could not check availability.'; if (result.available) { bookNow.href = result.reserve_url; bookNow.hidden = false; } } catch { status.textContent = 'We could not check availability. Please try again.'; }
+                const form = event.target.closest('[data-availability-form]');
+                if (!form || event.defaultPrevented) return;
+                event.preventDefault();
+
+                const panel = form.parentElement;
+                const status = panel.querySelector('[data-availability-status]');
+                const bookNow = panel.querySelector('[data-book-now]');
+                const submitButton = form.querySelector('button[type="submit"]');
+
+                status.textContent = 'Checking availability...';
+                bookNow.hidden = true;
+                bookNow.href = '#';
+                form.setAttribute('aria-busy', 'true');
+                if (submitButton) submitButton.disabled = true;
+
+                try {
+                    const response = await fetch(form.action, { method: 'POST', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }, body: new FormData(form) });
+                    const result = await response.json();
+                    status.textContent = result.message || 'We could not check availability.';
+                    if (result.available && result.reserve_url) {
+                        bookNow.href = result.reserve_url;
+                        bookNow.hidden = false;
+                    }
+                } catch {
+                    status.textContent = 'We could not check availability. Please try again.';
+                    bookNow.hidden = true;
+                    bookNow.href = '#';
+                } finally {
+                    form.removeAttribute('aria-busy');
+                    if (submitButton) submitButton.disabled = false;
+                }
             }))();
         </script>
     </body>

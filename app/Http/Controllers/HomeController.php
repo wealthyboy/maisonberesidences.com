@@ -31,7 +31,7 @@ class HomeController extends Controller
         }
 
         $apartments = Apartment::query()
-            ->with('images')
+            ->with(['images', 'attributes.parent'])
             ->orderBy('id')
             ->limit(4)
             ->get();

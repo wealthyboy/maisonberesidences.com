@@ -27,7 +27,7 @@ class ApartmentSearchController extends Controller
         $currency = $request->attributes->get('currency');
 
         $apartments = Apartment::query()
-            ->with(['images', 'property'])
+            ->with(['images', 'property', 'attributes.parent'])
             ->when(
                 filled($filters['checkin'] ?? null) && filled($filters['checkout'] ?? null),
                 function ($query) use ($checkin, $checkout) {

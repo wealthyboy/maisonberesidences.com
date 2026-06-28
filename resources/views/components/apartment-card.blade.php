@@ -27,6 +27,18 @@
     $query = collect($filters)->only(['checkin', 'checkout', 'guests', 'rooms'])->filter()->all();
     $showUrl = route('apartments.show', $apartment).($query ? '?'.http_build_query($query) : '');
     $beds = $apartment->no_of_rooms ?: collect([$apartment->bedroom_1, $apartment->bedroom_2, $apartment->bedroom_3, $apartment->bedroom_4, $apartment->bedroom_5, $apartment->bedroom_6])->filter()->count();
+    $amenityGroups = $apartment->attributes
+        ->filter(fn ($attribute) => $attribute->parent && $attribute->type === 'apartment_facility')
+        ->sort(fn ($a, $b) => [
+            $a->parent->sort_order,
+            $a->sort_order,
+            $a->name,
+        ] <=> [
+            $b->parent->sort_order,
+            $b->sort_order,
+            $b->name,
+        ])
+        ->groupBy(fn ($attribute) => $attribute->parent->name);
     $modalId = 'apartment-card-modal-'.$apartment->id;
 @endphp
 
@@ -78,6 +90,23 @@
             </form>
             <p class="apartment-availability-status" aria-live="polite" data-availability-status></p>
             <a class="apartment-book-now" href="#" hidden data-book-now>Book now <span aria-hidden="true">→</span></a>
+            @if ($amenityGroups->isNotEmpty())
+                <section class="apartment-modal-amenities">
+                    <h3>Apartment amenities</h3>
+                    <div class="apartment-modal-amenities-grid">
+                        @foreach ($amenityGroups as $groupName => $attributes)
+                            <article class="apartment-modal-amenity-group">
+                                <h4><span aria-hidden="true">✓</span>{{ $groupName }}</h4>
+                                <ul>
+                                    @foreach ($attributes as $attribute)
+                                        <li>{{ $attribute->name }}</li>
+                                    @endforeach
+                                </ul>
+                            </article>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
         </div>
     </dialog>
 </article>
@@ -87,6 +116,30 @@
         (() => {
             if (window.apartmentCardHandlersReady) return;
             window.apartmentCardHandlersReady = true;
+
+            const openModal = (modal) => {
+                if (!modal) return;
+                modal.showModal();
+                requestAnimationFrame(() => modal.classList.add('is-open'));
+            };
+
+            const closeModal = (modal) => {
+                if (!modal || !modal.open || modal.classList.contains('is-closing')) return;
+                modal.classList.remove('is-open');
+                modal.classList.add('is-closing');
+
+                const finish = () => {
+                    modal.classList.remove('is-closing');
+                    modal.close();
+                };
+
+                const timeout = window.setTimeout(finish, 460);
+                modal.addEventListener('transitionend', (transitionEvent) => {
+                    if (transitionEvent.target !== modal) return;
+                    window.clearTimeout(timeout);
+                    finish();
+                }, { once: true });
+            };
 
             document.addEventListener('click', (event) => {
                 const galleryButton = event.target.closest('[data-card-previous], [data-card-next]');
@@ -102,8 +155,23 @@
                 }
 
                 const open = event.target.closest('[data-card-modal-open]');
-                if (open) document.getElementById(open.getAttribute('aria-controls')).showModal();
-                if (event.target.closest('[data-card-modal-close]')) event.target.closest('[data-card-modal]').close();
+                if (open) openModal(document.getElementById(open.getAttribute('aria-controls')));
+
+                const close = event.target.closest('[data-card-modal-close]');
+                if (close) closeModal(close.closest('[data-card-modal]'));
+
+                if (event.target.matches('[data-card-modal]')) {
+                    const bounds = event.target.getBoundingClientRect();
+                    const clickedInside = event.clientX >= bounds.left && event.clientX <= bounds.right && event.clientY >= bounds.top && event.clientY <= bounds.bottom;
+                    if (!clickedInside) closeModal(event.target);
+                }
+            });
+
+            document.addEventListener('cancel', (event) => {
+                const modal = event.target.closest('[data-card-modal]');
+                if (!modal) return;
+                event.preventDefault();
+                closeModal(modal);
             });
 
             document.addEventListener('submit', async (event) => {
@@ -113,14 +181,28 @@
                 event.preventDefault();
                 const status = form.parentElement.querySelector('[data-availability-status]');
                 const bookNow = form.parentElement.querySelector('[data-book-now]');
+                const submitButton = form.querySelector('button[type="submit"]');
                 status.textContent = 'Checking availability...';
                 bookNow.hidden = true;
+                bookNow.href = '#';
+                form.setAttribute('aria-busy', 'true');
+                if (submitButton) submitButton.disabled = true;
                 try {
                     const response = await fetch(form.action, { method: 'POST', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }, body: new FormData(form) });
                     const result = await response.json();
                     status.textContent = result.message || 'We could not check availability.';
-                    if (result.available) { bookNow.href = result.reserve_url; bookNow.hidden = false; }
-                } catch { status.textContent = 'We could not check availability. Please try again.'; }
+                    if (result.available && result.reserve_url) {
+                        bookNow.href = result.reserve_url;
+                        bookNow.hidden = false;
+                    }
+                } catch {
+                    status.textContent = 'We could not check availability. Please try again.';
+                    bookNow.hidden = true;
+                    bookNow.href = '#';
+                } finally {
+                    form.removeAttribute('aria-busy');
+                    if (submitButton) submitButton.disabled = false;
+                }
             });
         })();
     </script>
