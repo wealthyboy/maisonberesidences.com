@@ -1,6 +1,10 @@
 @php
-    $settings = \App\Models\SystemSetting::query()->first();
-    $pages = \App\Models\Information::query()->orderBy('sort_order')->orderBy('title')->get();
+    $settings = \Illuminate\Support\Facades\Schema::hasTable('system_settings')
+        ? \App\Models\SystemSetting::query()->first()
+        : null;
+    $pages = \Illuminate\Support\Facades\Schema::hasTable('information')
+        ? \App\Models\Information::query()->orderBy('sort_order')->orderBy('title')->get()
+        : collect();
     $whatsAppDigits = preg_replace('/\D+/', '', (string) ($settings?->store_phone ?? ''));
 @endphp
 
