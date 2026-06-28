@@ -21,10 +21,10 @@ class CurrencyService
             return $this->context($requestedCurrency, 'manual selection');
         }
 
-        $savedCurrency = strtoupper((string) data_get($request->session()->get('currency'), 'code'));
+        $countryCode = $this->countryCodeFromHeaders($request);
 
-        if (in_array($savedCurrency, ['USD', 'NGN'], true)) {
-            return $this->context($savedCurrency, 'saved preference');
+        if ($countryCode !== '') {
+            return $this->context($countryCode === 'NG' ? 'NGN' : 'USD', $countryCode);
         }
 
         try {
@@ -37,6 +37,19 @@ class CurrencyService
 
             return $this->context('USD');
         }
+    }
+
+    private function countryCodeFromHeaders(Request $request): string
+    {
+        foreach (['CF-IPCountry', 'CloudFront-Viewer-Country', 'X-Appengine-Country', 'X-Country-Code', 'X-Geo-Country'] as $header) {
+            $countryCode = strtoupper((string) $request->header($header));
+
+            if (preg_match('/^[A-Z]{2}$/', $countryCode) && $countryCode !== 'XX') {
+                return $countryCode;
+            }
+        }
+
+        return '';
     }
 
     public function convertFromUsd(float $amount, array $currency): float
