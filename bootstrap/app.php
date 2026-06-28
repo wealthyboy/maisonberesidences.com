@@ -13,6 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->validateCsrfTokens(except: [
+            'webhook/payment',
+            'webhooks/paystack',
+        ]);
+
         $middleware->web(append: [
             ResolveVisitorCurrency::class,
         ]);
