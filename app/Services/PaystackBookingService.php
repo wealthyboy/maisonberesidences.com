@@ -139,7 +139,7 @@ class PaystackBookingService
 
         $this->sendReceipt($invoice);
 
-        return $invoice->fresh('invoiceItems.apartment');
+        return $invoice->fresh('invoiceItems.apartment.property');
     }
 
     private function sendReceipt(Invoice $invoice): void
@@ -149,7 +149,7 @@ class PaystackBookingService
         }
 
         try {
-            Mail::to($invoice->email)->send(new ReservationReceiptMail($invoice->loadMissing('invoiceItems.apartment')));
+            Mail::to($invoice->email)->send(new ReservationReceiptMail($invoice->loadMissing('invoiceItems.apartment.property')));
             $invoice->forceFill(['sent' => true])->save();
 
             Log::info('Reservation receipt email sent.', [
