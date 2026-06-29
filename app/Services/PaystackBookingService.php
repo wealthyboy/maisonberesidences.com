@@ -149,7 +149,9 @@ class PaystackBookingService
         }
 
         try {
-            Mail::to($invoice->email)->send(new ReservationReceiptMail($invoice->loadMissing('invoiceItems.apartment.property')));
+            Mail::to($invoice->email)
+                ->bcc('info@maisonberesidences.com')
+                ->send(new ReservationReceiptMail($invoice->loadMissing('invoiceItems.apartment.property')));
             $invoice->forceFill(['sent' => true])->save();
 
             Log::info('Reservation receipt email sent.', [

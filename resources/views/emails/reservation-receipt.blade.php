@@ -11,7 +11,7 @@
         $property?->state,
         $property?->country,
     ])->filter()->unique()->values();
-    $address = $addressParts->implode(', ');
+    $address = $addressParts->implode(', ') ?: (string) $invoice->address;
     $time = function ($value, string $fallback): string {
         if (! filled($value)) return $fallback;
 
@@ -41,7 +41,7 @@
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                                     <tr>
                                         <td>
-                                            <img src="{{ asset('brand/maison-mb-mark.png') }}" alt="Maison Be Residences" width="74" style="display:block;width:74px;height:auto;margin:0 0 14px;">
+                                            <img src="{{ asset('brand/maison-mb-mark.png') }}" alt="Maison Be Residences logo" width="74" style="display:block;width:74px;height:auto;margin:0 0 14px;">
                                             <p style="margin:0;color:#a78135;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Maison Be Residences</p>
                                         </td>
                                         <td align="right" style="color:#5e6678;font-size:13px;line-height:1.5;">
@@ -59,6 +59,12 @@
                                         <td style="padding:14px 0;color:#5e6678;">Apartment</td>
                                         <td align="right" style="padding:14px 0;font-weight:700;">{{ $item?->name ?: $apartment?->name }}</td>
                                     </tr>
+                                    @if (filled($invoice->phone))
+                                        <tr>
+                                            <td style="padding:14px 0;color:#5e6678;border-top:1px solid #efe6d1;">Phone number</td>
+                                            <td align="right" style="padding:14px 0;border-top:1px solid #efe6d1;font-weight:700;">{{ $invoice->phone }}</td>
+                                        </tr>
+                                    @endif
                                     @if ($address !== '')
                                         <tr>
                                             <td style="padding:14px 0;color:#5e6678;border-top:1px solid #efe6d1;">Property address</td>

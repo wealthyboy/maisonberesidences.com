@@ -9,7 +9,7 @@
         $property?->city,
         $property?->state,
         $property?->country,
-    ])->filter()->unique()->values()->implode(', ');
+    ])->filter()->unique()->values()->implode(', ') ?: (string) $invoice->address;
     $time = function ($value, string $fallback): string {
         if (! filled($value)) return $fallback;
 
@@ -43,6 +43,9 @@
             <section class="receipt-card">
                 @foreach ($invoice->invoiceItems as $item)
                     <div><span>Residence</span><strong>{{ $item->name }}</strong></div>
+                    @if (filled($invoice->phone))
+                        <div><span>Phone number</span><strong>{{ $invoice->phone }}</strong></div>
+                    @endif
                     @if ($address !== '')
                         <div><span>Property address</span><strong>{{ $address }}</strong></div>
                     @endif
