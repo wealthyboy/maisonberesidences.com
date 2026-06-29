@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -214,6 +215,7 @@ class ModuleController extends Controller
                 ->orderBy('sort_order')
                 ->orderBy('name')
                 ->get(),
+            'invoiceBackedCount' => $this->isInvoiceModule($module) ? Invoice::query()->count() : null,
         ]);
     }
 
@@ -237,7 +239,16 @@ class ModuleController extends Controller
         }
 
         if ($this->isInvoiceModule($module)) {
-            return Invoice::with('invoiceItems.apartment')->latest()->paginate(10);
+            $records = Invoice::with('invoiceItems.apartment')->latest()->paginate(10);
+
+            if ($module['slug'] === 'reservations') {
+                Log::info('Admin reservations loaded from invoices.', [
+                    'invoice_count' => Invoice::query()->count(),
+                    'page_count' => $records->count(),
+                ]);
+            }
+
+            return $records;
         }
 
         if ($module['slug'] === 'pages') {

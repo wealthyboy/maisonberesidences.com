@@ -45,6 +45,9 @@
                 <div class="flex flex-wrap gap-2">
                     <span class="rounded-full bg-[#d9b44a]/20 px-3 py-1 text-xs font-semibold text-[#222052]">Live CRUD</span>
                     <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">Database backed</span>
+                    @if ($isReservations && $invoiceBackedCount !== null)
+                        <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">Invoice-backed: {{ $invoiceBackedCount }}</span>
+                    @endif
                 </div>
             </div>
         </section>
