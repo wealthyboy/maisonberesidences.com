@@ -459,14 +459,14 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .receipt-card { margin-top: 3rem; padding: clamp(1.4rem, 3vw, 2.3rem); border: 1px solid var(--dark-line); border-radius: 8px; background: #fffdf8; }
 .receipt-card + .receipt-card { margin-top: 1.3rem; }
 .receipt-section-title { margin: 0 0 .65rem; color: var(--gold); font-size: .74rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
-.receipt-stay-card { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 1.2rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(216,203,169,.85); align-items: start; }
+.receipt-stay-card { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 1rem; padding-top: 1.25rem; border-top: 1px solid rgba(216,203,169,.85); align-items: start; }
 .receipt-stay-card img { width: 100%; aspect-ratio: 1.5; object-fit: cover; }
-.receipt-stay-card h2 { margin: 0 0 .25rem; color: #2fb49d; font-size: 1.35rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-.receipt-stay-card p, .receipt-property-block p { margin: .2rem 0; color: #404040; font-size: 1rem; line-height: 1.45; }
-.receipt-property-block { padding-top: 1.35rem; }
-.receipt-property-block h2 { margin: 0 0 .35rem; color: #425065; font-size: 1.5rem; font-weight: 800; }
-.receipt-property-block strong { color: #000; font-size: 1.18rem; }
-.receipt-property-block .receipt-phone { margin-top: .75rem; color: var(--soft-ink); }
+.receipt-stay-card h2 { margin: 0 0 .25rem; color: #2fb49d; font-size: 1.06rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.receipt-stay-card p, .receipt-property-block p { margin: .18rem 0; color: #404040; font-size: .88rem; line-height: 1.42; }
+.receipt-property-block { padding-bottom: 1.25rem; }
+.receipt-property-block h2 { margin: 0 0 .32rem; color: #425065; font-size: 1.16rem; font-weight: 800; }
+.receipt-property-block strong { color: #000; font-size: .96rem; }
+.receipt-property-block .receipt-phone { margin-top: .65rem; color: var(--soft-ink); }
 .receipt-id-link { display: inline-flex; margin-top: .6rem; color: var(--ink); font-size: .76rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 .receipt-card > div { display: flex; padding: 1rem 0; border-bottom: 1px solid rgba(216,203,169,.7); color: var(--soft-ink); align-items: center; justify-content: space-between; gap: 1rem; font-size: .82rem; }
 .receipt-card > .receipt-stay-card, .receipt-card > .receipt-property-block { display: grid; }

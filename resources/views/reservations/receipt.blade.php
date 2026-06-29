@@ -54,6 +54,17 @@
             <h1>{{ $invoice->payment_status === 'paid' ? 'Booking confirmed.' : 'We are confirming your payment.' }}</h1>
             <p class="receipt-lead">Thank you, {{ $invoice->full_name }}. Your reservation reference is <strong>{{ $invoice->invoice }}</strong>.</p>
             <section class="receipt-card">
+                <div class="receipt-property-block">
+                    <h2>Property Address</h2>
+                    @if ($address !== '')
+                        <p>{{ $address }}</p>
+                    @endif
+                    <p><strong>Check-in Time:</strong> {{ $checkInTime }}</p>
+                    <p><strong>Check-out Time:</strong> {{ $checkOutTime }}</p>
+                    @if (filled($invoice->phone))
+                        <p class="receipt-phone">Phone number: <strong>{{ $invoice->phone }}</strong></p>
+                    @endif
+                </div>
                 @foreach ($invoice->invoiceItems as $item)
                     <div class="receipt-stay-card">
                         <img src="{{ $apartmentImage }}" alt="{{ $item->name }} at Maison Be" loading="lazy" decoding="async">
@@ -66,17 +77,6 @@
                         </div>
                     </div>
                 @endforeach
-                <div class="receipt-property-block">
-                    <h2>Property Address</h2>
-                    @if ($address !== '')
-                        <p>{{ $address }}</p>
-                    @endif
-                    <p><strong>Check-in Time:</strong> {{ $checkInTime }}</p>
-                    <p><strong>Check-out Time:</strong> {{ $checkOutTime }}</p>
-                    @if (filled($invoice->phone))
-                        <p class="receipt-phone">Phone number: <strong>{{ $invoice->phone }}</strong></p>
-                    @endif
-                </div>
             </section>
             <section class="receipt-card">
                 <p class="receipt-section-title">Receipt summary</p>

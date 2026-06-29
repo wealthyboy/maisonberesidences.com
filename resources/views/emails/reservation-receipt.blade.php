@@ -68,14 +68,30 @@
 
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-top:1px solid #d8cba9;border-bottom:1px solid #d8cba9;">
                                     <tr>
-                                        <td style="padding:22px 0;">
+                                        <td style="padding:18px 0;color:#303030;font-size:14px;line-height:1.5;">
+                                            <p style="margin:0 0 5px;color:#425065;font-size:17px;font-weight:800;">Property Address</p>
+                                            @if ($address !== '')
+                                                <p style="margin:0 0 5px;">{{ $address }}</p>
+                                            @endif
+                                            <p style="margin:0;"><strong style="font-size:15px;">Check-in Time:</strong> {{ $checkInTime }}</p>
+                                            <p style="margin:3px 0 0;"><strong style="font-size:15px;">Check-out Time:</strong> {{ $checkOutTime }}</p>
+                                            @if (filled($invoice->phone))
+                                                <p style="margin:8px 0 0;color:#425065;">Phone number: <strong>{{ $invoice->phone }}</strong></p>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-bottom:1px solid #d8cba9;">
+                                    <tr>
+                                        <td style="padding:20px 0;">
                                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                                                 <tr>
-                                                    <td width="190" valign="top" style="padding-right:18px;">
-                                                        <img src="{{ $apartmentImage }}" alt="{{ $item?->name ?: $apartment?->name }}" width="180" style="display:block;width:180px;max-width:100%;height:auto;border:0;">
+                                                    <td width="164" valign="top" style="padding-right:16px;">
+                                                        <img src="{{ $apartmentImage }}" alt="{{ $item?->name ?: $apartment?->name }}" width="154" style="display:block;width:154px;max-width:100%;height:auto;border:0;">
                                                     </td>
-                                                    <td valign="top" style="color:#424242;font-size:15px;line-height:1.55;">
-                                                        <p style="margin:0 0 4px;color:#2fb49d;font-size:19px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">{{ $item?->name ?: $apartment?->name }}</p>
+                                                    <td valign="top" style="color:#424242;font-size:14px;line-height:1.5;">
+                                                        <p style="margin:0 0 5px;color:#2fb49d;font-size:16px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;">{{ $item?->name ?: $apartment?->name }}</p>
                                                         <p style="margin:0;"><strong>Check-in :</strong> {{ optional($item?->checkin)->format('l, F jS Y') }}</p>
                                                         <p style="margin:0;"><strong>Check-out:</strong> {{ optional($item?->checkout)->format('l, F jS Y') }}</p>
                                                         <p style="margin:0;"><strong>Length of stay:</strong> {{ $item?->quantity }} {{ \Illuminate\Support\Str::plural('night', (int) $item?->quantity) }}</p>
@@ -83,22 +99,6 @@
                                                     </td>
                                                 </tr>
                                             </table>
-                                        </td>
-                                    </tr>
-                                </table>
-
-                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-bottom:1px solid #d8cba9;">
-                                    <tr>
-                                        <td style="padding:22px 0;color:#000;font-size:16px;line-height:1.6;">
-                                            <p style="margin:0 0 4px;color:#425065;font-size:22px;font-weight:800;">Property Address</p>
-                                            @if ($address !== '')
-                                                <p style="margin:0 0 4px;">{{ $address }}</p>
-                                            @endif
-                                            <p style="margin:0;"><strong style="font-size:21px;">Check-in Time:</strong> {{ $checkInTime }}</p>
-                                            <p style="margin:4px 0 0;"><strong style="font-size:21px;">Check-out Time:</strong> {{ $checkOutTime }}</p>
-                                            @if (filled($invoice->phone))
-                                                <p style="margin:10px 0 0;color:#425065;">Phone number: <strong>{{ $invoice->phone }}</strong></p>
-                                            @endif
                                         </td>
                                     </tr>
                                 </table>
