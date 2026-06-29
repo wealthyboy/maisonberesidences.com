@@ -20,9 +20,6 @@ return [
                 ['slug' => 'vouchers', 'label' => 'Vouchers', 'icon' => 'ticket', 'description' => 'Create discount vouchers, usage limits, and campaign rules.'],
                 ['slug' => 'peak-periods', 'label' => 'Peak Periods', 'icon' => 'calendar-days', 'description' => 'Configure seasonal pricing windows and stay limits.'],
                 ['slug' => 'abandoned-carts', 'label' => 'Abandoned Carts', 'icon' => 'shopping-cart', 'description' => 'Review abandoned checkout records and follow-up status.'],
-                ['slug' => 'indrive-orders', 'label' => 'Indrive Orders', 'icon' => 'car', 'description' => 'Review and manage Indrive order records.'],
-                ['slug' => 'visits', 'label' => 'Visits', 'icon' => 'map-pin', 'description' => 'Track property visits and customer enquiries.'],
-                ['slug' => 'sublets', 'label' => 'Sublets', 'icon' => 'repeat', 'description' => 'Manage sublet inventory and owner-submitted listings.'],
             ],
         ],
         [
