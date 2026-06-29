@@ -156,7 +156,9 @@ return [
     |
     */
 
-    'domain' => env('SESSION_DOMAIN'),
+    'domain' => filled($domain = env('SESSION_DOMAIN')) && strtolower((string) $domain) !== 'null'
+        ? $domain
+        : null,
 
     /*
     |--------------------------------------------------------------------------
