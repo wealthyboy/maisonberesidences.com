@@ -501,23 +501,7 @@
                     }
                 });
 
-                const confirmedReference = sessionStorage.getItem('maisonbe_booking_confirmed');
-                if (confirmedReference) {
-                    panels.forEach((panel) => {
-                        panel.hidden = true;
-                        panel.style.display = 'none';
-                    });
-                    if (reference) reference.textContent = `Payment reference: ${confirmedReference}`;
-                    if (receiptLink) {
-                        receiptLink.href = `{{ route('reservations.receipt-reference') }}?reference=${encodeURIComponent(confirmedReference)}`;
-                        receiptLink.hidden = false;
-                    }
-                    if (confirmation) {
-                        confirmation.hidden = false;
-                        confirmation.style.display = 'grid';
-                    }
-                    sessionStorage.removeItem('maisonbe_booking_confirmed');
-                }
+                sessionStorage.removeItem('maisonbe_booking_confirmed');
             })();
         </script>
     </body>
