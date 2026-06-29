@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Voucher;
 use InvalidArgumentException;
 
 class CouponService
@@ -14,6 +15,20 @@ class CouponService
 
         if ($normalized === '') {
             return $this->emptyResult($subtotal, $currency);
+        }
+
+        $voucher = Voucher::query()->where('code', $normalized)->first();
+
+        if ($voucher) {
+            if (! $voucher->is_usable) {
+                throw new InvalidArgumentException('That coupon code is not valid.');
+            }
+
+            if ($voucher->from_value !== null && $subtotal < (float) $voucher->from_value) {
+                throw new InvalidArgumentException('This coupon requires a higher booking total.');
+            }
+
+            return $this->result($normalized, 'percent', (float) $voucher->amount, $subtotal, $currency);
         }
 
         $coupon = config("booking.coupons.{$normalized}");
@@ -29,6 +44,11 @@ class CouponService
             throw new InvalidArgumentException('That coupon code is not valid.');
         }
 
+        return $this->result($normalized, $type, $value, $subtotal, $currency);
+    }
+
+    private function result(string $code, string $type, float $value, float $subtotal, array $currency): array
+    {
         $discount = $type === 'percent'
             ? $subtotal * min($value, 100) / 100
             : $value;
@@ -37,7 +57,7 @@ class CouponService
         $total = round(max($subtotal - $discount, 0), 2);
 
         return [
-            'code' => $normalized,
+            'code' => $code,
             'type' => $type,
             'value' => $value,
             'discount' => $discount,

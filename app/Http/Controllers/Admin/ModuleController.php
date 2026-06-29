@@ -10,6 +10,7 @@ use App\Models\Information;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Property;
+use App\Models\Voucher;
 use App\Support\AdminModules;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -82,6 +83,14 @@ class ModuleController extends Controller
                 ->with('status', 'Page created.');
         }
 
+        if ($module['slug'] === 'vouchers') {
+            $voucher = Voucher::create($this->voucherData($request));
+
+            return redirect()
+                ->route('admin.modules.record.show', [$module['slug'], $voucher->id])
+                ->with('status', 'Voucher created.');
+        }
+
         AdminModuleRecord::create($this->genericRecordData($request, $module));
 
         return redirect()
@@ -141,6 +150,15 @@ class ModuleController extends Controller
                 ->with('status', 'Page updated.');
         }
 
+        if ($module['slug'] === 'vouchers') {
+            $voucher = Voucher::findOrFail($record);
+            $voucher->update($this->voucherData($request, $voucher));
+
+            return redirect()
+                ->route('admin.modules.record.show', [$module['slug'], $voucher->id])
+                ->with('status', 'Voucher updated.');
+        }
+
         $recordModel = AdminModuleRecord::where('module_slug', $module['slug'])->findOrFail($record);
         $recordModel->update($this->genericRecordData($request, $module));
 
@@ -185,11 +203,52 @@ class ModuleController extends Controller
                 ->with('status', 'Page deleted.');
         }
 
+        if ($module['slug'] === 'vouchers') {
+            Voucher::findOrFail($record)->delete();
+
+            return redirect()
+                ->route('admin.modules.show', $module['slug'])
+                ->with('status', 'Voucher deleted.');
+        }
+
         AdminModuleRecord::where('module_slug', $module['slug'])->findOrFail($record)->delete();
 
         return redirect()
             ->route('admin.modules.show', $module['slug'])
             ->with('status', Str::singular($module['label']) . ' deleted.');
+    }
+
+    public function bulkDestroy(Request $request, string $module): RedirectResponse
+    {
+        $module = $this->module($module);
+
+        $data = $request->validate([
+            'record_ids' => ['required', 'array', 'min:1'],
+            'record_ids.*' => ['integer'],
+        ]);
+
+        $ids = collect($data['record_ids'])->map(fn ($id) => (int) $id)->unique()->values();
+        $deleted = 0;
+
+        if ($module['slug'] === 'properties') {
+            $deleted = Property::whereIn('id', $ids)->delete();
+        } elseif ($module['slug'] === 'apartments') {
+            $deleted = Apartment::whereIn('id', $ids)->delete();
+        } elseif ($this->isInvoiceModule($module)) {
+            $deleted = Invoice::whereIn('id', $ids)->delete();
+        } elseif ($module['slug'] === 'pages') {
+            $deleted = Information::whereIn('id', $ids)->delete();
+        } elseif ($module['slug'] === 'vouchers') {
+            $deleted = Voucher::whereIn('id', $ids)->delete();
+        } else {
+            $deleted = AdminModuleRecord::where('module_slug', $module['slug'])
+                ->whereIn('id', $ids)
+                ->delete();
+        }
+
+        return redirect()
+            ->route('admin.modules.show', $module['slug'])
+            ->with('status', $deleted.' '.Str::plural('record', $deleted).' deleted.');
     }
 
     private function view(string $slug, string $screen, ?string $record = null): View
@@ -255,6 +314,10 @@ class ModuleController extends Controller
             return Information::query()->orderBy('sort_order')->orderBy('title')->paginate(10);
         }
 
+        if ($module['slug'] === 'vouchers') {
+            return Voucher::query()->latest()->paginate(10);
+        }
+
         return AdminModuleRecord::where('module_slug', $module['slug'])->latest()->paginate(10);
     }
 
@@ -269,6 +332,7 @@ class ModuleController extends Controller
             'apartments' => Apartment::with(['property', 'images', 'attributes'])->findOrFail($record),
             'invoices', 'reservations' => Invoice::with('invoiceItems.apartment')->findOrFail($record),
             'pages' => Information::findOrFail($record),
+            'vouchers' => Voucher::findOrFail($record),
             default => AdminModuleRecord::where('module_slug', $module['slug'])->findOrFail($record),
         };
     }
@@ -284,7 +348,7 @@ class ModuleController extends Controller
 
     private function isDatabaseBacked(array $module): bool
     {
-        return in_array($module['slug'], ['properties', 'apartments', 'invoices', 'reservations', 'pages'], true);
+        return in_array($module['slug'], ['properties', 'apartments', 'invoices', 'reservations', 'pages', 'vouchers'], true);
     }
 
     private function isInvoiceModule(array $module): bool
@@ -366,6 +430,31 @@ class ModuleController extends Controller
             'teaser' => $data['teaser'] ?? null,
             'description' => $data['description'] ?? null,
             'blog' => false,
+        ];
+    }
+
+    private function voucherData(Request $request, ?Voucher $voucher = null): array
+    {
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:80', 'unique:vouchers,code,'.($voucher?->id ?? 'NULL').',id'],
+            'discount' => ['required', 'numeric', 'min:0.01', 'max:100'],
+            'expiry' => ['nullable', 'date'],
+            'from_value' => ['nullable', 'numeric', 'min:0'],
+            'type' => ['required', 'in:general,specific user'],
+            'status' => ['required', 'boolean'],
+            'limits' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        return [
+            'user_id' => auth()->id() ?: 1,
+            'code' => strtoupper(trim($data['code'])),
+            'amount' => $data['discount'],
+            'from_value' => $data['from_value'] ?? null,
+            'type' => $data['type'],
+            'status' => (bool) $data['status'],
+            'valid' => true,
+            'expires' => filled($data['expiry'] ?? null) ? Carbon::parse($data['expiry'])->endOfDay() : null,
+            'limits' => $data['limits'] ?? null,
         ];
     }
 

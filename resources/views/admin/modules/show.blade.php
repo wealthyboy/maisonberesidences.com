@@ -6,8 +6,9 @@
     $isInvoices = in_array($module['slug'], ['invoices', 'reservations'], true);
     $isReservations = $module['slug'] === 'reservations';
     $isPages = $module['slug'] === 'pages';
-    $isDatabaseBacked = $isProperties || $isApartments || $isInvoices || $isPages;
-    $recordName = $model ? ($isInvoices ? $model->invoice : ($isPages ? $model->title : ($isDatabaseBacked ? $model->name : $model->title))) : null;
+    $isVouchers = $module['slug'] === 'vouchers';
+    $isDatabaseBacked = $isProperties || $isApartments || $isInvoices || $isPages || $isVouchers;
+    $recordName = $model ? ($isInvoices ? $model->invoice : ($isPages ? $model->title : ($isVouchers ? $model->code : ($isDatabaseBacked ? $model->name : $model->title)))) : null;
 @endphp
 
 @section('eyebrow', 'Admin module')
@@ -73,7 +74,7 @@
                     @if ($screen === 'edit')
                         @method('put')
                     @else
-                        @unless ($isInvoices || $isPages || $isApartments)
+                        @unless ($isInvoices || $isPages || $isApartments || $isVouchers)
                             <div class="border-b border-zinc-200 pb-2 lg:col-span-2">
                                 <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-zinc-500">{{ Illuminate\Support\Str::singular($module['label']) }} details</h3>
                             </div>
@@ -121,6 +122,8 @@
                         @include('admin.modules.forms.apartment')
                     @elseif ($isPages)
                         @include('admin.modules.forms.page')
+                    @elseif ($isVouchers)
+                        @include('admin.modules.forms.voucher')
                     @elseif ($isProperties)
                         <div class="border-b border-zinc-200 pb-2 lg:col-span-2">
                             <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-zinc-500">Property details</h3>
@@ -224,14 +227,14 @@
                 <dl class="mt-6 grid gap-4 md:grid-cols-3">
                     <div class="rounded-md border border-zinc-200 p-4">
                         <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Status</dt>
-                        <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $isInvoices ? ($model->sent ? 'Sent' : 'Draft') : ($isPages ? 'Published' : ucfirst($model->status ?? 'draft')) }}</dd>
+                        <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $isVouchers ? ($model->is_usable ? 'Active' : 'Inactive') : ($isInvoices ? ($model->sent ? 'Sent' : 'Draft') : ($isPages ? 'Published' : ucfirst($model->status ?? 'draft'))) }}</dd>
                     </div>
                     <div class="rounded-md border border-zinc-200 p-4">
                         <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Module</dt>
                         <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $module['label'] }}</dd>
                     </div>
                     <div class="rounded-md border border-zinc-200 p-4">
-                        <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">{{ $isProperties ? 'Location' : ($isApartments ? 'Property' : ($isInvoices ? 'Customer' : ($isPages ? 'Slug' : 'Published'))) }}</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">{{ $isProperties ? 'Location' : ($isApartments ? 'Property' : ($isInvoices ? 'Customer' : ($isPages ? 'Slug' : ($isVouchers ? 'Code' : 'Published')))) }}</dt>
                         <dd class="mt-2 text-sm font-semibold text-zinc-950">
                             @if ($isProperties)
                                 {{ trim(($model->city ?? '') . ', ' . ($model->country ?? ''), ', ') ?: 'Not set' }}
@@ -241,6 +244,8 @@
                                 {{ $model->full_name }}
                             @elseif ($isPages)
                                 {{ $model->slug }}
+                            @elseif ($isVouchers)
+                                {{ $model->code }}
                             @else
                                 {{ $model->published_at ? $model->published_at->format('M j, Y') : 'Not set' }}
                             @endif
@@ -248,7 +253,26 @@
                     </div>
                 </dl>
 
-                @if ($isInvoices && $model)
+                @if ($isVouchers && $model)
+                    <div class="mt-5 grid gap-4 md:grid-cols-4">
+                        <div class="rounded-md border border-zinc-200 p-4">
+                            <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Discount</dt>
+                            <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ number_format((float) $model->amount, 2) }}%</dd>
+                        </div>
+                        <div class="rounded-md border border-zinc-200 p-4">
+                            <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Minimum total</dt>
+                            <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $model->from_value ? number_format((float) $model->from_value, 2) : 'None' }}</dd>
+                        </div>
+                        <div class="rounded-md border border-zinc-200 p-4">
+                            <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Expiry</dt>
+                            <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $model->expires ? $model->expires->format('M j, Y') : 'No expiry' }}</dd>
+                        </div>
+                        <div class="rounded-md border border-zinc-200 p-4">
+                            <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Usage</dt>
+                            <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $model->used_count }}{{ $model->limits ? ' of '.$model->limits : '' }}</dd>
+                        </div>
+                    </div>
+                @elseif ($isInvoices && $model)
                     <div class="mt-5 grid gap-4 md:grid-cols-3">
                         <div class="rounded-md border border-zinc-200 p-4">
                             <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Email</dt>
@@ -335,18 +359,28 @@
         <section class="rounded-md border border-zinc-200 bg-white shadow-sm">
             <div class="flex flex-col gap-3 border-b border-zinc-200 px-5 py-4 md:flex-row md:items-center md:justify-between">
                 <h2 class="text-base font-semibold text-zinc-950">{{ $module['label'] }} records</h2>
+                <button type="submit" form="bulkDeleteForm" class="rounded-md border border-red-200 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-red-600 transition hover:bg-red-50">
+                    Delete selected
+                </button>
             </div>
 
             <div class="overflow-x-auto">
+                <form id="bulkDeleteForm" method="post" action="{{ route('admin.modules.bulk-destroy', $module['slug']) }}" onsubmit="return confirm('Delete the selected records? This cannot be undone.');" class="hidden">
+                    @csrf
+                    @method('delete')
+                </form>
                 <table class="min-w-full divide-y divide-zinc-200 text-left text-sm">
                     <thead class="bg-zinc-50 text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
                         <tr>
+                            <th class="w-10 px-5 py-3">
+                                <input type="checkbox" class="h-4 w-4 rounded border-zinc-300 text-[#222052] focus:ring-[#222052]" data-bulk-check-all aria-label="Select all records">
+                            </th>
                             @if ($isApartments)
                                 <th class="px-5 py-3">Image</th>
                             @endif
-                            <th class="px-5 py-3">{{ $isReservations ? 'Guest' : 'Name' }}</th>
-                            <th class="px-5 py-3">{{ $isReservations ? 'Stay' : 'Status' }}</th>
-                            <th class="px-5 py-3">{{ $isReservations ? 'Total' : 'Updated' }}</th>
+                            <th class="px-5 py-3">{{ $isReservations ? 'Guest' : ($isVouchers ? 'Code' : 'Name') }}</th>
+                            <th class="px-5 py-3">{{ $isReservations ? 'Stay' : ($isVouchers ? 'Discount' : 'Status') }}</th>
+                            <th class="px-5 py-3">{{ $isReservations ? 'Total' : ($isVouchers ? 'Usage' : 'Updated') }}</th>
                             <th class="px-5 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -354,6 +388,9 @@
                         @if ($records)
                             @forelse ($records as $recordItem)
                                 <tr>
+                                    <td class="px-5 py-4 align-top">
+                                        <input form="bulkDeleteForm" type="checkbox" name="record_ids[]" value="{{ $recordItem->id }}" class="h-4 w-4 rounded border-zinc-300 text-[#222052] focus:ring-[#222052]" data-bulk-check-row aria-label="Select {{ $isInvoices ? $recordItem->invoice : ($recordItem->name ?? $recordItem->title ?? 'record') }}">
+                                    </td>
                                     @if ($isApartments)
                                         <td class="px-5 py-4">
                                             @if ($recordItem->image)
@@ -371,6 +408,8 @@
                                         <div class="font-medium text-zinc-950">
                                             @if ($isInvoices)
                                                 {{ $recordItem->invoice }}
+                                            @elseif ($isVouchers)
+                                                {{ $recordItem->code }}
                                             @else
                                                 {{ $isPages ? $recordItem->title : ($isDatabaseBacked ? $recordItem->name : $recordItem->title) }}
                                             @endif
@@ -384,6 +423,8 @@
                                                 {{ $recordItem->city ?: 'No city' }}{{ $recordItem->country ? ', ' . $recordItem->country : '' }}
                                             @elseif ($isPages)
                                                 {{ $recordItem->teaser ? Illuminate\Support\Str::limit($recordItem->teaser, 90) : 'No teaser entered.' }}
+                                            @elseif ($isVouchers)
+                                                {{ $recordItem->expires ? 'Expires '.$recordItem->expires->format('M j, Y') : 'No expiry' }}
                                             @else
                                                 {{ $recordItem->summary ? Illuminate\Support\Str::limit($recordItem->summary, 90) : 'No summary entered.' }}
                                             @endif
@@ -401,18 +442,26 @@
                                                 @endif
                                             </div>
                                         @else
-                                            <span class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700">{{ $isInvoices ? ($recordItem->sent ? 'Sent' : 'Draft') : ($isApartments ? ($recordItem->price_mode ?: 'Apartment') : ucfirst($recordItem->status ?? 'draft')) }}</span>
+                                            <span class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700">{{ $isVouchers ? number_format((float) $recordItem->amount, 2).'%' : ($isInvoices ? ($recordItem->sent ? 'Sent' : 'Draft') : ($isApartments ? ($recordItem->price_mode ?: 'Apartment') : ucfirst($recordItem->status ?? 'draft'))) }}</span>
                                         @endif
                                         @if ($isInvoices && ! $isReservations)
                                             <div class="mt-1 text-xs font-semibold text-zinc-500">{{ $recordItem->currency }}{{ number_format((float) $recordItem->total, 2) }}</div>
                                         @endif
                                     </td>
-                                    <td class="px-5 py-4 {{ $isReservations ? 'font-semibold text-zinc-950' : 'text-zinc-600' }}">{{ $isReservations ? $recordItem->currency.number_format((float) $recordItem->total, 2) : $recordItem->updated_at->format('M j, Y') }}</td>
+                                    <td class="px-5 py-4 {{ $isReservations ? 'font-semibold text-zinc-950' : 'text-zinc-600' }}">
+                                        @if ($isReservations)
+                                            {{ $recordItem->currency.number_format((float) $recordItem->total, 2) }}
+                                        @elseif ($isVouchers)
+                                            {{ $recordItem->used_count }}{{ $recordItem->limits ? ' / '.$recordItem->limits : '' }}
+                                        @else
+                                            {{ $recordItem->updated_at->format('M j, Y') }}
+                                        @endif
+                                    </td>
                                     <td class="px-5 py-4 text-right">
                                         <div class="flex items-center justify-end gap-3">
                                             <a href="{{ route('admin.modules.record.show', [$module['slug'], $recordItem->id]) }}" class="font-semibold text-zinc-600 hover:text-zinc-950">View</a>
                                             <a href="{{ route('admin.modules.record.edit', [$module['slug'], $recordItem->id]) }}" class="font-semibold text-[#222052] hover:text-[#d9b44a]">Edit</a>
-                                            <form method="post" action="{{ route('admin.modules.record.destroy', [$module['slug'], $recordItem->id]) }}">
+                                            <form method="post" action="{{ route('admin.modules.record.destroy', [$module['slug'], $recordItem->id]) }}" onsubmit="return confirm('Delete this record? This cannot be undone.');">
                                                 @csrf
                                                 @method('delete')
                                                 <button type="submit" class="font-semibold text-red-600 hover:text-red-700">Delete</button>
@@ -422,7 +471,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ $isApartments ? 5 : 4 }}" class="px-5 py-10 text-center text-sm text-zinc-500">No {{ strtolower($module['label']) }} records yet.</td>
+                                    <td colspan="{{ $isApartments ? 6 : 5 }}" class="px-5 py-10 text-center text-sm text-zinc-500">No {{ strtolower($module['label']) }} records yet.</td>
                                 </tr>
                             @endforelse
                         @endif
@@ -439,6 +488,21 @@
         @endif
     </div>
 @endsection
+
+@if ($screen === 'index')
+    @push('scripts')
+        <script>
+            document.addEventListener('change', function (event) {
+                const selectAll = event.target.closest('[data-bulk-check-all]');
+                if (!selectAll) return;
+
+                document.querySelectorAll('[data-bulk-check-row]').forEach(function (checkbox) {
+                    checkbox.checked = selectAll.checked;
+                });
+            });
+        </script>
+    @endpush
+@endif
 
 @if ($isApartments && $screen === 'index')
     @push('scripts')

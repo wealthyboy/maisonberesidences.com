@@ -51,6 +51,10 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
         ->where('module', AdminModules::allowedSlugs())
         ->name('modules.create');
 
+    Route::delete('{module}/bulk-destroy', [ModuleController::class, 'bulkDestroy'])
+        ->where('module', AdminModules::allowedSlugs())
+        ->name('modules.bulk-destroy');
+
     Route::get('{module}/{record}', [ModuleController::class, 'show'])
         ->where('module', AdminModules::allowedSlugs())
         ->name('modules.record.show');

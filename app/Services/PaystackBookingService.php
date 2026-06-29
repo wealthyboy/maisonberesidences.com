@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Mail\ReservationReceiptMail;
 use App\Models\Apartment;
 use App\Models\Invoice;
+use App\Models\Voucher;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -124,6 +125,12 @@ class PaystackBookingService
                 'checkin' => $checkin,
                 'checkout' => $checkout,
             ]);
+
+            if (filled($invoice->coupon_code)) {
+                Voucher::query()
+                    ->where('code', strtoupper((string) $invoice->coupon_code))
+                    ->increment('used_count');
+            }
 
             Log::info('Paystack booking invoice created.', [
                 'reference' => $reference,
