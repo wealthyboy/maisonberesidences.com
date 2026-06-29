@@ -79,6 +79,12 @@ return [
             'transport' => 'array',
         ],
 
+        'zeptomail' => [
+            'transport' => 'zeptomail',
+            'key' => env('ZEPTO_API_KEY'),
+            'endpoint' => env('ZEPTO_API_URL', 'https://api.zeptomail.com/v1.1/email'),
+        ],
+
         'failover' => [
             'transport' => 'failover',
             'mailers' => [

@@ -19,7 +19,14 @@ class PaymentWebhookController extends Controller
     {
         $payload = $request->getContent();
 
-        Log::info($request->all());
+        Log::info('Paystack webhook received.', [
+            'ip' => $request->ip(),
+            'signature_present' => filled($request->header('x-paystack-signature')),
+            'content_type' => $request->header('content-type'),
+            'event' => $request->json('event'),
+            'reference' => $request->json('data.reference'),
+            'input' => $request->all(),
+        ]);
 
         if (! $this->paystack->webhookIsValid($payload, $request->header('x-paystack-signature'))) {
             Log::warning('Paystack webhook rejected because signature is invalid.', [
@@ -39,8 +46,21 @@ class PaymentWebhookController extends Controller
 
         $reference = (string) data_get($event, 'data.reference');
 
+        if ($reference === '') {
+            Log::warning('Paystack webhook missing payment reference.', ['event' => $event]);
+
+            return response()->json(['message' => 'Missing reference.'], 422);
+        }
+
         try {
-            $this->bookings->processReference($reference, $event);
+            $invoice = $this->bookings->processReference($reference, $event);
+
+            Log::info('Paystack webhook reserved booking.', [
+                'reference' => $reference,
+                'invoice_id' => $invoice->id,
+                'invoice' => $invoice->invoice,
+                'email' => $invoice->email,
+            ]);
         } catch (\Throwable $exception) {
             Log::error('Paystack webhook processing failed.', ['reference' => $reference, 'message' => $exception->getMessage()]);
 

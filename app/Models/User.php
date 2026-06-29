@@ -1,71 +1,55 @@
-<?php
+Its <?php
 
-namespace App\Models;
+    namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Schema;
+    // use Illuminate\Contracts\Auth\MustVerifyEmail;
+    use Database\Factories\UserFactory;
+    use Illuminate\Database\Eloquent\Factories\HasFactory;
+    use Illuminate\Database\Eloquent\Relations\HasOne;
+    use Illuminate\Foundation\Auth\User as Authenticatable;
+    use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
-{
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'is_admin',
-    ];
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    class User extends Authenticatable
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'is_admin' => 'boolean',
+        /** @use HasFactory<UserFactory> */
+        use HasFactory, Notifiable;
+
+        /**
+         * The attributes that are mass assignable.
+         *
+         * @var list<string>s
+         */
+        protected $fillable = [
+            'name',
+            'email',
+            'password',
         ];
-    }
 
-    public function users_permission(): HasOne
-    {
-        return $this->hasOne(UserPermission::class);
-    }
+        /**
+         * The attributes that should be hidden for serialization.
+         *
+         * @var list<string>
+         */
+        protected $hidden = [
+            'password',
+            'remember_token',
+        ];
 
-    public function hasAdminAccess(): bool
-    {
-        if ((bool) $this->is_admin) {
-            return true;
+        /**
+         * Get the attributes that should be cast.
+         *
+         * @return array<string, string>
+         */
+        protected function casts(): array
+        {
+            return [
+                'email_verified_at' => 'datetime',
+                'password' => 'hashed',
+            ];
         }
 
-        if (! Schema::hasTable('user_permissions')) {
-            return false;
+        public function users_permission(): HasOne
+        {
+            return $this->hasOne(UserPermission::class);
         }
-
-        return $this->users_permission()->exists();
     }
-}

@@ -59,6 +59,13 @@ class PaystackBookingService
                     ]);
                 }
 
+                Log::info('Paystack booking matched existing invoice.', [
+                    'reference' => $reference,
+                    'invoice_id' => $invoice->id,
+                    'invoice' => $invoice->invoice,
+                    'payment_status' => $invoice->payment_status,
+                ]);
+
                 return $invoice;
             }
 
@@ -118,6 +125,15 @@ class PaystackBookingService
                 'checkout' => $checkout,
             ]);
 
+            Log::info('Paystack booking invoice created.', [
+                'reference' => $reference,
+                'invoice_id' => $invoice->id,
+                'invoice' => $invoice->invoice,
+                'apartment_id' => $apartment->id,
+                'checkin' => $checkin->toDateString(),
+                'checkout' => $checkout->toDateString(),
+            ]);
+
             return $invoice;
         });
 
@@ -135,6 +151,11 @@ class PaystackBookingService
         try {
             Mail::to($invoice->email)->send(new ReservationReceiptMail($invoice->loadMissing('invoiceItems.apartment')));
             $invoice->forceFill(['sent' => true])->save();
+
+            Log::info('Reservation receipt email sent.', [
+                'invoice_id' => $invoice->id,
+                'email' => $invoice->email,
+            ]);
         } catch (\Throwable $exception) {
             Log::error('Reservation receipt email failed.', [
                 'invoice_id' => $invoice->id,
