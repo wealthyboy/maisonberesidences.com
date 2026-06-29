@@ -23,6 +23,8 @@
     };
     $checkInTime = $time($property?->check_in_time, '2:00 PM');
     $checkOutTime = $time($property?->check_out_time, '12:00 PM');
+    $couponLabel = filled($invoice->coupon_code) ? 'Coupon '.$invoice->coupon_code : 'Coupon';
+    $couponAmount = (float) $invoice->discount > 0 ? '-'.$money($invoice->discount) : $money(0);
 @endphp
 
 <!DOCTYPE html>
@@ -54,6 +56,7 @@
                                 <h1 style="margin:24px 0 14px;color:#18264a;font-size:32px;line-height:1.05;">Booking Confirmed</h1>
                                 <p style="margin:0 0 26px;color:#5e6678;font-size:15px;line-height:1.6;">Thank you, {{ $invoice->full_name }}. Your instant booking is confirmed.</p>
 
+                                <p style="margin:0 0 10px;color:#a78135;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Booking details</p>
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-top:1px solid #d8cba9;border-bottom:1px solid #d8cba9;">
                                     <tr>
                                         <td style="padding:14px 0;color:#5e6678;">Apartment</td>
@@ -83,16 +86,18 @@
                                         <td style="padding:14px 0;color:#5e6678;border-top:1px solid #efe6d1;">Nights</td>
                                         <td align="right" style="padding:14px 0;border-top:1px solid #efe6d1;">{{ $item?->quantity }}</td>
                                     </tr>
+                                </table>
+
+                                <p style="margin:28px 0 10px;color:#a78135;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Receipt summary</p>
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-top:1px solid #d8cba9;border-bottom:1px solid #d8cba9;">
                                     <tr>
-                                        <td style="padding:14px 0;color:#5e6678;border-top:1px solid #efe6d1;">Subtotal</td>
-                                        <td align="right" style="padding:14px 0;border-top:1px solid #efe6d1;font-weight:700;">{{ $money($invoice->subtotal) }}</td>
+                                        <td style="padding:14px 0;color:#5e6678;">Subtotal</td>
+                                        <td align="right" style="padding:14px 0;font-weight:700;">{{ $money($invoice->subtotal) }}</td>
                                     </tr>
-                                    @if ((float) $invoice->discount > 0)
-                                        <tr>
-                                            <td style="padding:14px 0;color:#2f855a;border-top:1px solid #efe6d1;">Coupon {{ $invoice->coupon_code }}</td>
-                                            <td align="right" style="padding:14px 0;border-top:1px solid #efe6d1;color:#2f855a;font-weight:700;">-{{ $money($invoice->discount) }}</td>
-                                        </tr>
-                                    @endif
+                                    <tr>
+                                        <td style="padding:14px 0;color:#2f855a;border-top:1px solid #efe6d1;">{{ $couponLabel }}</td>
+                                        <td align="right" style="padding:14px 0;border-top:1px solid #efe6d1;color:#2f855a;font-weight:700;">{{ $couponAmount }}</td>
+                                    </tr>
                                     <tr>
                                         <td style="padding:18px 0;color:#5e6678;border-top:1px solid #d8cba9;">Total paid in {{ $invoice->currency_code }}</td>
                                         <td align="right" style="padding:18px 0;border-top:1px solid #d8cba9;font-size:24px;font-weight:700;">{{ $money($invoice->total) }}</td>

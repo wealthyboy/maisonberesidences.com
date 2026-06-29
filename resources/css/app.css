@@ -457,6 +457,8 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .receipt-main { max-width: 760px; }
 .receipt-lead { max-width: 540px; }
 .receipt-card { margin-top: 3rem; padding: clamp(1.4rem, 3vw, 2.3rem); border: 1px solid var(--dark-line); border-radius: 8px; background: #fffdf8; }
+.receipt-card + .receipt-card { margin-top: 1.3rem; }
+.receipt-section-title { margin: 0 0 .65rem; color: var(--gold); font-size: .74rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
 .receipt-card > div { display: flex; padding: 1rem 0; border-bottom: 1px solid rgba(216,203,169,.7); color: var(--soft-ink); align-items: center; justify-content: space-between; gap: 1rem; font-size: .82rem; }
 .receipt-card > div strong { color: var(--ink); text-align: right; }
 .receipt-card .receipt-total { border: 0; font-size: .94rem; font-weight: 600; }

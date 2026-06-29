@@ -21,6 +21,8 @@
     };
     $checkInTime = $time($property?->check_in_time, '2:00 PM');
     $checkOutTime = $time($property?->check_out_time, '12:00 PM');
+    $couponLabel = filled($invoice->coupon_code) ? 'Coupon '.$invoice->coupon_code : 'Coupon';
+    $couponAmount = (float) $invoice->discount > 0 ? '-'.$money($invoice->discount) : $money(0);
 @endphp
 
 <!DOCTYPE html>
@@ -41,6 +43,7 @@
             <h1>{{ $invoice->payment_status === 'paid' ? 'Booking confirmed.' : 'We are confirming your payment.' }}</h1>
             <p class="receipt-lead">Thank you, {{ $invoice->full_name }}. Your reservation reference is <strong>{{ $invoice->invoice }}</strong>.</p>
             <section class="receipt-card">
+                <p class="receipt-section-title">Booking details</p>
                 @foreach ($invoice->invoiceItems as $item)
                     <div><span>Residence</span><strong>{{ $item->name }}</strong></div>
                     @if (filled($invoice->phone))
@@ -51,12 +54,13 @@
                     @endif
                     <div><span>Check-in</span><strong>{{ $item->checkin->format('j M Y') }} at {{ $checkInTime }}</strong></div>
                     <div><span>Check-out</span><strong>{{ $item->checkout->format('j M Y') }} at {{ $checkOutTime }}</strong></div>
-                    <div><span>{{ $item->quantity }} {{ \Illuminate\Support\Str::plural('night', $item->quantity) }}</span><strong>{{ $money($item->total) }}</strong></div>
+                    <div><span>Nights</span><strong>{{ $item->quantity }}</strong></div>
                 @endforeach
+            </section>
+            <section class="receipt-card">
+                <p class="receipt-section-title">Receipt summary</p>
                 <div><span>Subtotal</span><strong>{{ $money($invoice->subtotal) }}</strong></div>
-                @if ((float) $invoice->discount > 0)
-                    <div><span>Coupon {{ $invoice->coupon_code }}</span><strong>-{{ $money($invoice->discount) }}</strong></div>
-                @endif
+                <div><span>{{ $couponLabel }}</span><strong>{{ $couponAmount }}</strong></div>
                 <div class="receipt-total"><span>Total paid in {{ $invoice->currency_code }}</span><strong>{{ $money($invoice->total) }}</strong></div>
             </section>
             <p class="receipt-note">{{ $invoice->payment_status === 'paid' ? 'This receipt confirms your instant booking at Maison Be Residences.' : 'Please allow a moment for payment confirmation. Refresh this page shortly if the status has not changed.' }}</p>
