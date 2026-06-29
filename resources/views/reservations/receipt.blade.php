@@ -33,7 +33,6 @@
     $checkOutTime = $time($property?->check_out_time, '12:00 PM');
     $couponLabel = filled($invoice->coupon_code) ? 'Coupon '.$invoice->coupon_code : 'Coupon';
     $couponAmount = (float) $invoice->discount > 0 ? '-'.$money($invoice->discount) : $money(0);
-    $selfCheckInUrl = 'mailto:info@maisonberesidences.com?subject='.rawurlencode('Self check-in ID for '.$invoice->invoice);
 @endphp
 
 <!DOCTYPE html>
@@ -85,7 +84,6 @@
                 <div class="receipt-total"><span>Total paid in {{ $invoice->currency_code }}</span><strong>{{ $money($invoice->total) }}</strong></div>
             </section>
             <p class="receipt-note"><strong>Note:</strong> You’re required to present a valid ID upon arrival to check-in. You can also self check-in by clicking the link below to upload your ID.</p>
-            <a class="receipt-id-link" href="{{ $selfCheckInUrl }}">Upload your ID</a>
             <p class="receipt-note">{{ $invoice->payment_status === 'paid' ? 'This receipt confirms your instant booking at Maison Be Residences.' : 'Please allow a moment for payment confirmation. Refresh this page shortly if the status has not changed.' }}</p>
         </main>
         <x-site-footer />

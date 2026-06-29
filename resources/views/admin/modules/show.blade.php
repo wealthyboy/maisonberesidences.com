@@ -3,7 +3,8 @@
 @php
     $isProperties = $module['slug'] === 'properties';
     $isApartments = $module['slug'] === 'apartments';
-    $isInvoices = $module['slug'] === 'invoices';
+    $isInvoices = in_array($module['slug'], ['invoices', 'reservations'], true);
+    $isReservations = $module['slug'] === 'reservations';
     $isPages = $module['slug'] === 'pages';
     $isDatabaseBacked = $isProperties || $isApartments || $isInvoices || $isPages;
     $recordName = $model ? ($isInvoices ? $model->invoice : ($isPages ? $model->title : ($isDatabaseBacked ? $model->name : $model->title))) : null;
@@ -340,9 +341,9 @@
                             @if ($isApartments)
                                 <th class="px-5 py-3">Image</th>
                             @endif
-                            <th class="px-5 py-3">Name</th>
-                            <th class="px-5 py-3">Status</th>
-                            <th class="px-5 py-3">Updated</th>
+                            <th class="px-5 py-3">{{ $isReservations ? 'Guest' : 'Name' }}</th>
+                            <th class="px-5 py-3">{{ $isReservations ? 'Stay' : 'Status' }}</th>
+                            <th class="px-5 py-3">{{ $isReservations ? 'Total' : 'Updated' }}</th>
                             <th class="px-5 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -386,12 +387,24 @@
                                         </div>
                                     </td>
                                     <td class="px-5 py-4">
-                                        <span class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700">{{ $isInvoices ? ($recordItem->sent ? 'Sent' : 'Draft') : ($isApartments ? ($recordItem->price_mode ?: 'Apartment') : ucfirst($recordItem->status ?? 'draft')) }}</span>
-                                        @if ($isInvoices)
+                                        @if ($isReservations)
+                                            @php($stayItem = $recordItem->invoiceItems->first())
+                                            <span class="font-semibold text-zinc-950">{{ $stayItem?->name ?: 'Reservation' }}</span>
+                                            <div class="mt-1 text-xs text-zinc-500">
+                                                @if ($stayItem?->checkin && $stayItem?->checkout)
+                                                    {{ $stayItem->checkin->format('M j, Y') }} - {{ $stayItem->checkout->format('M j, Y') }}
+                                                @else
+                                                    Dates not set
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700">{{ $isInvoices ? ($recordItem->sent ? 'Sent' : 'Draft') : ($isApartments ? ($recordItem->price_mode ?: 'Apartment') : ucfirst($recordItem->status ?? 'draft')) }}</span>
+                                        @endif
+                                        @if ($isInvoices && ! $isReservations)
                                             <div class="mt-1 text-xs font-semibold text-zinc-500">{{ $recordItem->currency }}{{ number_format((float) $recordItem->total, 2) }}</div>
                                         @endif
                                     </td>
-                                    <td class="px-5 py-4 text-zinc-600">{{ $recordItem->updated_at->format('M j, Y') }}</td>
+                                    <td class="px-5 py-4 {{ $isReservations ? 'font-semibold text-zinc-950' : 'text-zinc-600' }}">{{ $isReservations ? $recordItem->currency.number_format((float) $recordItem->total, 2) : $recordItem->updated_at->format('M j, Y') }}</td>
                                     <td class="px-5 py-4 text-right">
                                         <div class="flex items-center justify-end gap-3">
                                             <a href="{{ route('admin.modules.record.show', [$module['slug'], $recordItem->id]) }}" class="font-semibold text-zinc-600 hover:text-zinc-950">View</a>

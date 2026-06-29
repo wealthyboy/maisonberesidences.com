@@ -65,7 +65,7 @@ class ModuleController extends Controller
                 ->with('status', 'Apartment created.');
         }
 
-        if ($module['slug'] === 'invoices') {
+        if ($this->isInvoiceModule($module)) {
             $invoice = $this->storeInvoice($request);
 
             return redirect()
@@ -122,7 +122,7 @@ class ModuleController extends Controller
                 ->with('status', 'Apartment updated.');
         }
 
-        if ($module['slug'] === 'invoices') {
+        if ($this->isInvoiceModule($module)) {
             $invoice = Invoice::with('invoiceItems')->findOrFail($record);
             $this->updateInvoice($request, $invoice);
 
@@ -168,7 +168,7 @@ class ModuleController extends Controller
                 ->with('status', 'Apartment deleted.');
         }
 
-        if ($module['slug'] === 'invoices') {
+        if ($this->isInvoiceModule($module)) {
             Invoice::findOrFail($record)->delete();
 
             return redirect()
@@ -236,7 +236,7 @@ class ModuleController extends Controller
             return Apartment::with('property')->latest()->paginate(10);
         }
 
-        if ($module['slug'] === 'invoices') {
+        if ($this->isInvoiceModule($module)) {
             return Invoice::with('invoiceItems.apartment')->latest()->paginate(10);
         }
 
@@ -256,7 +256,7 @@ class ModuleController extends Controller
         return match ($module['slug']) {
             'properties' => Property::findOrFail($record),
             'apartments' => Apartment::with(['property', 'images', 'attributes'])->findOrFail($record),
-            'invoices' => Invoice::with('invoiceItems.apartment')->findOrFail($record),
+            'invoices', 'reservations' => Invoice::with('invoiceItems.apartment')->findOrFail($record),
             'pages' => Information::findOrFail($record),
             default => AdminModuleRecord::where('module_slug', $module['slug'])->findOrFail($record),
         };
@@ -273,7 +273,12 @@ class ModuleController extends Controller
 
     private function isDatabaseBacked(array $module): bool
     {
-        return in_array($module['slug'], ['properties', 'apartments', 'invoices', 'pages'], true);
+        return in_array($module['slug'], ['properties', 'apartments', 'invoices', 'reservations', 'pages'], true);
+    }
+
+    private function isInvoiceModule(array $module): bool
+    {
+        return in_array($module['slug'], ['invoices', 'reservations'], true);
     }
 
     public function checkApartmentAvailability(Request $request)

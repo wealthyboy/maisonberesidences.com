@@ -467,7 +467,6 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .receipt-property-block h2 { margin: 0 0 .32rem; color: #425065; font-size: 1.16rem; font-weight: 800; }
 .receipt-property-block strong { color: #000; font-size: .96rem; }
 .receipt-property-block .receipt-phone { margin-top: .65rem; color: var(--soft-ink); }
-.receipt-id-link { display: inline-flex; margin-top: .6rem; color: var(--ink); font-size: .76rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 .receipt-card > div { display: flex; padding: 1rem 0; border-bottom: 1px solid rgba(216,203,169,.7); color: var(--soft-ink); align-items: center; justify-content: space-between; gap: 1rem; font-size: .82rem; }
 .receipt-card > .receipt-stay-card, .receipt-card > .receipt-property-block { display: grid; }
 .receipt-card > div strong { color: var(--ink); text-align: right; }
