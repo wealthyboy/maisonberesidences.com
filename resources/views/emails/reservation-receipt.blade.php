@@ -4,6 +4,15 @@
     $item = $invoice->invoiceItems->first();
     $apartment = $item?->apartment;
     $property = $apartment?->property;
+    $resolveImage = function (?string $path): ?string {
+        if (! filled($path)) {
+            return null;
+        }
+
+        return str_starts_with($path, 'http') ? $path : asset($path);
+    };
+    $apartmentImage = $apartment?->images?->map(fn ($image) => $resolveImage($image->image))->filter()->first()
+        ?: ($resolveImage($apartment?->image) ?: asset('media/maisonbe-hero-source.jpg'));
     $addressParts = collect([
         $property?->address,
         $property?->location_full_name,
@@ -25,6 +34,7 @@
     $checkOutTime = $time($property?->check_out_time, '12:00 PM');
     $couponLabel = filled($invoice->coupon_code) ? 'Coupon '.$invoice->coupon_code : 'Coupon';
     $couponAmount = (float) $invoice->discount > 0 ? '-'.$money($invoice->discount) : $money(0);
+    $selfCheckInUrl = 'mailto:info@maisonberesidences.com?subject='.rawurlencode('Self check-in ID for '.$invoice->invoice);
 @endphp
 
 <!DOCTYPE html>
@@ -56,35 +66,40 @@
                                 <h1 style="margin:24px 0 14px;color:#18264a;font-size:32px;line-height:1.05;">Booking Confirmed</h1>
                                 <p style="margin:0 0 26px;color:#5e6678;font-size:15px;line-height:1.6;">Thank you, {{ $invoice->full_name }}. Your instant booking is confirmed.</p>
 
-                                <p style="margin:0 0 10px;color:#a78135;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Booking details</p>
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-top:1px solid #d8cba9;border-bottom:1px solid #d8cba9;">
                                     <tr>
-                                        <td style="padding:14px 0;color:#5e6678;">Apartment</td>
-                                        <td align="right" style="padding:14px 0;font-weight:700;">{{ $item?->name ?: $apartment?->name }}</td>
+                                        <td style="padding:22px 0;">
+                                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                                <tr>
+                                                    <td width="190" valign="top" style="padding-right:18px;">
+                                                        <img src="{{ $apartmentImage }}" alt="{{ $item?->name ?: $apartment?->name }}" width="180" style="display:block;width:180px;max-width:100%;height:auto;border:0;">
+                                                    </td>
+                                                    <td valign="top" style="color:#424242;font-size:15px;line-height:1.55;">
+                                                        <p style="margin:0 0 4px;color:#2fb49d;font-size:19px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">{{ $item?->name ?: $apartment?->name }}</p>
+                                                        <p style="margin:0;"><strong>Check-in :</strong> {{ optional($item?->checkin)->format('l, F jS Y') }}</p>
+                                                        <p style="margin:0;"><strong>Check-out:</strong> {{ optional($item?->checkout)->format('l, F jS Y') }}</p>
+                                                        <p style="margin:0;"><strong>Length of stay:</strong> {{ $item?->quantity }} {{ \Illuminate\Support\Str::plural('night', (int) $item?->quantity) }}</p>
+                                                        <p style="margin:4px 0 0;font-weight:800;">{{ $money($item?->price) }} per night</p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
                                     </tr>
-                                    @if (filled($invoice->phone))
-                                        <tr>
-                                            <td style="padding:14px 0;color:#5e6678;border-top:1px solid #efe6d1;">Phone number</td>
-                                            <td align="right" style="padding:14px 0;border-top:1px solid #efe6d1;font-weight:700;">{{ $invoice->phone }}</td>
-                                        </tr>
-                                    @endif
-                                    @if ($address !== '')
-                                        <tr>
-                                            <td style="padding:14px 0;color:#5e6678;border-top:1px solid #efe6d1;">Property address</td>
-                                            <td align="right" style="padding:14px 0;border-top:1px solid #efe6d1;font-weight:700;line-height:1.45;">{{ $address }}</td>
-                                        </tr>
-                                    @endif
+                                </table>
+
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-bottom:1px solid #d8cba9;">
                                     <tr>
-                                        <td style="padding:14px 0;color:#5e6678;border-top:1px solid #efe6d1;">Check-in</td>
-                                        <td align="right" style="padding:14px 0;border-top:1px solid #efe6d1;font-weight:700;">{{ optional($item?->checkin)->format('M j, Y') }} at {{ $checkInTime }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding:14px 0;color:#5e6678;border-top:1px solid #efe6d1;">Check-out</td>
-                                        <td align="right" style="padding:14px 0;border-top:1px solid #efe6d1;font-weight:700;">{{ optional($item?->checkout)->format('M j, Y') }} at {{ $checkOutTime }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding:14px 0;color:#5e6678;border-top:1px solid #efe6d1;">Nights</td>
-                                        <td align="right" style="padding:14px 0;border-top:1px solid #efe6d1;">{{ $item?->quantity }}</td>
+                                        <td style="padding:22px 0;color:#000;font-size:16px;line-height:1.6;">
+                                            <p style="margin:0 0 4px;color:#425065;font-size:22px;font-weight:800;">Property Address</p>
+                                            @if ($address !== '')
+                                                <p style="margin:0 0 4px;">{{ $address }}</p>
+                                            @endif
+                                            <p style="margin:0;"><strong style="font-size:21px;">Check-in Time:</strong> {{ $checkInTime }}</p>
+                                            <p style="margin:4px 0 0;"><strong style="font-size:21px;">Check-out Time:</strong> {{ $checkOutTime }}</p>
+                                            @if (filled($invoice->phone))
+                                                <p style="margin:10px 0 0;color:#425065;">Phone number: <strong>{{ $invoice->phone }}</strong></p>
+                                            @endif
+                                        </td>
                                     </tr>
                                 </table>
 
@@ -104,6 +119,8 @@
                                     </tr>
                                 </table>
 
+                                <p style="margin:24px 0 0;color:#5e6678;font-size:14px;line-height:1.6;"><strong>Note:</strong> You’re required to present a valid ID upon arrival to check-in. You can also self check-in by clicking the link below to upload your ID.</p>
+                                <p style="margin:8px 0 0;"><a href="{{ $selfCheckInUrl }}" style="color:#18264a;font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;">Upload your ID</a></p>
                                 <p style="margin:24px 0 0;color:#5e6678;font-size:14px;line-height:1.6;">This receipt confirms your instant booking at Maison Be Residences.</p>
                             </td>
                         </tr>

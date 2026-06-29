@@ -137,7 +137,7 @@ class ReservationController extends Controller
 
     public function receipt(Invoice $invoice): View
     {
-        return view('reservations.receipt', ['invoice' => $invoice->load('invoiceItems.apartment.property')]);
+        return view('reservations.receipt', ['invoice' => $invoice->load('invoiceItems.apartment.property', 'invoiceItems.apartment.images')]);
     }
 
     public function receiptByReference(Request $request): View|RedirectResponse
