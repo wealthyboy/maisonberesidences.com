@@ -9,6 +9,7 @@ use App\Models\Attribute as ApartmentAttribute;
 use App\Models\Information;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
+use App\Models\PeakPeriod;
 use App\Models\Property;
 use App\Models\Voucher;
 use App\Support\AdminModules;
@@ -91,6 +92,14 @@ class ModuleController extends Controller
                 ->with('status', 'Voucher created.');
         }
 
+        if ($module['slug'] === 'peak-periods') {
+            $peakPeriod = PeakPeriod::create($this->peakPeriodData($request));
+
+            return redirect()
+                ->route('admin.modules.record.show', [$module['slug'], $peakPeriod->id])
+                ->with('status', 'Peak period created.');
+        }
+
         AdminModuleRecord::create($this->genericRecordData($request, $module));
 
         return redirect()
@@ -159,6 +168,15 @@ class ModuleController extends Controller
                 ->with('status', 'Voucher updated.');
         }
 
+        if ($module['slug'] === 'peak-periods') {
+            $peakPeriod = PeakPeriod::findOrFail($record);
+            $peakPeriod->update($this->peakPeriodData($request, $peakPeriod));
+
+            return redirect()
+                ->route('admin.modules.record.show', [$module['slug'], $peakPeriod->id])
+                ->with('status', 'Peak period updated.');
+        }
+
         $recordModel = AdminModuleRecord::where('module_slug', $module['slug'])->findOrFail($record);
         $recordModel->update($this->genericRecordData($request, $module));
 
@@ -211,6 +229,14 @@ class ModuleController extends Controller
                 ->with('status', 'Voucher deleted.');
         }
 
+        if ($module['slug'] === 'peak-periods') {
+            PeakPeriod::findOrFail($record)->delete();
+
+            return redirect()
+                ->route('admin.modules.show', $module['slug'])
+                ->with('status', 'Peak period deleted.');
+        }
+
         AdminModuleRecord::where('module_slug', $module['slug'])->findOrFail($record)->delete();
 
         return redirect()
@@ -240,6 +266,8 @@ class ModuleController extends Controller
             $deleted = Information::whereIn('id', $ids)->delete();
         } elseif ($module['slug'] === 'vouchers') {
             $deleted = Voucher::whereIn('id', $ids)->delete();
+        } elseif ($module['slug'] === 'peak-periods') {
+            $deleted = PeakPeriod::whereIn('id', $ids)->delete();
         } else {
             $deleted = AdminModuleRecord::where('module_slug', $module['slug'])
                 ->whereIn('id', $ids)
@@ -318,6 +346,10 @@ class ModuleController extends Controller
             return Voucher::query()->latest()->paginate(10);
         }
 
+        if ($module['slug'] === 'peak-periods') {
+            return PeakPeriod::query()->latest()->paginate(10);
+        }
+
         return AdminModuleRecord::where('module_slug', $module['slug'])->latest()->paginate(10);
     }
 
@@ -333,6 +365,7 @@ class ModuleController extends Controller
             'invoices', 'reservations' => Invoice::with('invoiceItems.apartment')->findOrFail($record),
             'pages' => Information::findOrFail($record),
             'vouchers' => Voucher::findOrFail($record),
+            'peak-periods' => PeakPeriod::findOrFail($record),
             default => AdminModuleRecord::where('module_slug', $module['slug'])->findOrFail($record),
         };
     }
@@ -348,7 +381,7 @@ class ModuleController extends Controller
 
     private function isDatabaseBacked(array $module): bool
     {
-        return in_array($module['slug'], ['properties', 'apartments', 'invoices', 'reservations', 'pages', 'vouchers'], true);
+        return in_array($module['slug'], ['properties', 'apartments', 'invoices', 'reservations', 'pages', 'vouchers', 'peak-periods'], true);
     }
 
     private function isInvoiceModule(array $module): bool
@@ -455,6 +488,34 @@ class ModuleController extends Controller
             'valid' => true,
             'expires' => filled($data['expiry'] ?? null) ? Carbon::parse($data['expiry'])->endOfDay() : null,
             'limits' => $data['limits'] ?? null,
+        ];
+    }
+
+    private function peakPeriodData(Request $request, ?PeakPeriod $peakPeriod = null): array
+    {
+        $data = $request->validate([
+            'name' => ['nullable', 'string', 'max:255'],
+            'discount' => ['required', 'numeric', 'min:0.01', 'max:1000'],
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'days_limit' => ['nullable', 'integer', 'min:0'],
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        $startDate = Carbon::parse($data['start_date'])->startOfDay();
+        $endDate = Carbon::parse($data['end_date'])->endOfDay();
+        $name = filled($data['name'] ?? null)
+            ? $data['name']
+            : 'Peak period '.$startDate->format('M j').' - '.$endDate->format('M j, Y');
+
+        return [
+            'name' => $name,
+            'discount' => $data['discount'],
+            'increase_percent' => $data['discount'],
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'days_limit' => $data['days_limit'] ?? null,
+            'is_active' => (bool) $data['is_active'],
         ];
     }
 

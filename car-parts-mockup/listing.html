@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Brake Parts | Dami Parts</title>
+    <style>
+        :root { --red:#ed1c24; --ink:#172033; --muted:#657084; --line:#d8dde6; --navy:#071f45; --page:#f4f6f9; --orange:#ff5a13; }
+        * { box-sizing:border-box; }
+        body { margin:0; color:var(--ink); background:var(--page); font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+        a { color:inherit; text-decoration:none; }
+        button,input,select { font:inherit; }
+        .promo { min-height:38px; display:flex; align-items:center; justify-content:center; gap:14px; background:var(--red); color:#fff; font-size:.86rem; font-weight:900; }
+        .header { display:grid; grid-template-columns:130px 1fr auto; gap:18px; align-items:center; min-height:78px; padding:0 clamp(18px,4vw,76px); background:#fff; border-bottom:1px solid #e8edf4; }
+        .logo { display:grid; place-items:center; width:106px; height:62px; background:var(--red); color:#fff; font-weight:950; line-height:.86; letter-spacing:-.05em; text-transform:uppercase; }
+        .logo span { font-size:2.05rem; } .logo small { font-size:.72rem; letter-spacing:.02em; }
+        .search { justify-self:center; display:grid; grid-template-columns:1fr 48px; width:min(560px,100%); min-height:48px; border:1px solid #cbd2dd; border-radius:8px; overflow:hidden; background:#fff; }
+        .search input { border:0; outline:0; padding:0 16px; font-size:.94rem; } .search button { border:0; background:#fff; color:var(--red); font-size:1.35rem; }
+        .actions { display:flex; gap:10px; align-items:center; }
+        .pill { display:inline-flex; align-items:center; gap:9px; min-height:42px; padding:0 13px; border:1px solid #e1e7f0; border-radius:999px; background:#fff; font-size:.9rem; font-weight:850; white-space:nowrap; }
+        .pill svg { width:19px; height:19px; }
+        .nav { display:flex; min-height:44px; padding:0 clamp(18px,4vw,76px); overflow:auto; background:#fff; border-bottom:1px solid #e6ebf2; }
+        .nav a { display:flex; align-items:center; padding:0 14px; border-left:1px solid #e4e9f0; font-size:.74rem; font-weight:900; text-transform:uppercase; }
+        .nav a:last-child { border-right:1px solid #e4e9f0; }
+        .page { padding:28px clamp(18px,4vw,76px) 46px; }
+        .breadcrumbs { color:#738092; font-size:.78rem; font-weight:750; margin-bottom:18px; }
+        .listing-head { display:flex; justify-content:space-between; gap:18px; align-items:end; margin-bottom:18px; }
+        .listing-head h1 { margin:0; font-size:1.75rem; letter-spacing:0; }
+        .listing-head p { margin:6px 0 0; color:var(--muted); font-size:.92rem; font-weight:650; }
+        .vehicle-strip { display:flex; justify-content:space-between; gap:14px; align-items:center; margin-bottom:18px; padding:14px 16px; border:1px solid #dce3ec; border-radius:10px; background:#fff; }
+        .vehicle-strip strong { font-size:.92rem; } .vehicle-strip span { color:var(--muted); font-size:.82rem; font-weight:750; }
+        .vehicle-strip a { color:var(--red); font-size:.82rem; font-weight:950; }
+        .layout { display:grid; grid-template-columns:280px 1fr; gap:20px; align-items:start; }
+        .filters { position:sticky; top:14px; border:1px solid #dfe5ee; background:#fff; border-radius:10px; overflow:hidden; }
+        .filters-head { padding:15px 16px; border-bottom:1px solid #e7ecf3; font-size:.94rem; font-weight:950; }
+        .filter-group { border-bottom:1px solid #eef2f6; }
+        .filter-toggle { display:flex; justify-content:space-between; align-items:center; width:100%; padding:15px 16px 12px; border:0; background:#fff; color:var(--ink); cursor:pointer; }
+        .filter-toggle span:first-child { font-size:.82rem; text-transform:uppercase; letter-spacing:.08em; font-weight:950; }
+        .filter-toggle span:last-child { font-size:1.1rem; transition:transform .2s ease; }
+        .filter-group.is-collapsed .filter-toggle span:last-child { transform:rotate(180deg); }
+        .filter-body { padding:0 16px 15px; }
+        .filter-group.is-collapsed .filter-body { display:none; }
+        .filter-group label { display:flex; justify-content:space-between; gap:10px; align-items:center; margin:10px 0; color:#354155; font-size:.86rem; font-weight:720; }
+        .filter-group input[type="checkbox"] { width:22px; height:22px; flex:0 0 22px; accent-color:var(--red); cursor:pointer; }
+        .range { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+        .range input, .sort select { min-height:38px; width:100%; border:1px solid #cfd7e3; border-radius:6px; padding:0 10px; font-size:.86rem; }
+        .sort { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:14px; }
+        .sort span { color:var(--muted); font-size:.86rem; font-weight:750; }
+        .sort-left { display:flex; align-items:center; gap:10px; }
+        .sort-left strong { color:var(--ink); font-size:1.05rem; font-weight:950; }
+        .sort-left a { display:grid; place-items:center; width:26px; height:26px; color:#2f3949; }
+        .sort-left svg { width:18px; height:18px; }
+        .sort-tools { display:flex; align-items:center; gap:18px; }
+        .view-toggle { display:flex; align-items:center; gap:12px; }
+        .view-btn { display:grid; justify-items:center; gap:3px; border:0; background:transparent; color:#8d8d8d; cursor:pointer; font-size:.8rem; font-weight:750; }
+        .view-btn svg { width:25px; height:25px; fill:currentColor; }
+        .view-btn.is-active { color:var(--orange); }
+        .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+        .card { display:grid; grid-template-rows:250px auto; border:1px solid #e2e7ef; background:#fff; min-height:585px; }
+        .media { position:relative; display:grid; place-items:center; min-height:250px; padding:44px 12px 24px; }
+        .heart { position:absolute; top:16px; left:16px; color:#5c7f96; font-size:1.4rem; }
+        .badge { position:absolute; top:16px; right:16px; padding:3px 8px; border-radius:999px; background:var(--orange); color:#fff; font-size:.76rem; font-weight:950; }
+        .part-svg { width:210px; height:156px; filter:drop-shadow(0 10px 12px rgba(10,20,40,.12)); }
+        .info { display:grid; align-content:start; padding:0 14px 14px; }
+        .rating { display:flex; gap:7px; align-items:center; min-height:26px; color:#1476e8; font-size:.8rem; font-weight:800; }
+        .stars { color:var(--orange); letter-spacing:-1px; font-size:.98rem; }
+        .info h2 { min-height:44px; margin:4px 0 8px; font-size:.94rem; line-height:1.25; }
+        .fit { min-height:38px; margin:0; color:#3b4657; font-size:.82rem; line-height:1.28; font-weight:650; }
+        .article { margin:9px 0 18px; color:#788393; font-size:.76rem; font-weight:720; }
+        .rrp { min-height:18px; margin:auto 0 5px; color:#697586; font-size:.78rem; font-weight:800; }
+        .price { color:#12263a; } .price strong { font-size:1.65rem; font-weight:550; } .price sup { font-size:.78rem; font-weight:750; }
+        .tax { min-height:36px; margin:6px 0 12px; color:#6b7688; font-size:.76rem; line-height:1.25; font-weight:700; }
+        .add { min-height:42px; border:0; background:var(--red); color:#fff; font-size:.84rem; font-weight:950; text-transform:uppercase; cursor:pointer; }
+        .grid.is-list { grid-template-columns:1fr; gap:12px; }
+        .grid.is-list .card { grid-template-columns:210px 1fr; grid-template-rows:auto; min-height:0; }
+        .grid.is-list .media { min-height:250px; border-right:1px solid #edf1f6; padding:32px 18px; }
+        .grid.is-list .part-svg { width:210px; height:156px; }
+        .grid.is-list .info { grid-template-columns:1fr auto; column-gap:24px; align-content:center; padding:20px; }
+        .grid.is-list .rating, .grid.is-list .info h2, .grid.is-list .fit, .grid.is-list .article { grid-column:1; }
+        .grid.is-list .rrp, .grid.is-list .price, .grid.is-list .tax, .grid.is-list .add { grid-column:2; width:180px; }
+        .grid.is-list .info h2, .grid.is-list .fit, .grid.is-list .article, .grid.is-list .rrp, .grid.is-list .tax { min-height:0; }
+        .grid.is-list .rrp { margin:0 0 4px; }
+        .pagination { display:flex; justify-content:center; gap:8px; margin-top:22px; }
+        .pagination a { display:grid; place-items:center; width:36px; height:36px; border:1px solid #d6deea; background:#fff; font-size:.82rem; font-weight:850; }
+        .pagination a.active { background:var(--navy); color:#fff; border-color:var(--navy); }
+        .footer { background:#202124; color:#fff; padding:30px clamp(18px,4vw,76px); }
+        .footer-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:28px; }
+        .footer h3 { margin:0 0 14px; font-size:.88rem; letter-spacing:.1em; text-transform:uppercase; }
+        .footer a { display:block; margin:0 0 10px; color:rgba(255,255,255,.58); font-size:.82rem; font-weight:750; }
+        .footer-bottom { margin-top:22px; padding-top:18px; border-top:1px solid rgba(255,255,255,.18); color:rgba(255,255,255,.52); font-size:.76rem; }
+        @media (max-width:1050px){ .layout{grid-template-columns:1fr}.filters{position:static}.grid{grid-template-columns:repeat(2,1fr)}.header{grid-template-columns:110px 1fr}.actions{grid-column:1/-1;justify-content:flex-end}.footer-grid{grid-template-columns:repeat(2,1fr)}}
+        @media (max-width:800px){ .grid.is-list .card{grid-template-columns:1fr}.grid.is-list .media{border-right:0;border-bottom:1px solid #edf1f6}.grid.is-list .info{grid-template-columns:1fr}.grid.is-list .rrp,.grid.is-list .price,.grid.is-list .tax,.grid.is-list .add{grid-column:1;width:100%}.sort{align-items:flex-start}.sort-tools{align-items:flex-end;flex-direction:column;gap:10px} }
+        @media (max-width:650px){ .promo{font-size:.76rem}.header{grid-template-columns:1fr}.search{justify-self:stretch}.actions{display:none}.listing-head,.vehicle-strip{display:block}.sort{display:grid}.sort-tools{align-items:flex-start}.grid{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr}.page{padding-top:20px}}
+    </style>
+</head>
+<body>
+    <div class="promo">30% OFF WHEN YOU SPEND £40 <strong>Use Code: JUN30</strong></div>
+    <header class="header">
+        <a class="logo" href="index.html"><span>DP</span><small>Dami Parts</small></a>
+        <form class="search"><input placeholder="Search by part, brand or product number"><button>⌕</button></form>
+        <nav class="actions"><a class="pill" href="#">◉ Sign In</a><a class="pill" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 7h15l-1.5 8.5a2 2 0 0 1-2 1.5H9a2 2 0 0 1-2-1.5L5 3H2"></path><circle cx="9" cy="21" r="1"></circle><circle cx="18" cy="21" r="1"></circle></svg> <b style="color:var(--red)">0</b> £0.00</a></nav>
+    </header>
+    <nav class="nav"><a href="listing.html">Car Parts</a><a>Accessories</a><a>Detailing</a><a>Performance</a><a>Tools</a><a>Service Kits</a><a>Engine Oils</a><a>Wiper Blades</a><a>Car Batteries</a><a>Deals</a></nav>
+    <main class="page">
+        <div class="breadcrumbs">Home / Car parts / Braking / Brake pads</div>
+        <div class="listing-head"><div><h1>Brake pads and service parts</h1><p>Parts that fit BMW 3 Series 2018 Diesel. Change your vehicle anytime.</p></div></div>
+        <section class="vehicle-strip"><div><strong>Vehicle selected: BMW 3 Series 2018</strong><br><span>Showing compatible parts for your chosen make, model and year.</span></div><a href="#">Change vehicle</a></section>
+        <div class="layout">
+            <aside class="filters">
+                <div class="filters-head">Filter results</div>
+                <div class="filter-group">
+                    <button class="filter-toggle" type="button"><span>Category</span><span>⌃</span></button>
+                    <div class="filter-body"><label>Brake pads <input type="checkbox" checked></label><label>Brake discs <input type="checkbox"></label><label>Wear sensors <input type="checkbox"></label><label>Calipers <input type="checkbox"></label></div>
+                </div>
+                <div class="filter-group">
+                    <button class="filter-toggle" type="button"><span>Brand</span><span>⌃</span></button>
+                    <div class="filter-body"><label>Bosch <input type="checkbox"></label><label>Brembo <input type="checkbox" checked></label><label>Febi Bilstein <input type="checkbox"></label><label>Pagid <input type="checkbox"></label></div>
+                </div>
+                <div class="filter-group">
+                    <button class="filter-toggle" type="button"><span>Price</span><span>⌃</span></button>
+                    <div class="filter-body"><div class="range"><input placeholder="Min £"><input placeholder="Max £"></div></div>
+                </div>
+                <div class="filter-group">
+                    <button class="filter-toggle" type="button"><span>Availability</span><span>⌃</span></button>
+                    <div class="filter-body"><label>In stock <input type="checkbox" checked></label><label>Next-day delivery <input type="checkbox"></label></div>
+                </div>
+            </aside>
+            <section>
+                <div class="sort">
+                    <div class="sort-left">
+                        <strong>128 Results</strong>
+                        <a href="#" aria-label="Open results in new view">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"></path><path d="M10 14 21 3"></path><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"></path></svg>
+                        </a>
+                    </div>
+                    <div class="sort-tools">
+                        <select><option>Sort by: Recommended</option><option>Price: Low to high</option><option>Top rated</option></select>
+                        <div class="view-toggle" aria-label="Product view">
+                            <button class="view-btn" type="button" data-view="list" aria-label="List view">
+                                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="5" height="5" rx="1"></rect><rect x="3" y="10" width="5" height="5" rx="1"></rect><rect x="3" y="16" width="5" height="5" rx="1"></rect><rect x="10" y="4" width="11" height="5" rx="1"></rect><rect x="10" y="10" width="11" height="5" rx="1"></rect><rect x="10" y="16" width="11" height="5" rx="1"></rect></svg>
+                                <span>List</span>
+                            </button>
+                            <button class="view-btn is-active" type="button" data-view="grid" aria-label="Grid view">
+                                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="5" rx="1"></rect><rect x="10" y="3" width="5" height="5" rx="1"></rect><rect x="17" y="3" width="5" height="5" rx="1"></rect><rect x="3" y="10" width="5" height="5" rx="1"></rect><rect x="10" y="10" width="5" height="5" rx="1"></rect><rect x="17" y="10" width="5" height="5" rx="1"></rect><rect x="3" y="17" width="5" height="5" rx="1"></rect><rect x="10" y="17" width="5" height="5" rx="1"></rect><rect x="17" y="17" width="5" height="5" rx="1"></rect></svg>
+                                <span>Grid</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid" id="productGrid">
+                    <article class="card"><div class="media"><span class="heart">♡</span><span class="badge">-30%</span><svg class="part-svg" viewBox="0 0 220 150"><rect x="42" y="52" width="136" height="58" rx="10" fill="#111827"/><rect x="55" y="64" width="110" height="34" rx="6" fill="#e5e7eb"/><circle cx="70" cy="81" r="8" fill="#ef4444"/><circle cx="150" cy="81" r="8" fill="#ef4444"/></svg></div><div class="info"><div class="rating"><span class="stars">★★★★☆</span> Reviews - 54</div><h2><a href="product.html">Brembo Front Brake Pad Set</a></h2><p class="fit">Front axle, low dust compound, with accessories</p><p class="article">Article number: P 06 075</p><p class="rrp">compared to RRP £62.99</p><div class="price"><strong>£39</strong><sup>99</sup></div><p class="tax">Incl. VAT, excl. delivery costs</p><button class="add" onclick="location.href='checkout.html'">Add to cart</button></div></article>
+                    <article class="card"><div class="media"><span class="heart">♡</span><svg class="part-svg" viewBox="0 0 220 150"><circle cx="110" cy="75" r="48" fill="#d9dee7" stroke="#6b7483" stroke-width="10"/><circle cx="110" cy="75" r="15" fill="#111827"/><path d="M110 28v18M110 104v18M63 75h18M139 75h18" stroke="#111827" stroke-width="8"/></svg></div><div class="info"><div class="rating"><span class="stars">★★★★★</span> Reviews - 21</div><h2>Febi Brake Disc</h2><p class="fit">Vented disc, front axle, coated finish</p><p class="article">Article number: 43892</p><p class="rrp">compared to RRP £88.20</p><div class="price"><strong>£58</strong><sup>49</sup></div><p class="tax">Incl. VAT, excl. delivery costs</p><button class="add">Add to cart</button></div></article>
+                    <article class="card"><div class="media"><span class="heart">♡</span><span class="badge">-18%</span><svg class="part-svg" viewBox="0 0 220 150"><path d="M50 90c32-36 78-36 120 0" fill="none" stroke="#111827" stroke-width="16" stroke-linecap="round"/><circle cx="55" cy="91" r="16" fill="#e5e7eb" stroke="#111827" stroke-width="6"/><circle cx="166" cy="91" r="16" fill="#e5e7eb" stroke="#111827" stroke-width="6"/></svg></div><div class="info"><div class="rating"><span class="stars">★★★★☆</span> Reviews - 12</div><h2>Bosch Wear Sensor</h2><p class="fit">Brake pad wear warning contact, front axle</p><p class="article">Article number: 1 987 473 521</p><p class="rrp">compared to RRP £18.50</p><div class="price"><strong>£12</strong><sup>99</sup></div><p class="tax">Incl. VAT, excl. delivery costs</p><button class="add">Add to cart</button></div></article>
+                    <article class="card"><div class="media"><span class="heart">♡</span><svg class="part-svg" viewBox="0 0 220 150"><path d="M60 44h80c24 0 38 18 34 42-4 26-26 40-58 40H70c-18 0-30-12-30-30V64c0-11 9-20 20-20z" fill="#d9dee7" stroke="#6b7483" stroke-width="8"/><circle cx="84" cy="86" r="18" fill="#111827"/></svg></div><div class="info"><div class="rating"><span class="stars">★★★★☆</span> Reviews - 9</div><h2>Pagid Brake Caliper</h2><p class="fit">Rear axle right, remanufactured exchange unit</p><p class="article">Article number: 384129</p><p class="rrp">compared to RRP £142.80</p><div class="price"><strong>£96</strong><sup>99</sup></div><p class="tax">Incl. VAT, excl. delivery costs</p><button class="add">Add to cart</button></div></article>
+                    <article class="card"><div class="media"><span class="heart">♡</span><span class="badge">-22%</span><svg class="part-svg" viewBox="0 0 220 150"><rect x="58" y="34" width="104" height="82" rx="9" fill="#e5e7eb" stroke="#111827" stroke-width="8"/><path d="M78 56h64M78 76h64M78 96h42" stroke="#6b7483" stroke-width="7"/></svg></div><div class="info"><div class="rating"><span class="stars">★★★★★</span> Reviews - 37</div><h2>Mann Oil Filter</h2><p class="fit">Spin-on filter, OE matching specification</p><p class="article">Article number: W 712/95</p><p class="rrp">compared to RRP £15.20</p><div class="price"><strong>£9</strong><sup>89</sup></div><p class="tax">Incl. VAT, excl. delivery costs</p><button class="add">Add to cart</button></div></article>
+                    <article class="card"><div class="media"><span class="heart">♡</span><svg class="part-svg" viewBox="0 0 220 150"><path d="M80 20h44v20l18 16v66c0 10-8 18-18 18H76c-10 0-18-8-18-18V56l22-16z" fill="#d9dee7" stroke="#6b7483" stroke-width="7"/><rect x="74" y="66" width="54" height="42" fill="#fff" stroke="#9ca3af" stroke-width="4"/><path d="M83 79h36M83 93h28" stroke="#111827" stroke-width="5"/></svg></div><div class="info"><div class="rating"><span class="stars">★★★★☆</span> Reviews - 65</div><h2>Castrol Edge 5W-30 Oil</h2><p class="fit">Fully synthetic engine oil, 5 litre bottle</p><p class="article">Article number: EDGE5305L</p><p class="rrp"></p><div class="price"><strong>£42</strong><sup>50</sup></div><p class="tax">Incl. VAT, excl. delivery costs</p><button class="add">Add to cart</button></div></article>
+                </div>
+                <nav class="pagination"><a>‹</a><a class="active">1</a><a>2</a><a>3</a><a>›</a></nav>
+            </section>
+        </div>
+    </main>
+    <footer class="footer"><div class="footer-grid"><nav><h3>Shop</h3><a>Vehicle Make</a><a>Shop All Brands</a><a>Discounts & Coupons</a></nav><nav><h3>Products</h3><a>Batteries</a><a>Engine Oil</a><a>Brake Pads</a></nav><nav><h3>Help</h3><a>Track My Order</a><a>Contact Us</a><a>Returns</a></nav><nav><h3>Services</h3><a>Buy Online</a><a>Repair Help</a><a>Find a Repair Shop</a></nav></div><div class="footer-bottom">© 2026 Dami Parts. Presentation mockup.</div></footer>
+    <script>
+        const productGrid = document.getElementById('productGrid');
+        document.querySelectorAll('.view-btn').forEach((button) => {
+            button.addEventListener('click', () => {
+                const isList = button.dataset.view === 'list';
+                productGrid.classList.toggle('is-list', isList);
+                document.querySelectorAll('.view-btn').forEach((viewButton) => {
+                    viewButton.classList.toggle('is-active', viewButton === button);
+                });
+            });
+        });
+
+        document.querySelectorAll('.filter-toggle').forEach((button) => {
+            button.addEventListener('click', () => {
+                button.closest('.filter-group').classList.toggle('is-collapsed');
+            });
+        });
+    </script>
+</body>
+</html>

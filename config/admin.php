@@ -16,7 +16,6 @@ return [
             'icon' => 'chart-line',
             'items' => [
                 ['slug' => 'reservations', 'label' => 'Reservations', 'icon' => 'calendar-check', 'description' => 'Create, edit, review, and resend reservation details.'],
-                ['slug' => 'check-in', 'label' => 'Check-in', 'icon' => 'clipboard-check', 'description' => 'Handle guest check-in workflows and reservation confirmations.'],
                 ['slug' => 'vouchers', 'label' => 'Vouchers', 'icon' => 'ticket', 'description' => 'Create discount vouchers, usage limits, and campaign rules.'],
                 ['slug' => 'peak-periods', 'label' => 'Peak Periods', 'icon' => 'calendar-days', 'description' => 'Configure seasonal pricing windows and stay limits.'],
                 ['slug' => 'abandoned-carts', 'label' => 'Abandoned Carts', 'icon' => 'shopping-cart', 'description' => 'Review abandoned checkout records and follow-up status.'],

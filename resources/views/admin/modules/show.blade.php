@@ -7,7 +7,8 @@
     $isReservations = $module['slug'] === 'reservations';
     $isPages = $module['slug'] === 'pages';
     $isVouchers = $module['slug'] === 'vouchers';
-    $isDatabaseBacked = $isProperties || $isApartments || $isInvoices || $isPages || $isVouchers;
+    $isPeakPeriods = $module['slug'] === 'peak-periods';
+    $isDatabaseBacked = $isProperties || $isApartments || $isInvoices || $isPages || $isVouchers || $isPeakPeriods;
     $recordName = $model ? ($isInvoices ? $model->invoice : ($isPages ? $model->title : ($isVouchers ? $model->code : ($isDatabaseBacked ? $model->name : $model->title)))) : null;
 @endphp
 
@@ -74,7 +75,7 @@
                     @if ($screen === 'edit')
                         @method('put')
                     @else
-                        @unless ($isInvoices || $isPages || $isApartments || $isVouchers)
+                        @unless ($isInvoices || $isPages || $isApartments || $isVouchers || $isPeakPeriods)
                             <div class="border-b border-zinc-200 pb-2 lg:col-span-2">
                                 <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-zinc-500">{{ Illuminate\Support\Str::singular($module['label']) }} details</h3>
                             </div>
@@ -124,6 +125,8 @@
                         @include('admin.modules.forms.page')
                     @elseif ($isVouchers)
                         @include('admin.modules.forms.voucher')
+                    @elseif ($isPeakPeriods)
+                        @include('admin.modules.forms.peak-period')
                     @elseif ($isProperties)
                         <div class="border-b border-zinc-200 pb-2 lg:col-span-2">
                             <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-zinc-500">Property details</h3>
@@ -227,14 +230,14 @@
                 <dl class="mt-6 grid gap-4 md:grid-cols-3">
                     <div class="rounded-md border border-zinc-200 p-4">
                         <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Status</dt>
-                        <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $isVouchers ? ($model->is_usable ? 'Active' : 'Inactive') : ($isInvoices ? ($model->sent ? 'Sent' : 'Draft') : ($isPages ? 'Published' : ucfirst($model->status ?? 'draft'))) }}</dd>
+                        <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $isPeakPeriods ? ($model->is_active ? 'Active' : 'Inactive') : ($isVouchers ? ($model->is_usable ? 'Active' : 'Inactive') : ($isInvoices ? ($model->sent ? 'Sent' : 'Draft') : ($isPages ? 'Published' : ucfirst($model->status ?? 'draft')))) }}</dd>
                     </div>
                     <div class="rounded-md border border-zinc-200 p-4">
                         <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Module</dt>
                         <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $module['label'] }}</dd>
                     </div>
                     <div class="rounded-md border border-zinc-200 p-4">
-                        <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">{{ $isProperties ? 'Location' : ($isApartments ? 'Property' : ($isInvoices ? 'Customer' : ($isPages ? 'Slug' : ($isVouchers ? 'Code' : 'Published')))) }}</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">{{ $isProperties ? 'Location' : ($isApartments ? 'Property' : ($isInvoices ? 'Customer' : ($isPages ? 'Slug' : ($isVouchers ? 'Code' : ($isPeakPeriods ? 'Date range' : 'Published'))))) }}</dt>
                         <dd class="mt-2 text-sm font-semibold text-zinc-950">
                             @if ($isProperties)
                                 {{ trim(($model->city ?? '') . ', ' . ($model->country ?? ''), ', ') ?: 'Not set' }}
@@ -246,6 +249,8 @@
                                 {{ $model->slug }}
                             @elseif ($isVouchers)
                                 {{ $model->code }}
+                            @elseif ($isPeakPeriods)
+                                {{ $model->start_date?->format('M j, Y') }} - {{ $model->end_date?->format('M j, Y') }}
                             @else
                                 {{ $model->published_at ? $model->published_at->format('M j, Y') : 'Not set' }}
                             @endif
@@ -253,7 +258,26 @@
                     </div>
                 </dl>
 
-                @if ($isVouchers && $model)
+                @if ($isPeakPeriods && $model)
+                    <div class="mt-5 grid gap-4 md:grid-cols-4">
+                        <div class="rounded-md border border-zinc-200 p-4">
+                            <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Price increase</dt>
+                            <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ number_format((float) ($model->increase_percent ?? $model->discount), 2) }}%</dd>
+                        </div>
+                        <div class="rounded-md border border-zinc-200 p-4">
+                            <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Start date</dt>
+                            <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $model->start_date?->format('M j, Y') ?: 'Not set' }}</dd>
+                        </div>
+                        <div class="rounded-md border border-zinc-200 p-4">
+                            <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">End date</dt>
+                            <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $model->end_date?->format('M j, Y') ?: 'Not set' }}</dd>
+                        </div>
+                        <div class="rounded-md border border-zinc-200 p-4">
+                            <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Days limit</dt>
+                            <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $model->days_limit ?? 'None' }}</dd>
+                        </div>
+                    </div>
+                @elseif ($isVouchers && $model)
                     <div class="mt-5 grid gap-4 md:grid-cols-4">
                         <div class="rounded-md border border-zinc-200 p-4">
                             <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Discount</dt>
@@ -379,8 +403,8 @@
                                 <th class="px-5 py-3">Image</th>
                             @endif
                             <th class="px-5 py-3">{{ $isReservations ? 'Guest' : ($isVouchers ? 'Code' : 'Name') }}</th>
-                            <th class="px-5 py-3">{{ $isReservations ? 'Stay' : ($isVouchers ? 'Discount' : 'Status') }}</th>
-                            <th class="px-5 py-3">{{ $isReservations ? 'Total' : ($isVouchers ? 'Usage' : 'Updated') }}</th>
+                            <th class="px-5 py-3">{{ $isReservations ? 'Stay' : ($isVouchers ? 'Discount' : ($isPeakPeriods ? 'Date range' : 'Status')) }}</th>
+                            <th class="px-5 py-3">{{ $isReservations ? 'Total' : ($isVouchers ? 'Usage' : ($isPeakPeriods ? 'Increase' : 'Updated')) }}</th>
                             <th class="px-5 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -425,6 +449,8 @@
                                                 {{ $recordItem->teaser ? Illuminate\Support\Str::limit($recordItem->teaser, 90) : 'No teaser entered.' }}
                                             @elseif ($isVouchers)
                                                 {{ $recordItem->expires ? 'Expires '.$recordItem->expires->format('M j, Y') : 'No expiry' }}
+                                            @elseif ($isPeakPeriods)
+                                                {{ $recordItem->is_active ? 'Active' : 'Inactive' }}{{ $recordItem->days_limit ? ' · '.$recordItem->days_limit.' day limit' : '' }}
                                             @else
                                                 {{ $recordItem->summary ? Illuminate\Support\Str::limit($recordItem->summary, 90) : 'No summary entered.' }}
                                             @endif
@@ -442,7 +468,11 @@
                                                 @endif
                                             </div>
                                         @else
-                                            <span class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700">{{ $isVouchers ? number_format((float) $recordItem->amount, 2).'%' : ($isInvoices ? ($recordItem->sent ? 'Sent' : 'Draft') : ($isApartments ? ($recordItem->price_mode ?: 'Apartment') : ucfirst($recordItem->status ?? 'draft'))) }}</span>
+                                            @if ($isPeakPeriods)
+                                                <span class="font-semibold text-zinc-950">{{ $recordItem->start_date?->format('M j, Y') }} - {{ $recordItem->end_date?->format('M j, Y') }}</span>
+                                            @else
+                                                <span class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700">{{ $isVouchers ? number_format((float) $recordItem->amount, 2).'%' : ($isInvoices ? ($recordItem->sent ? 'Sent' : 'Draft') : ($isApartments ? ($recordItem->price_mode ?: 'Apartment') : ucfirst($recordItem->status ?? 'draft'))) }}</span>
+                                            @endif
                                         @endif
                                         @if ($isInvoices && ! $isReservations)
                                             <div class="mt-1 text-xs font-semibold text-zinc-500">{{ $recordItem->currency }}{{ number_format((float) $recordItem->total, 2) }}</div>
@@ -453,6 +483,8 @@
                                             {{ $recordItem->currency.number_format((float) $recordItem->total, 2) }}
                                         @elseif ($isVouchers)
                                             {{ $recordItem->used_count }}{{ $recordItem->limits ? ' / '.$recordItem->limits : '' }}
+                                        @elseif ($isPeakPeriods)
+                                            {{ number_format((float) ($recordItem->increase_percent ?? $recordItem->discount), 2) }}%
                                         @else
                                             {{ $recordItem->updated_at->format('M j, Y') }}
                                         @endif

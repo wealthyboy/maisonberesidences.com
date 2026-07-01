@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Checkout | Dami Parts</title>
+    <style>
+        :root { --red:#ed1c24; --ink:#172033; --muted:#657084; --line:#d8dde6; --navy:#071f45; --page:#f4f6f9; }
+        *{box-sizing:border-box} body{margin:0;color:var(--ink);background:var(--page);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif} a{text-decoration:none;color:inherit} button,input,select{font:inherit}
+        .checkout-header{display:flex;justify-content:space-between;align-items:center;min-height:78px;padding:0 clamp(18px,4vw,76px);background:#fff;border-bottom:1px solid #e6ebf2}.logo{display:grid;place-items:center;width:106px;height:62px;background:var(--red);color:#fff;font-weight:950;line-height:.86;letter-spacing:-.05em;text-transform:uppercase}.logo span{font-size:2.05rem}.logo small{font-size:.72rem;letter-spacing:.02em}.secure{color:#296b36;font-size:.86rem;font-weight:900}
+        .page{padding:28px clamp(18px,4vw,76px) 48px}.head{margin-bottom:20px}.head h1{margin:0;font-size:1.7rem}.head p{margin:7px 0 0;color:var(--muted);font-size:.9rem;font-weight:650}.layout{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start}.panel{background:#fff;border:1px solid #e0e6ef;border-radius:10px;padding:20px}.panel h2{margin:0 0 16px;font-size:1.05rem}.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.fields label{display:grid;gap:6px;color:#3f4a5c;font-size:.78rem;font-weight:900;text-transform:uppercase;letter-spacing:.05em}.fields input,.fields select{min-height:44px;border:1px solid #cfd7e3;border-radius:7px;padding:0 11px;color:var(--ink);font-size:.9rem;text-transform:none;letter-spacing:0}.wide{grid-column:1/-1}.step{display:flex;align-items:center;gap:12px;margin-bottom:16px}.step span{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff;font-size:.82rem;font-weight:950}.shipping-options{display:grid;gap:10px}.option{display:flex;justify-content:space-between;gap:12px;padding:13px;border:1px solid #dfe5ee;border-radius:8px;font-size:.88rem;font-weight:750}.option strong{display:block;margin-bottom:3px}.option small{color:var(--muted);font-weight:650}.payment-row{display:flex;gap:8px;flex-wrap:wrap}.pay{padding:10px 12px;border:1px solid #d9e0eb;border-radius:999px;background:#fff;font-size:.82rem;font-weight:850}.summary{position:sticky;top:18px}.item{display:grid;grid-template-columns:76px 1fr auto;gap:12px;align-items:center;padding-bottom:16px;border-bottom:1px solid #edf1f5}.mini{display:grid;place-items:center;width:76px;height:66px;border:1px solid #e3e8f0;border-radius:8px;background:#fafbfc}.mini svg{width:60px;height:42px}.item h3{margin:0 0 4px;font-size:.9rem}.item p{margin:0;color:var(--muted);font-size:.78rem;font-weight:700}.totals{display:grid;gap:12px;margin-top:16px}.totals div{display:flex;justify-content:space-between;font-size:.88rem;color:#4a5668;font-weight:750}.totals .grand{padding-top:14px;border-top:1px solid #dfe5ee;color:var(--ink);font-size:1.1rem;font-weight:950}.coupon{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:16px}.coupon input{min-height:42px;border:1px solid #cfd7e3;border-radius:7px;padding:0 10px}.coupon button{border:0;border-radius:7px;background:var(--navy);color:#fff;padding:0 14px;font-size:.82rem;font-weight:950}.place{width:100%;min-height:50px;margin-top:18px;border:0;border-radius:8px;background:var(--red);color:#fff;font-size:.9rem;font-weight:950;text-transform:uppercase}.fineprint{margin:12px 0 0;color:var(--muted);font-size:.76rem;line-height:1.45;font-weight:650}.footer{background:#202124;color:rgba(255,255,255,.58);padding:24px clamp(18px,4vw,76px);font-size:.76rem;font-weight:700}
+        @media(max-width:960px){.layout{grid-template-columns:1fr}.summary{position:static}.fields{grid-template-columns:1fr}}@media(max-width:620px){.checkout-header{display:grid;gap:10px;justify-items:start;padding:12px 16px}.page{padding:20px 16px}.item{grid-template-columns:64px 1fr}.item>strong{grid-column:2}.coupon{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <header class="checkout-header"><a class="logo" href="index.html"><span>DP</span><small>Dami Parts</small></a><div class="secure">Secure checkout · SSL encrypted</div></header>
+    <main class="page">
+        <div class="head"><h1>Checkout</h1><p>Confirm delivery, payment and order details.</p></div>
+        <div class="layout">
+            <section>
+                <div class="panel"><div class="step"><span>1</span><h2>Contact details</h2></div><div class="fields"><label>First name<input value="Damilola"></label><label>Last name<input value="Atam"></label><label class="wide">Email address<input type="email" value="damilola@autofactorng.com"></label><label>Phone<input value="+44 7700 900123"></label><label>Postcode<input value="SW1A 1AA"></label></div></div>
+                <div class="panel" style="margin-top:14px"><div class="step"><span>2</span><h2>Delivery address</h2></div><div class="fields"><label class="wide">Address line 1<input value="24 Cooper Road"></label><label>City<input value="London"></label><label>County<input value="Greater London"></label><label class="wide">Country<select><option>United Kingdom</option></select></label></div></div>
+                <div class="panel" style="margin-top:14px"><div class="step"><span>3</span><h2>Delivery method</h2></div><div class="shipping-options"><label class="option"><span><strong>Standard delivery</strong><small>2-4 working days</small></span><input type="radio" checked></label><label class="option"><span><strong>Next day delivery</strong><small>Order before 4pm</small></span><input type="radio"></label><label class="option"><span><strong>Click and collect</strong><small>Pickup from selected partner store</small></span><input type="radio"></label></div></div>
+                <div class="panel" style="margin-top:14px"><div class="step"><span>4</span><h2>Payment</h2></div><div class="payment-row"><span class="pay">Visa</span><span class="pay">Mastercard</span><span class="pay">Apple Pay</span><span class="pay">Bank card</span></div></div>
+            </section>
+            <aside class="panel summary">
+                <h2>Order summary</h2>
+                <div class="item"><div class="mini"><svg viewBox="0 0 220 150"><rect x="42" y="52" width="136" height="58" rx="10" fill="#111827"/><rect x="55" y="64" width="110" height="34" rx="6" fill="#e5e7eb"/><circle cx="70" cy="81" r="8" fill="#ef4444"/><circle cx="150" cy="81" r="8" fill="#ef4444"/></svg></div><div><h3>Brembo Front Brake Pad Set</h3><p>Qty 1 · Article P 06 075</p></div><strong>£39.99</strong></div>
+                <div class="coupon"><input placeholder="Coupon code"><button>Apply</button></div>
+                <div class="totals"><div><span>Subtotal</span><strong>£39.99</strong></div><div><span>Delivery</span><strong>£4.99</strong></div><div><span>VAT included</span><strong>£7.50</strong></div><div class="grand"><span>Total</span><strong>£44.98</strong></div></div>
+                <button class="place">Place order</button><p class="fineprint">By placing your order you agree to the Dami Parts terms, returns policy and privacy notice.</p>
+            </aside>
+        </div>
+    </main>
+    <footer class="footer">© 2026 Dami Parts. Presentation mockup.</footer>
+</body>
+</html>

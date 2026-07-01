@@ -70,8 +70,11 @@
             <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 2.5 2.5L16 9"></path></svg>Instant confirmation</li>
             @if ($beds)<li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20V9a2 2 0 0 1 2-2h8v13"></path><path d="M13 20V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v16"></path><path d="M3 20h18"></path></svg>{{ $beds }} {{ \Illuminate\Support\Str::plural('bedroom', $beds) }}</li>@endif
             @if ($apartment->toilets)<li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16"></path><path d="M6 12v3a6 6 0 0 0 12 0v-3"></path><path d="M8 12V7a4 4 0 0 1 8 0v5"></path><path d="M4 20h16"></path></svg>{{ rtrim(rtrim(number_format((float) $apartment->toilets, 1), '0'), '.') }} {{ \Illuminate\Support\Str::plural('bathroom', (float) $apartment->toilets) }}</li>@endif
+            @for ($bedroom = 1; $bedroom <= min((int) $beds, 6); $bedroom++)
+                <li class="residence-card-bed"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20V9"></path><path d="M3 14h18v6"></path><path d="M7 14V8h5a3 3 0 0 1 3 3v3"></path><path d="M7 11h3"></path></svg><span>Bedroom {{ $bedroom }}</span><strong>King Size Bed</strong></li>
+            @endfor
         </ul>
-        <span class="residence-card-price">{{ $quote['display_nightly'] }} / night</span>
+        <span class="residence-card-price">{{ $quote['display_nightly'] }} <small>/ night</small></span>
         @if (filled($filters['checkin'] ?? null) && filled($filters['checkout'] ?? null))
             <a class="residence-card-book" href="{{ route('reservations.create', $apartment).'?'.http_build_query($query) }}">Book now <span aria-hidden="true">→</span></a>
         @endif

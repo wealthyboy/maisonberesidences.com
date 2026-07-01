@@ -59,17 +59,18 @@
                 </header>
                 <div class="menu-content">
                     <nav class="menu-nav" aria-label="Main navigation">
-                        <div class="menu-tabs"><a class="is-active" href="#residences">Residences</a><a href="#enquire">Contact</a></div>
-                        <div class="menu-links">
-                            <p>Lagos</p>
-                            <a href="#residences">The Residences</a>
-                            <a href="#residences">Neighbourhood</a>
-                            <a href="#enquire">Reservations</a>
+                        <div class="menu-tabs">
+                            <a class="is-active" href="{{ route('apartments.index') }}">Apartments</a>
+                            <a href="#amenities">Amenities</a>
+                            <a href="#introduction">About Us</a>
+                            <a href="{{ route('login') }}">Login</a>
                         </div>
                         <div class="menu-links">
-                            <p>Maison Be</p>
-                            <a href="#residences">Our Story</a>
-                            <a href="#enquire">Contact us</a>
+                            <p>Lagos</p>
+                            <a href="{{ route('apartments.index') }}">Apartments</a>
+                            <a href="#amenities">Amenities</a>
+                            <a href="#introduction">About Us</a>
+                            <a href="{{ route('login') }}">Login</a>
                         </div>
                     </nav>
                     <div class="menu-image"><img src="{{ asset('media/maisonbe-hero-source.jpg') }}" alt="Maison Be residence interior"></div>
@@ -105,7 +106,7 @@
             </section>
 
             @if ($apartments->isNotEmpty())
-                <section class="residence-stories" aria-label="The Maison Be experience">
+                <section class="residence-stories" id="amenities" aria-label="The Maison Be experience">
                     @foreach ($apartments->take(2) as $apartment)
                         @php
                             $flavourSlides = $apartment->images->map(function ($image) {
@@ -216,6 +217,31 @@
                     button.classList.add('is-loading');
                     window.setTimeout(() => staySearch.submit(), 140);
                 });
+
+                const revealTargets = [
+                    ...document.querySelectorAll('.introduction .eyebrow, .introduction-copy, .residences-heading, .residence-card, .residence-story-copy, .residence-story-slider, .enquire .eyebrow, .enquire h2, .enquire a, .site-footer-links, .site-footer p')
+                ];
+
+                revealTargets.forEach((target, index) => {
+                    target.classList.add('maison-reveal');
+                    target.style.setProperty('--maison-delay', `${Math.min(index % 4, 3) * 90}ms`);
+                });
+
+                if ('IntersectionObserver' in window) {
+                    const revealObserver = new IntersectionObserver((entries) => {
+                        entries.forEach((entry) => {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('is-visible');
+                                revealObserver.unobserve(entry.target);
+                            }
+                        });
+                    }, { threshold: .14, rootMargin: '0px 0px -44px 0px' });
+
+                    revealTargets.forEach((target) => revealObserver.observe(target));
+                } else {
+                    revealTargets.forEach((target) => target.classList.add('is-visible'));
+                }
+
                 const menuToggle = document.getElementById('menu-toggle');
                 const menu = document.getElementById('site-menu');
                 const menuClose = document.getElementById('menu-close');

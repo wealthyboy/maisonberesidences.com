@@ -22,7 +22,7 @@
             <div class="results-hero-copy"><h1>Book your stay</h1><p>Space, comfort and a quieter way to arrive.</p></div>
         </header>
         <main class="results-main">
-            <h1>Choose your apartment.</h1>
+            <h1 class="u-mb-0">Select your apartment.</h1>
             <form class="results-search" method="get" action="{{ route('apartments.index') }}" data-results-search>
                 <x-date-range-picker class="results-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" />
                 <x-rooms-guests-selector class="results-rooms-guests" :guests="$filters['guests'] ?? 1" :rooms="$filters['rooms'] ?? 1" />
