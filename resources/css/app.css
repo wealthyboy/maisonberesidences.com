@@ -285,9 +285,9 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .booking-confirmed-actions { display: flex; margin-top: 1.8rem; justify-content: center; gap: .75rem; flex-wrap: wrap; }
 .booking-confirmed-actions a { display: inline-flex; min-height: 48px; padding: 0 1.2rem; border-radius: 999px; color: #fff; background: var(--deep); align-items: center; justify-content: center; font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-decoration: none; text-transform: uppercase; }
 .booking-confirmed-actions a:first-child { color: var(--deep); background: transparent; border: 1px solid var(--dark-line); }
-.checkout-layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(330px, .75fr); gap: 1.4rem; align-items: start; }
+.checkout-layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(330px, .75fr); gap: .85rem; align-items: start; }
 .checkout-form { display: grid; gap: 1rem; }
-.checkout-section, .checkout-summary-card { border: 1px solid rgba(216,203,169,.9); border-radius: 12px; background: #fffdf8; box-shadow: 0 18px 42px rgba(24,38,74,.06); }
+.checkout-section, .checkout-summary-card { border: 1px solid rgba(216,203,169,.9); border-radius: 12px; background: #fff; box-shadow: 0 18px 42px rgba(24,38,74,.06); }
 .checkout-section { padding: clamp(1.25rem, 2.6vw, 2rem); }
 .checkout-section-heading { display: grid; margin-bottom: 1.5rem; grid-template-columns: 2.1rem minmax(0, 1fr); gap: .9rem; align-items: start; }
 .checkout-section-heading > span { display: grid; width: 2.1rem; height: 2.1rem; border-radius: 50%; color: #fff; background: var(--deep); place-items: center; font-size: .8rem; font-weight: 800; }

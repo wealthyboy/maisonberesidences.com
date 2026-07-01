@@ -28,7 +28,7 @@ class CurrencyService
         }
 
         try {
-            $position = Location::get($request->ip());
+            $position = Location::get($this->visitorIp($request));
             $countryCode = strtoupper((string) ($position?->countryCode ?? ''));
 
             return $this->context($countryCode === 'NG' ? 'NGN' : 'USD', $position?->countryName);
@@ -50,6 +50,27 @@ class CurrencyService
         }
 
         return '';
+    }
+
+    private function visitorIp(Request $request): string
+    {
+        foreach (['CF-Connecting-IP', 'True-Client-IP', 'X-Real-IP'] as $header) {
+            $ip = trim((string) $request->header($header));
+
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                return $ip;
+            }
+        }
+
+        foreach (explode(',', (string) $request->header('X-Forwarded-For')) as $ip) {
+            $ip = trim($ip);
+
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                return $ip;
+            }
+        }
+
+        return (string) $request->ip();
     }
 
     public function convertFromUsd(float $amount, array $currency): float
