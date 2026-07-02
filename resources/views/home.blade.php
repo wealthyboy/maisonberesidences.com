@@ -59,13 +59,6 @@
                 </header>
                 <div class="menu-content">
                     <nav class="menu-nav" aria-label="Main navigation">
-                        <div class="menu-tabs">
-                            <a class="is-active" href="{{ route('apartments.index') }}">Apartments</a>
-                            <a href="{{ url('information/events') }}">Amenities and Events</a>
-                            <a href="{{ url('information/about-us') }}">About Us</a>
-                            <a href="{{ url('information/about-us') }}">Contact Us</a>
-                            <a href="{{ route('login') }}">Login</a>
-                        </div>
                         <div class="menu-links">
                             <p>Lagos</p>
                             <a href="{{ route('apartments.index') }}">Apartments</a>
