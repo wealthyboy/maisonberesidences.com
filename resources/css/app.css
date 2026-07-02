@@ -352,7 +352,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .residence-card-highlights svg { width: 1rem; height: 1rem; flex: 0 0 auto; stroke: var(--gold); fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
 .residence-card-highlights .residence-card-bed { display: grid; grid-template-columns: 1rem minmax(0, .95fr) minmax(0, 1.12fr); column-gap: .55rem; color: var(--ink); }
 .residence-card-highlights .residence-card-bed strong { font-weight: 700; }
-.residence-card-price { display: block; margin-top: 1.28rem; padding-top: 1.05rem; border-top: 1px solid #e6dcc2; color: #050505; font-family: "Galaxie Polaris Condensed", "Galaxie Polaris", "Instrument Sans", Arial, sans-serif; font-size: clamp(1.14rem, 1.42vw, 1.52rem); font-weight: 900; letter-spacing: .005em; }
+.residence-card-price { display: block; margin-top: 1.28rem; padding-top: 1.05rem; border-top: 1px solid #e6dcc2; color: #050505; font-family: "Centra No2", "Instrument Sans", Arial, sans-serif; font-size: clamp(1.14rem, 1.42vw, 1.52rem); font-weight: 500; letter-spacing: 0; }
 .residence-card-price small { display: block; margin-top: .18rem; color: var(--ink); font-family: "Galaxie Polaris", "Instrument Sans", Arial, sans-serif; font-size: .62rem; font-weight: 400; letter-spacing: .02em; }
 .residence-card-book { display: inline-block; margin-top: 1rem; padding-bottom: .32rem; border-bottom: 1px solid var(--gold); color: var(--ink); font-family: "Galaxie Polaris", "Instrument Sans", Arial, sans-serif; font-size: .65rem; font-weight: 700; letter-spacing: .14em; text-decoration: none; text-transform: uppercase; }
 .residence-card-book:hover, .residence-card-book:focus-visible { color: #a78135; }
