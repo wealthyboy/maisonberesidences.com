@@ -270,9 +270,9 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .apartment-amenity-group h3 span { color: #050505; font-size: 1.35rem; font-weight: 600; line-height: 1; }
 .apartment-amenity-group ul { display: grid; margin: 0; padding-left: 3.2rem; gap: .68rem; color: #1d243d; font-size: clamp(1rem, 1.7vw, 1.55rem); line-height: 1.2; }
 .apartment-amenity-group li::marker { font-size: .75em; }
-.checkout-main { width: min(100% - 4rem, 1220px); margin: 0 auto; padding: 1rem 0 3.25rem; }
-.checkout-heading { max-width: 720px; margin-bottom: .65rem; }
-.checkout-heading h1 { margin: .35rem 0 .45rem; font-size: clamp(1.6rem, 2.35vw, 2.45rem); line-height: 1; }
+.checkout-main { width: min(100% - 4rem, 1220px); margin: 0 auto; padding: .45rem 0 3rem; }
+.checkout-heading { max-width: 720px; margin-bottom: .45rem; }
+.checkout-heading h1 { margin: .18rem 0 .28rem; font-size: clamp(1.45rem, 2.1vw, 2.12rem); line-height: 1; }
 .checkout-heading p:not(.eyebrow) { margin: 0; color: var(--soft-ink); font-size: .95rem; line-height: 1.35; }
 .booking-confirmed { display: grid; width: min(100%, 680px); min-height: 56vh; margin: 0 auto; padding: clamp(2rem, 6vw, 4rem) 0; place-items: center; align-content: center; text-align: center; }
 .booking-confirmed[hidden] { display: none !important; }
@@ -285,8 +285,8 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .booking-confirmed-actions { display: flex; margin-top: 1.8rem; justify-content: center; gap: .75rem; flex-wrap: wrap; }
 .booking-confirmed-actions a { display: inline-flex; min-height: 48px; padding: 0 1.2rem; border-radius: 999px; color: #fff; background: var(--deep); align-items: center; justify-content: center; font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-decoration: none; text-transform: uppercase; }
 .booking-confirmed-actions a:first-child { color: var(--deep); background: transparent; border: 1px solid var(--dark-line); }
-.checkout-layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(330px, .75fr); gap: .85rem; align-items: start; }
-.checkout-form { display: grid; gap: 1rem; }
+.checkout-layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(330px, .75fr); gap: .7rem; align-items: start; }
+.checkout-form { display: grid; gap: .32rem; }
 .checkout-section, .checkout-summary-card { border: 1px solid rgba(216,203,169,.9); border-radius: 12px; background: #fff; box-shadow: 0 18px 42px rgba(24,38,74,.06); }
 .checkout-section { padding: clamp(1.25rem, 2.6vw, 2rem); }
 .checkout-section-heading { display: grid; margin-bottom: 1.5rem; grid-template-columns: 2.1rem minmax(0, 1fr); gap: .9rem; align-items: start; }
@@ -324,21 +324,28 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .checkout-apartment-preview .eyebrow { margin: 0 0 .45rem; font-size: .55rem; }
 .checkout-apartment-preview h2 { margin: 0; color: var(--ink); font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(1.9rem, 3vw, 2.6rem); font-weight: 500; line-height: .9; }
 .checkout-summary { display: grid; gap: 1rem; position: sticky; top: 1.5rem; }
-.checkout-summary-card { padding: 1.45rem; }
+.checkout-summary-card { padding: 1.25rem; }
 .checkout-summary-card .eyebrow { margin-bottom: .8rem; font-size: .58rem; }
+.checkout-stay-media { display: grid; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(216,203,169,.72); grid-template-columns: 92px minmax(0,1fr); gap: .85rem; align-items: center; }
+.checkout-stay-media img { display: block; width: 92px; aspect-ratio: 1.25; border-radius: 8px; object-fit: cover; background: #e8e0d2; }
+.checkout-stay-media .eyebrow { margin: 0 0 .35rem; }
+.checkout-stay-media h2 { line-height: 1.02; }
+.checkout-stay-nightly { margin: .35rem 0 0; color: var(--ink); font-size: .9rem; font-weight: 800; line-height: 1.2; }
+.checkout-stay-nightly span { color: var(--soft-ink); font-size: .68rem; font-weight: 500; }
 .checkout-summary dl { margin: 1.2rem 0 0; }
-.checkout-summary dl div, .checkout-price-line, .checkout-total { display: grid; padding: .7rem 0; grid-template-columns: minmax(0, 1fr) max-content; align-items: center; gap: 1rem; }
+.checkout-summary dl div { display: grid; padding: .62rem 0; grid-template-columns: minmax(0, 1fr) max-content; align-items: center; gap: 1rem; }
+.checkout-price-line, .checkout-total { display: grid; min-height: 58px; padding: .7rem 0; grid-template-columns: minmax(0, 1fr) max-content; align-items: center; gap: 1.2rem; }
 .checkout-summary dt { font-weight: 700; }
 .checkout-summary dd { margin: 0; color: var(--soft-ink); text-align: right; }
 .checkout-price-line { border-top: 1px solid var(--dark-line); }
 .checkout-price-line > span, .checkout-price-line strong, .checkout-total > span, .checkout-total strong { display: flex; align-items: center; line-height: 1.05; }
 .checkout-price-line > span { flex-direction: column; align-items: flex-start; justify-content: center; }
-.checkout-price-line strong, .checkout-total strong { text-align: right; white-space: nowrap; }
+.checkout-price-line strong, .checkout-total strong { justify-content: flex-end; text-align: right; white-space: nowrap; }
 .checkout-discount-line { color: #2f7c4f; }
-.checkout-price-line small { display: block; margin-top: .2rem; color: var(--soft-ink); font-size: .78rem; line-height: 1.2; }
+.checkout-price-line small { display: block; margin-top: .18rem; color: var(--soft-ink); font-size: .72rem; line-height: 1.2; }
 .checkout-peak { color: #a78135; font-size: .76rem; }
-.checkout-total { margin-top: 1rem; border-top: 1px solid var(--dark-line); font-size: 1rem; }
-.checkout-total strong { color: var(--deep); font-size: 1.32rem; line-height: 1; }
+.checkout-total { margin-top: 0; border-top: 1px solid var(--dark-line); font-size: .95rem; }
+.checkout-total strong { color: var(--deep); font-size: 1.2rem; line-height: 1; }
 .checkout-error { margin-bottom: 1.5rem; padding: .85rem 1rem; border: 1px solid #e3aaa2; border-radius: 8px; color: #9a261b; background: #fef1ef; }
 .residence-card-highlights { display: grid; margin: 1.15rem 0 0; padding: 0; gap: .58rem; list-style: none; color: #50596f; font-family: "Galaxie Polaris", "Instrument Sans", Arial, sans-serif; font-size: .76rem; }
 .residence-card-highlights li { display: flex; align-items: center; gap: .5rem; }

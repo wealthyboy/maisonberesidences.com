@@ -176,8 +176,14 @@
 
                 <aside class="checkout-summary">
                     <section class="checkout-summary-card">
-                        <p class="eyebrow">Your stay</p>
-                        <h2>{{ $apartment->name }}</h2>
+                        <div class="checkout-stay-media">
+                            <img src="{{ $checkoutImage }}" alt="{{ $apartment->name }} at Maison Be" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ asset('media/maisonbe-hero-source.jpg') }}';">
+                            <div>
+                                <p class="eyebrow">Your stay</p>
+                                <h2>{{ $apartment->name }}</h2>
+                                <p class="checkout-stay-nightly">{{ $quote['display_nightly'] }} <span>per night</span></p>
+                            </div>
+                        </div>
                         <dl>
                             <div><dt>Check in</dt><dd>{{ $stay['checkin']->format('D, j M Y') }}</dd></div>
                             <div><dt>Check out</dt><dd>{{ $stay['checkout']->format('D, j M Y') }}</dd></div>
