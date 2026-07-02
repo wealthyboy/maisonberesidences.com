@@ -16,5 +16,6 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(AdminUserSeeder::class);
         $this->call(ApartmentAttributeSeeder::class);
+        $this->call(InformationSeeder::class);
     }
 }
