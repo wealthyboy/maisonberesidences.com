@@ -25,6 +25,12 @@
                     $b->name,
                 ])
                 ->groupBy(fn ($attribute) => $attribute->parent->name);
+            $highlightSource = trim((string) ($apartment->description ?: $apartment->teaser));
+            $knownHighlights = ['Air conditioning', 'Flat-screen TV', 'Pillowtop bed', 'Premium bedding', 'Blackout drapes/curtains', 'Private Family Lounge'];
+            $highlights = collect($knownHighlights)->filter(fn ($highlight) => str_contains(strtolower($highlightSource), strtolower($highlight)))->values();
+            if ($highlights->isEmpty() && filled($highlightSource)) {
+                $highlights = collect(preg_split('/[,;\\n]+/', $highlightSource))->map(fn ($highlight) => trim($highlight))->filter()->take(6)->values();
+            }
         @endphp
         <header class="results-header"><a class="results-wordmark" href="{{ url('/') }}">Maison Be <small>Residences</small></a><a href="{{ route('apartments.index', $filters) }}" class="results-back">All apartments</a></header>
         <main class="apartment-show-main">
@@ -33,16 +39,35 @@
                     <p class="eyebrow">Maison Be Residence</p>
                     <h1>{{ $apartment->name }}</h1>
                 </div>
-                <p>{{ $apartment->teaser ?: 'A refined short-stay residence designed around privacy, comfort, and considered hospitality.' }}</p>
             </header>
             <section class="apartment-show-gallery">
-                <img src="{{ $images->first() }}" alt="{{ $apartment->name }} at Maison Be">
-                @foreach ($images->skip(1)->take(4) as $image)<img src="{{ $image }}" alt="{{ $apartment->name }} residence detail" loading="lazy">@endforeach
+                <figure>
+                    <img src="{{ $images->first() }}" alt="{{ $apartment->name }} at Maison Be">
+                </figure>
+                @foreach ($images->skip(1)->take(4) as $image)
+                    <figure @class(['apartment-gallery-more' => $loop->last])>
+                        <img src="{{ $image }}" alt="{{ $apartment->name }} residence detail" loading="lazy">
+                        @if ($loop->last)
+                            <span><strong>+{{ $images->count() }}</strong>View gallery</span>
+                        @endif
+                    </figure>
+                @endforeach
             </section>
             <section class="apartment-show-layout">
                 <article class="apartment-story-card">
                     <p class="eyebrow">About this residence</p>
-                    <p class="apartment-description">{{ $apartment->description ?: $apartment->teaser ?: 'A thoughtfully appointed Maison Be residence designed for a quieter, more considered stay.' }}</p>
+                    @if ($highlights->isNotEmpty())
+                        <div class="apartment-highlight-panel">
+                            <span class="apartment-highlight-kicker">Highlights</span>
+                            <ul>
+                                @foreach ($highlights as $highlight)
+                                    <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.65 5.1H19l-4.35 3.12 1.67 5.08L12 13.15 7.68 16.3l1.67-5.08L5 8.1h5.35L12 3Z"></path></svg>{{ $highlight }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @else
+                        <p class="apartment-description">A thoughtfully appointed Maison Be residence designed for a quieter, more considered stay.</p>
+                    @endif
                     <ul class="apartment-facts">
                         <li><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7 9 18l-5-5"></path></svg>Confirmation</span><strong>Instant</strong></li>
                         <li><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V5a2 2 0 0 1 2-2h7v18M4 11h9M9 7h.01M9 15h.01M13 9h5a2 2 0 0 1 2 2v10M16 14h.01M16 18h.01"></path></svg>Bedrooms</span><strong>{{ $apartment->no_of_rooms ?: '—' }}</strong></li>
@@ -57,10 +82,9 @@
                     <form action="{{ route('apartments.availability', $apartment) }}" class="apartment-availability-form" data-availability-form>
                         <x-date-range-picker class="availability-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" required />
                         <label>Guests<input type="number" name="guests" min="1" max="{{ $apartment->max_adults ?: 20 }}" value="{{ $filters['guests'] ?? 1 }}"></label>
-                        <button type="submit">Check availability</button>
+                        <button type="submit" data-availability-action>Check availability</button>
                     </form>
                     <p class="apartment-availability-status" aria-live="polite" data-availability-status></p>
-                    <a class="apartment-book-now" href="#" hidden data-book-now>Book now <span aria-hidden="true">→</span></a>
                 </aside>
             </section>
             @if ($amenityGroups->isNotEmpty())
@@ -90,27 +114,44 @@
 
                 const panel = form.parentElement;
                 const status = panel.querySelector('[data-availability-status]');
-                const bookNow = panel.querySelector('[data-book-now]');
                 const submitButton = form.querySelector('button[type="submit"]');
+                const actionUrl = submitButton?.dataset.reserveUrl;
 
-                status.textContent = 'Checking availability...';
-                bookNow.hidden = true;
-                bookNow.href = '#';
+                if (submitButton?.dataset.available === 'true' && actionUrl) {
+                    window.location.href = actionUrl;
+                    return;
+                }
+
+                status.textContent = '';
+                status.classList.remove('is-error', 'is-success');
                 form.setAttribute('aria-busy', 'true');
-                if (submitButton) submitButton.disabled = true;
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'Checking availability...';
+                    submitButton.dataset.available = 'false';
+                    submitButton.dataset.reserveUrl = '';
+                }
 
                 try {
                     const response = await fetch(form.action, { method: 'POST', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }, body: new FormData(form) });
                     const result = await response.json();
-                    status.textContent = result.message || 'We could not check availability.';
                     if (result.available && result.reserve_url) {
-                        bookNow.href = result.reserve_url;
-                        bookNow.hidden = false;
+                        status.textContent = result.message || 'This apartment is available for your chosen stay.';
+                        status.classList.add('is-success');
+                        if (submitButton) {
+                            submitButton.textContent = 'Book now →';
+                            submitButton.dataset.available = 'true';
+                            submitButton.dataset.reserveUrl = result.reserve_url;
+                        }
+                    } else {
+                        status.textContent = result.message || 'Apartment not available for your selected date.';
+                        status.classList.add('is-error');
+                        if (submitButton) submitButton.textContent = 'Check availability';
                     }
                 } catch {
                     status.textContent = 'We could not check availability. Please try again.';
-                    bookNow.hidden = true;
-                    bookNow.href = '#';
+                    status.classList.add('is-error');
+                    if (submitButton) submitButton.textContent = 'Check availability';
                 } finally {
                     form.removeAttribute('aria-busy');
                     if (submitButton) submitButton.disabled = false;

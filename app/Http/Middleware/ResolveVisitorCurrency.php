@@ -13,6 +13,19 @@ class ResolveVisitorCurrency
 
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->is('apartments/*/availability')) {
+            $context = $request->session()->get('currency', [
+                'code' => 'USD',
+                'symbol' => '$',
+                'rate' => 1.0,
+                'country' => null,
+            ]);
+
+            $request->attributes->set('currency', $context);
+
+            return $next($request);
+        }
+
         $context = $this->currencies->resolveFor($request);
         $request->attributes->set('currency', $context);
         $request->session()->put('currency', $context);

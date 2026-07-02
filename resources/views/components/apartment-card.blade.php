@@ -2,6 +2,7 @@
     'apartment',
     'quote',
     'filters' => [],
+    'linkUrl' => null,
 ])
 
 @php
@@ -24,8 +25,23 @@
     }
 
     $slides = $images->take(10)->values();
+    $highlightSource = $apartment->teaser ?: strip_tags((string) $apartment->description);
+    $knownHighlights = ['Air conditioning', 'Flat-screen TV', 'Pillowtop bed', 'Premium bedding', 'Blackout drapes/curtains', 'Private Family Lounge'];
+    $highlights = collect($knownHighlights)
+        ->filter(fn ($highlight) => str_contains(strtolower($highlightSource), strtolower($highlight)))
+        ->values();
+
+    if ($highlights->isEmpty() && filled($highlightSource)) {
+        $highlights = collect(preg_split('/[,;\\n]+/', $highlightSource))
+            ->map(fn ($highlight) => trim($highlight))
+            ->filter()
+            ->take(6)
+            ->values();
+    }
+
     $query = collect($filters)->only(['checkin', 'checkout', 'guests', 'rooms'])->filter()->all();
     $showUrl = route('apartments.show', $apartment).($query ? '?'.http_build_query($query) : '');
+    $cardUrl = $linkUrl ?: $showUrl;
     $beds = $apartment->no_of_rooms ?: collect([$apartment->bedroom_1, $apartment->bedroom_2, $apartment->bedroom_3, $apartment->bedroom_4, $apartment->bedroom_5, $apartment->bedroom_6])->filter()->count();
     $amenityGroups = $apartment->attributes
         ->filter(fn ($attribute) => $attribute->parent && $attribute->type === 'apartment_facility')
@@ -65,7 +81,7 @@
     </div>
     <div class="residence-card-copy">
         <p>Maison Be Residence</p>
-        <h3><a href="{{ $showUrl }}">{{ $apartment->name }}</a></h3>
+        <h3><a href="{{ $cardUrl }}">{{ $apartment->name }}</a></h3>
         <ul class="residence-card-highlights">
             <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 2.5 2.5L16 9"></path></svg>Instant confirmation</li>
             @if ($beds)<li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20V9a2 2 0 0 1 2-2h8v13"></path><path d="M13 20V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v16"></path><path d="M3 20h18"></path></svg>{{ $beds }} {{ \Illuminate\Support\Str::plural('bedroom', $beds) }}</li>@endif
@@ -82,14 +98,39 @@
 
     <dialog class="apartment-card-modal" id="{{ $modalId }}" data-card-modal>
         <div class="apartment-card-modal-header"><div><p class="eyebrow">Apartment information</p><h2>{{ $apartment->name }}</h2></div><button type="button" data-card-modal-close aria-label="Close apartment information">×</button></div>
-        <img src="{{ $images->first() }}" alt="{{ $apartment->name }} at Maison Be">
+        <div class="apartment-card-modal-slider" data-modal-slider>
+            @foreach ($slides as $index => $image)
+                <figure class="apartment-card-modal-slide {{ $index === 0 ? 'is-active' : '' }}" data-modal-slide>
+                    <img src="{{ $image }}" alt="{{ $apartment->name }} at Maison Be" loading="{{ $index === 0 ? 'eager' : 'lazy' }}" decoding="async" onerror="this.onerror=null;this.src='{{ asset('media/maisonbe-hero-source.jpg') }}';">
+                </figure>
+            @endforeach
+            @if ($slides->count() > 1)
+                <button class="apartment-card-modal-control is-previous" type="button" aria-label="Previous apartment photo" data-modal-previous><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
+                <button class="apartment-card-modal-control is-next" type="button" aria-label="Next apartment photo" data-modal-next><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
+                <span class="apartment-card-modal-count" data-modal-count>1 / {{ $slides->count() }}</span>
+                <div class="apartment-card-modal-progress" aria-hidden="true">
+                    @foreach ($slides as $index => $image)<span class="{{ $index === 0 ? 'is-active' : '' }}" data-modal-progress></span>@endforeach
+                </div>
+            @endif
+        </div>
         <div class="apartment-card-modal-body">
-            <p>{{ $apartment->teaser ?: \Illuminate\Support\Str::limit(strip_tags((string) $apartment->description), 180) }}</p>
+            @if ($highlights->isNotEmpty())
+                <div class="apartment-card-modal-highlights">
+                    <span>Highlights</span>
+                    <ul>
+                        @foreach ($highlights as $highlight)
+                            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>{{ $highlight }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @elseif (filled($apartment->teaser ?: strip_tags((string) $apartment->description)))
+                <p>{{ $apartment->teaser ?: \Illuminate\Support\Str::limit(strip_tags((string) $apartment->description), 180) }}</p>
+            @endif
             <h3>Check availability for {{ $apartment->name }}</h3>
             <form class="apartment-availability-form" action="{{ route('apartments.availability', $apartment) }}" data-availability-form>
                 <x-date-range-picker class="availability-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" required />
                 <label>Guests<input type="number" name="guests" min="1" max="{{ $apartment->max_adults ?: 20 }}" value="{{ $filters['guests'] ?? 1 }}"></label>
-                <button type="submit">Check availability</button>
+                <button type="submit" data-availability-submit>Check availability</button>
             </form>
             <p class="apartment-availability-status" aria-live="polite" data-availability-status></p>
             <a class="apartment-book-now" href="#" hidden data-book-now>Book now <span aria-hidden="true">→</span></a>
@@ -145,6 +186,20 @@
             };
 
             document.addEventListener('click', (event) => {
+                const modalSliderButton = event.target.closest('[data-modal-previous], [data-modal-next]');
+                if (modalSliderButton) {
+                    event.preventDefault();
+                    const slider = modalSliderButton.closest('[data-modal-slider]');
+                    const slides = [...slider.querySelectorAll('[data-modal-slide]')];
+                    const progress = [...slider.querySelectorAll('[data-modal-progress]')];
+                    const count = slider.querySelector('[data-modal-count]');
+                    let active = slides.findIndex((slide) => slide.classList.contains('is-active'));
+                    active = (active + (modalSliderButton.matches('[data-modal-next]') ? 1 : -1) + slides.length) % slides.length;
+                    slides.forEach((slide, index) => slide.classList.toggle('is-active', index === active));
+                    progress.forEach((item, index) => item.classList.toggle('is-active', index === active));
+                    if (count) count.textContent = `${active + 1} / ${slides.length}`;
+                }
+
                 const galleryButton = event.target.closest('[data-card-previous], [data-card-next]');
                 if (galleryButton) {
                     event.preventDefault();
@@ -158,7 +213,19 @@
                 }
 
                 const open = event.target.closest('[data-card-modal-open]');
-                if (open) openModal(document.getElementById(open.getAttribute('aria-controls')));
+                if (open) {
+                    const modal = document.getElementById(open.getAttribute('aria-controls'));
+                    const card = open.closest('[data-apartment-card]');
+                    const cardSlides = [...card.querySelectorAll('[data-card-slide]')];
+                    const activeIndex = Math.max(0, cardSlides.findIndex((slide) => slide.classList.contains('is-active')));
+                    const modalSlides = [...modal.querySelectorAll('[data-modal-slide]')];
+                    const modalProgress = [...modal.querySelectorAll('[data-modal-progress]')];
+                    const modalCount = modal.querySelector('[data-modal-count]');
+                    modalSlides.forEach((slide, index) => slide.classList.toggle('is-active', index === activeIndex));
+                    modalProgress.forEach((item, index) => item.classList.toggle('is-active', index === activeIndex));
+                    if (modalCount) modalCount.textContent = `${activeIndex + 1} / ${modalSlides.length}`;
+                    openModal(modal);
+                }
 
                 const close = event.target.closest('[data-card-modal-close]');
                 if (close) closeModal(close.closest('[data-card-modal]'));
@@ -185,23 +252,44 @@
                 const status = form.parentElement.querySelector('[data-availability-status]');
                 const bookNow = form.parentElement.querySelector('[data-book-now]');
                 const submitButton = form.querySelector('button[type="submit"]');
-                status.textContent = 'Checking availability...';
+                if (submitButton?.dataset.available === 'true' && submitButton.dataset.reserveUrl) {
+                    window.location.href = submitButton.dataset.reserveUrl;
+                    return;
+                }
+
+                status.textContent = '';
+                status.classList.remove('is-success', 'is-error');
                 bookNow.hidden = true;
                 bookNow.href = '#';
                 form.setAttribute('aria-busy', 'true');
-                if (submitButton) submitButton.disabled = true;
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'Checking availability...';
+                    submitButton.dataset.available = 'false';
+                    submitButton.dataset.reserveUrl = '';
+                }
                 try {
                     const response = await fetch(form.action, { method: 'POST', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }, body: new FormData(form) });
                     const result = await response.json();
                     status.textContent = result.message || 'We could not check availability.';
                     if (result.available && result.reserve_url) {
+                        status.classList.add('is-success');
                         bookNow.href = result.reserve_url;
-                        bookNow.hidden = false;
+                        if (submitButton) {
+                            submitButton.textContent = 'Book now →';
+                            submitButton.dataset.available = 'true';
+                            submitButton.dataset.reserveUrl = result.reserve_url;
+                        }
+                    } else {
+                        status.classList.add('is-error');
+                        if (submitButton) submitButton.textContent = 'Check availability';
                     }
                 } catch {
                     status.textContent = 'We could not check availability. Please try again.';
+                    status.classList.add('is-error');
                     bookNow.hidden = true;
                     bookNow.href = '#';
+                    if (submitButton) submitButton.textContent = 'Check availability';
                 } finally {
                     form.removeAttribute('aria-busy');
                     if (submitButton) submitButton.disabled = false;

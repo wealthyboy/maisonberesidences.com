@@ -2,12 +2,14 @@
     'class' => 'booking-guests',
     'guests' => 1,
     'rooms' => 1,
-    'maxGuests' => 20,
-    'maxRooms' => 10,
+    'maxGuests' => null,
+    'maxRooms' => null,
 ])
 
 @php
     $pickerId = 'rooms-guests-'.\Illuminate\Support\Str::random(8);
+    $maxGuests = max(1, (int) ($maxGuests ?? \App\Models\Apartment::query()->max('max_adults') ?: 1));
+    $maxRooms = max(1, (int) ($maxRooms ?? \App\Models\Apartment::query()->max('no_of_rooms') ?: 1));
     $guestValue = max(1, min((int) $guests, (int) $maxGuests));
     $roomValue = max(1, min((int) $rooms, (int) $maxRooms));
 @endphp

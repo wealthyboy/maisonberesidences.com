@@ -24,7 +24,7 @@
         <main class="results-main">
             <h1 class="u-mb-0">Select your apartment.</h1>
             <form class="results-search" method="get" action="{{ route('apartments.index') }}" data-results-search>
-                <x-date-range-picker class="results-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" />
+                <x-date-range-picker class="results-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" required />
                 <x-rooms-guests-selector class="results-rooms-guests" :guests="$filters['guests'] ?? 1" :rooms="$filters['rooms'] ?? 1" />
                 <button type="submit">Check availability</button>
             </form>
@@ -120,6 +120,16 @@
 
                 form.addEventListener('submit', (event) => {
                     if (event.defaultPrevented) return;
+                    const checkin = form.querySelector('[data-checkin-input]');
+                    const checkout = form.querySelector('[data-checkout-input]');
+
+                    if (!checkin?.value || !checkout?.value) {
+                        event.preventDefault();
+                        const field = checkin?.value ? 'checkout' : 'checkin';
+                        form.querySelector(`[data-date-trigger][data-date-field="${field}"]`)?.click();
+                        return;
+                    }
+
                     event.preventDefault();
                     loadResults(buildUrl());
                 });
