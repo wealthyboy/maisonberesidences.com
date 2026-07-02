@@ -12,15 +12,45 @@
     <body class="apartments-page">
         <header class="results-hero" style="--results-hero-image: url('{{ asset('media/maisonbe-hero-source.jpg') }}');">
             <nav class="results-hero-nav">
+                <button class="menu-button" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-menu" id="menu-toggle">
+                    <span></span><span></span><span></span>
+                </button>
                 <a class="results-wordmark" href="{{ url('/') }}">Maison Be <small>Residences</small></a>
                 <div class="results-actions">
                     <a href="{{ request()->fullUrlWithQuery(['currency' => $currency['code'] === 'NGN' ? 'USD' : 'NGN']) }}" class="currency-switch">{{ $currency['code'] === 'NGN' ? 'View USD' : 'View NGN' }}</a>
                     <a href="{{ url('/') }}" class="results-back">Home</a>
-                    <a class="results-menu" href="{{ url('/') }}" aria-label="Return to Maison Be home"><span></span><span></span><span></span></a>
                 </div>
             </nav>
             <div class="results-hero-copy"><h1>Book your stay</h1><p>Space, comfort and a quieter way to arrive.</p></div>
         </header>
+
+        <aside class="site-menu" id="site-menu" aria-hidden="true" hidden>
+            <header class="menu-header">
+                <button class="menu-close" type="button" aria-label="Close navigation" id="menu-close"><span></span><span></span></button>
+                <a class="menu-wordmark" href="/" aria-label="Maison Be Residences home">Maison Be <small>Residences</small></a>
+                <a class="menu-reserve" href="{{ route('apartments.index') }}">Reserve</a>
+            </header>
+            <div class="menu-content">
+                <nav class="menu-nav" aria-label="Main navigation">
+                    <div class="menu-tabs">
+                        <a class="is-active" href="{{ route('apartments.index') }}">Apartments</a>
+                        <a href="{{ url('information/events') }}">Amenities and Events</a>
+                        <a href="{{ url('information/about-us') }}">About Us</a>
+                        <a href="{{ url('information/about-us') }}">Contact Us</a>
+                        <a href="{{ route('login') }}">Login</a>
+                    </div>
+                    <div class="menu-links">
+                        <p>Lagos</p>
+                        <a href="{{ route('apartments.index') }}">Apartments</a>
+                        <a href="{{ url('information/events') }}">Amenities and Events</a>
+                        <a href="{{ url('information/about-us') }}">About Us</a>
+                        <a href="{{ url('information/about-us') }}">Contact Us</a>
+                        <a href="{{ route('login') }}">Login</a>
+                    </div>
+                </nav>
+                <div class="menu-image"><img src="{{ asset('media/maisonbe-hero-source.jpg') }}" alt="Maison Be residence interior"></div>
+            </div>
+        </aside>
         <main class="results-main">
             <h1 class="u-mb-0">Select your apartment.</h1>
             <form class="results-search" method="get" action="{{ route('apartments.index') }}" data-results-search>
@@ -55,6 +85,37 @@
         <x-site-footer />
         <script>
             (() => {
+                const menu = document.getElementById('site-menu');
+                const menuToggle = document.getElementById('menu-toggle');
+                const menuClose = document.getElementById('menu-close');
+                const setMenuState = (open) => {
+                    if (!menu || !menuToggle || !menuClose) return;
+
+                    if (open) {
+                        menu.hidden = false;
+                        requestAnimationFrame(() => menu.classList.add('is-open'));
+                        menu.setAttribute('aria-hidden', 'false');
+                        menuToggle.setAttribute('aria-expanded', 'true');
+                        document.body.classList.add('menu-open');
+                        return;
+                    }
+
+                    menu.classList.remove('is-open');
+                    menu.setAttribute('aria-hidden', 'true');
+                    menuToggle.setAttribute('aria-expanded', 'false');
+                    document.body.classList.remove('menu-open');
+                    window.setTimeout(() => {
+                        if (!menu.classList.contains('is-open')) menu.hidden = true;
+                    }, 320);
+                };
+
+                menuToggle?.addEventListener('click', () => setMenuState(true));
+                menuClose?.addEventListener('click', () => setMenuState(false));
+                menu?.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => setMenuState(false)));
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape' && menu && !menu.hidden) setMenuState(false);
+                });
+
                 const form = document.querySelector('[data-results-search]');
                 const region = document.querySelector('[data-results-async]');
                 const content = document.querySelector('[data-results-content]');

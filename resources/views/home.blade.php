@@ -61,15 +61,17 @@
                     <nav class="menu-nav" aria-label="Main navigation">
                         <div class="menu-tabs">
                             <a class="is-active" href="{{ route('apartments.index') }}">Apartments</a>
-                            <a href="#amenities">Amenities</a>
-                            <a href="#introduction">About Us</a>
+                            <a href="{{ url('information/events') }}">Amenities and Events</a>
+                            <a href="{{ url('information/about-us') }}">About Us</a>
+                            <a href="{{ url('information/about-us') }}">Contact Us</a>
                             <a href="{{ route('login') }}">Login</a>
                         </div>
                         <div class="menu-links">
                             <p>Lagos</p>
                             <a href="{{ route('apartments.index') }}">Apartments</a>
-                            <a href="#amenities">Amenities</a>
-                            <a href="#introduction">About Us</a>
+                            <a href="{{ url('information/events') }}">Amenities and Events</a>
+                            <a href="{{ url('information/about-us') }}">About Us</a>
+                            <a href="{{ url('information/about-us') }}">Contact Us</a>
                             <a href="{{ route('login') }}">Login</a>
                         </div>
                     </nav>
@@ -129,7 +131,7 @@
                                 <p class="eyebrow">{{ $loop->first ? 'The Maison Be way' : 'Made for lingering' }}</p>
                                 <h2>{{ $loop->first ? 'A more considered way to stay.' : 'Space to settle into your own rhythm.' }}</h2>
                                 <p>{{ $loop->first ? 'From the first arrival to the last unhurried morning, each Maison Be residence is designed around the quiet details that make a stay feel effortless.' : 'Thoughtful interiors, generous rooms and a private sense of calm make every visit feel less like a booking and more like coming home.' }}</p>
-                                <a href="{{ route('apartments.index') }}">Discover {{ $apartment->name }} <span aria-hidden="true">→</span></a>
+                                <a href="{{ route('apartments.index') }}">View all apartments <span aria-hidden="true">→</span></a>
                             </div>
                             <div class="residence-story-slider" data-story-slider>
                                 @foreach ($flavourSlides as $index => $slide)
