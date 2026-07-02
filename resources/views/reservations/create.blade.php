@@ -167,7 +167,6 @@
                         <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"></rect><path d="M7 15h4"></path><path d="M3 10h18"></path></svg>Bank card</span>
                         <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16"></path><path d="m6 10 6-5 6 5"></path><path d="M7 10v7"></path><path d="M12 10v7"></path><path d="M17 10v7"></path><path d="M5 17h14"></path></svg>Bank transfer</span>
                     </p>
-                    <p class="checkout-payment-status" aria-live="polite" data-payment-status></p>
                     <button class="checkout-submit" type="submit" data-payment-submit>
                         <span data-payment-label>Make payment</span>
                         <span aria-hidden="true">→</span>
@@ -255,7 +254,11 @@
                 const receiptLink = document.querySelector('[data-receipt-link]');
                 const panels = document.querySelectorAll('[data-checkout-panel]');
 
-                if (!form || !submit || !label || !status) return;
+                if (!form || !submit || !label) return;
+
+                const setStatus = (message = '') => {
+                    if (status) status.textContent = message;
+                };
 
                 const loadScript = () => new Promise((resolve, reject) => {
                     const timeout = window.setTimeout(() => {
@@ -339,7 +342,7 @@
                     if (!form.reportValidity()) return;
 
                     setProcessing(true, 'Processing...');
-                    status.textContent = 'Preparing your payment...';
+                    setStatus('Preparing your payment...');
 
                     try {
                         const controller = new AbortController();
@@ -369,7 +372,7 @@
                         const payment = payload.payment;
                         const confirmBooking = async (response) => {
                             const paymentReference = response?.reference || response?.trxref || payment.reference;
-                            status.textContent = 'Confirming your booking...';
+                            setStatus('Confirming your booking...');
 
                             const confirmationResponse = await fetch('{{ route('reservations.payment-confirm') }}', {
                                 method: 'POST',
@@ -401,10 +404,10 @@
                                 confirmedReference = confirmed.reference || confirmedReference;
                                 confirmedReceiptUrl = confirmed.receipt_url || confirmedReceiptUrl;
                                 sessionStorage.setItem('maisonbe_booking_confirmed', confirmedReference);
-                                status.textContent = 'Booking confirmed.';
+                                setStatus('Booking confirmed.');
                             } catch (error) {
                                 setProcessing(false);
-                                status.textContent = error.message || 'Payment was received, but booking confirmation is still pending. Please contact Maison Be Reservations with your payment reference.';
+                                setStatus(error.message || 'Payment was received, but booking confirmation is still pending. Please contact Maison Be Reservations with your payment reference.');
                                 return;
                             }
 
@@ -427,7 +430,7 @@
                         };
                         const handleClose = () => {
                             setProcessing(false);
-                            status.textContent = 'Payment window closed. You can try again when ready.';
+                            setStatus('Payment window closed. You can try again when ready.');
                         };
 
                         if (window.PaystackPop && typeof PaystackPop.setup === 'function') {
@@ -445,7 +448,7 @@
                             });
 
                             handler.openIframe();
-                            status.textContent = 'Complete your payment in the secure window.';
+                            setStatus('Complete your payment in the secure window.');
                             return;
                         }
 
@@ -464,7 +467,7 @@
                                 onCancel: handleClose,
                                 onClose: handleClose,
                             });
-                            status.textContent = 'Complete your payment in the secure window.';
+                            setStatus('Complete your payment in the secure window.');
                             return;
                         }
 
@@ -484,7 +487,7 @@
                                     onCancel: handleClose,
                                     onClose: handleClose,
                                 });
-                                status.textContent = 'Complete your payment in the secure window.';
+                                setStatus('Complete your payment in the secure window.');
                                 return;
                             }
                         }
@@ -501,9 +504,9 @@
                         throw new Error('Payment window loaded, but could not start. Please refresh and try again.');
                     } catch (error) {
                         setProcessing(false);
-                        status.textContent = error.name === 'AbortError'
+                        setStatus(error.name === 'AbortError'
                             ? 'Payment is taking too long to start. Please try again.'
-                            : error.message;
+                            : error.message);
                     }
                 });
 
