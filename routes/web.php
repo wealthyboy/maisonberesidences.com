@@ -13,6 +13,7 @@ use App\Support\AdminModules;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+Route::get('information/events', [InformationController::class, 'events'])->name('information.events');
 Route::get('information/{information:slug}', [InformationController::class, 'show'])->name('information.show');
 
 Route::get('apartments', [ApartmentSearchController::class, 'index'])->name('apartments.index');

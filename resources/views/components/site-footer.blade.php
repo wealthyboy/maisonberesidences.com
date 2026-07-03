@@ -11,6 +11,7 @@
 <footer class="site-footer">
     <div class="site-footer-inner">
         <div class="site-footer-links">
+            <a href="{{ route('information.events') }}">Amenities and Events</a>
             @foreach ($pages as $page)
                 <a href="{{ filled($page->custom_link) ? $page->custom_link : route('information.show', $page) }}">{{ $page->title }}</a>
             @endforeach
