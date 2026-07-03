@@ -16,7 +16,10 @@ class HomeController extends Controller
 
     public function __invoke(Request $request): View
     {
-        if (! $request->boolean('live')) {
+        $user = $request->user();
+        $adminCanPreview = $user && method_exists($user, 'hasAdminAccess') && $user->hasAdminAccess();
+
+        if (! $request->boolean('live') && ! $adminCanPreview) {
             return view('welcome');
         }
 
