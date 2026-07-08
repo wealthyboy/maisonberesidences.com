@@ -4,10 +4,10 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <meta name="description" content="Maison Be Residences. Private stays in Lagos, thoughtfully considered.">
+        <meta name="description" content="Maison Be Residence. Private stays in Lagos, thoughtfully considered.">
         <meta name="theme-color" content="#1c211e">
 
-        <title>Maison Be Residences | Lagos</title>
+        <title>Maison Be Residence | Lagos</title>
 
         <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon_io/apple-touch-icon.png') }}">
         <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon_io/favicon-32x32.png') }}">
@@ -30,8 +30,8 @@
                     <button class="menu-button" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-menu" id="menu-toggle">
                         <span></span><span></span><span></span>
                     </button>
-                    <a class="hero-wordmark" href="/" aria-label="Maison Be Residences home">
-                        Maison Be <small>Residences</small>
+                    <a class="hero-wordmark" href="/" aria-label="Maison Be Residence home">
+                        Maison Be <small>Residence</small>
                     </a>
                     <a class="reserve-link" href="#residences">Reserve</a>
                 </header>
@@ -54,7 +54,7 @@
             <aside class="site-menu" id="site-menu" aria-hidden="true" hidden>
                 <header class="menu-header">
                     <button class="menu-close" type="button" aria-label="Close navigation" id="menu-close"><span></span><span></span></button>
-                    <a class="menu-wordmark" href="/" aria-label="Maison Be Residences home">Maison Be <small>Residences</small></a>
+                    <a class="menu-wordmark" href="/" aria-label="Maison Be Residence home">Maison Be <small>Residence</small></a>
                     <a class="menu-reserve" href="#residences">Reserve</a>
                 </header>
                 <div class="menu-content">
@@ -73,17 +73,17 @@
             </aside>
 
             <section class="introduction" id="introduction" aria-labelledby="introduction-title" style="--introduction-room-image: url('{{ asset('media/maisonbe-introduction-room.png') }}');">
-                <p class="eyebrow">Maison Be Residences</p>
+                <p class="eyebrow">Maison Be Residence</p>
                 <div class="introduction-copy">
                     <h2 id="introduction-title">More than a place to stay, Maison Be is a place to belong.</h2>
-                    <p>Built around comfort, trust and understated luxury, our residences offer a warm, composed home away from home for short stays, extended visits and every moment in between.</p>
+                    <p>Built around comfort, trust and understated luxury, our residence offers a warm, composed home away from home for short stays, extended visits and every moment in between.</p>
                     <a class="introduction-cta" href="{{ route('apartments.index') }}">View all apartments <span aria-hidden="true">→</span></a>
                 </div>
             </section>
 
             <section class="residences" id="residences" aria-labelledby="residences-title">
                 <div class="residences-heading">
-                    <p class="eyebrow">Maison Be Residences</p>
+                    <p class="eyebrow">Maison Be Residence</p>
                     <div class="residences-heading-content">
                         <h2 id="residences-title">Find your stay.</h2>
                         <div class="residences-heading-summary">
@@ -148,23 +148,7 @@
             </section>
         </main>
 
-        @php
-            $whatsAppDigits = preg_replace('/\D+/', '', (string) ($settings?->store_phone ?? ''));
-            $whatsAppUrl = $whatsAppDigits !== '' ? 'https://wa.me/' . $whatsAppDigits : null;
-        @endphp
-        <footer class="site-footer">
-            <div class="site-footer-links">
-                @foreach ($information as $page)
-                    <a href="{{ filled($page->custom_link) ? $page->custom_link : route('information.show', $page) }}">{{ $page->title }}</a>
-                @endforeach
-            </div>
-            <p>&copy; {{ now()->year }} {{ $settings?->store_name ?: 'Maison Be Residences' }}. All rights reserved.</p>
-            @if ($whatsAppUrl)
-                <a class="site-footer-whatsapp" href="{{ $whatsAppUrl }}" target="_blank" rel="noopener noreferrer" aria-label="Chat with Maison Be on WhatsApp">
-                    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3.5a12.3 12.3 0 0 0-10.5 18.7L4 28l6-1.4A12.5 12.5 0 1 0 16 3.5Z"></path><path d="M12.4 10.2c-.4-.9-.8-.9-1.2-.9h-.9c-.3 0-.8.1-1.1.5-.4.4-1.5 1.5-1.5 3.8s1.5 4.5 1.7 4.8c.2.3 3 4.8 7.4 6.5 3.6 1.4 4.4 1.1 5.2 1s2.7-1.1 3.1-2.2.4-2.1.3-2.3c-.1-.2-.3-.3-.7-.5s-2.7-1.3-3.1-1.4c-.4-.2-.7-.2-1 .2-.3.4-1.2 1.4-1.4 1.7-.3.3-.5.3-1 .1-2.8-1.3-4.6-3.4-5.1-4-.3-.4 0-.6.2-.8l.7-.8c.2-.3.3-.5.5-.8.2-.3.1-.6 0-.8l-1.4-3.1Z"></path></svg>
-                </a>
-            @endif
-        </footer>
+        <x-site-footer />
 
         <section class="gallery-modal" id="gallery-modal" aria-hidden="true" aria-labelledby="gallery-modal-title" hidden>
             <div class="gallery-modal-backdrop" data-gallery-modal-close></div>
@@ -214,7 +198,7 @@
                 });
 
                 const revealTargets = [
-                    ...document.querySelectorAll('.introduction .eyebrow, .introduction-copy, .residences-heading, .residence-card, .residence-story-copy, .residence-story-slider, .enquire .eyebrow, .enquire h2, .enquire a, .site-footer-links, .site-footer p')
+                    ...document.querySelectorAll('.introduction .eyebrow, .introduction-copy, .residences-heading, .residence-card, .residence-story-copy, .residence-story-slider, .enquire .eyebrow, .enquire h2, .enquire a')
                 ];
 
                 revealTargets.forEach((target, index) => {

@@ -5,11 +5,12 @@
     $isApartments = $module['slug'] === 'apartments';
     $isInvoices = in_array($module['slug'], ['invoices', 'reservations'], true);
     $isReservations = $module['slug'] === 'reservations';
+    $isCustomers = $module['slug'] === 'customers';
     $isPages = $module['slug'] === 'pages';
     $isVouchers = $module['slug'] === 'vouchers';
     $isPeakPeriods = $module['slug'] === 'peak-periods';
-    $isDatabaseBacked = $isProperties || $isApartments || $isInvoices || $isPages || $isVouchers || $isPeakPeriods;
-    $recordName = $model ? ($isInvoices ? $model->invoice : ($isPages ? $model->title : ($isVouchers ? $model->code : ($isDatabaseBacked ? $model->name : $model->title)))) : null;
+    $isDatabaseBacked = $isProperties || $isApartments || $isInvoices || $isCustomers || $isPages || $isVouchers || $isPeakPeriods;
+    $recordName = $model ? ($isInvoices ? $model->invoice : ($isCustomers ? $model->full_name : ($isPages ? $model->title : ($isVouchers ? $model->code : ($isDatabaseBacked ? $model->name : $model->title))))) : null;
 @endphp
 
 @section('eyebrow', 'Admin module')
@@ -218,9 +219,11 @@
                     </div>
 
                     <div class="flex gap-2">
-                        <a href="{{ route('admin.modules.record.edit', [$module['slug'], $record]) }}" class="rounded-md bg-[#222052] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d9b44a] hover:text-[#222052]">
-                            Edit
-                        </a>
+                        @unless ($isCustomers)
+                            <a href="{{ route('admin.modules.record.edit', [$module['slug'], $record]) }}" class="rounded-md bg-[#222052] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d9b44a] hover:text-[#222052]">
+                                Edit
+                            </a>
+                        @endunless
                         <a href="{{ route('admin.modules.show', $module['slug']) }}" class="rounded-md border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50">
                             Back
                         </a>
@@ -383,9 +386,11 @@
         <section class="rounded-md border border-zinc-200 bg-white shadow-sm">
             <div class="flex flex-col gap-3 border-b border-zinc-200 px-5 py-4 md:flex-row md:items-center md:justify-between">
                 <h2 class="text-base font-semibold text-zinc-950">{{ $module['label'] }} records</h2>
-                <button type="submit" form="bulkDeleteForm" class="rounded-md border border-red-200 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-red-600 transition hover:bg-red-50">
-                    Delete selected
-                </button>
+                @unless ($isCustomers)
+                    <button type="submit" form="bulkDeleteForm" class="rounded-md border border-red-200 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-red-600 transition hover:bg-red-50">
+                        Delete selected
+                    </button>
+                @endunless
             </div>
 
             <div class="overflow-x-auto">
@@ -396,15 +401,20 @@
                 <table class="min-w-full divide-y divide-zinc-200 text-left text-sm">
                     <thead class="bg-zinc-50 text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
                         <tr>
-                            <th class="w-10 px-5 py-3">
-                                <input type="checkbox" class="h-4 w-4 rounded border-zinc-300 text-[#222052] focus:ring-[#222052]" data-bulk-check-all aria-label="Select all records">
-                            </th>
+                            @unless ($isCustomers)
+                                <th class="w-10 px-5 py-3">
+                                    <input type="checkbox" class="h-4 w-4 rounded border-zinc-300 text-[#222052] focus:ring-[#222052]" data-bulk-check-all aria-label="Select all records">
+                                </th>
+                            @endunless
                             @if ($isApartments)
                                 <th class="px-5 py-3">Image</th>
                             @endif
-                            <th class="px-5 py-3">{{ $isReservations ? 'Guest' : ($isVouchers ? 'Code' : 'Name') }}</th>
-                            <th class="px-5 py-3">{{ $isReservations ? 'Stay' : ($isVouchers ? 'Discount' : ($isPeakPeriods ? 'Date range' : 'Status')) }}</th>
-                            <th class="px-5 py-3">{{ $isReservations ? 'Total' : ($isVouchers ? 'Usage' : ($isPeakPeriods ? 'Increase' : 'Updated')) }}</th>
+                            <th class="px-5 py-3">{{ $isCustomers ? 'Customer' : ($isReservations ? 'Guest' : ($isVouchers ? 'Code' : 'Name')) }}</th>
+                            <th class="px-5 py-3">{{ $isCustomers ? 'Contact' : ($isReservations ? 'Stay' : ($isVouchers ? 'Discount' : ($isPeakPeriods ? 'Date range' : 'Status'))) }}</th>
+                            <th class="px-5 py-3">{{ $isCustomers ? 'Reservations' : ($isReservations ? 'Total' : ($isVouchers ? 'Usage' : ($isPeakPeriods ? 'Increase' : 'Updated'))) }}</th>
+                            @if ($isCustomers)
+                                <th class="px-5 py-3">Last reservation</th>
+                            @endif
                             <th class="px-5 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -412,9 +422,11 @@
                         @if ($records)
                             @forelse ($records as $recordItem)
                                 <tr>
-                                    <td class="px-5 py-4 align-top">
-                                        <input form="bulkDeleteForm" type="checkbox" name="record_ids[]" value="{{ $recordItem->id }}" class="h-4 w-4 rounded border-zinc-300 text-[#222052] focus:ring-[#222052]" data-bulk-check-row aria-label="Select {{ $isInvoices ? $recordItem->invoice : ($recordItem->name ?? $recordItem->title ?? 'record') }}">
-                                    </td>
+                                    @unless ($isCustomers)
+                                        <td class="px-5 py-4 align-top">
+                                            <input form="bulkDeleteForm" type="checkbox" name="record_ids[]" value="{{ $recordItem->id }}" class="h-4 w-4 rounded border-zinc-300 text-[#222052] focus:ring-[#222052]" data-bulk-check-row aria-label="Select {{ $isInvoices ? $recordItem->invoice : ($recordItem->name ?? $recordItem->title ?? 'record') }}">
+                                        </td>
+                                    @endunless
                                     @if ($isApartments)
                                         <td class="px-5 py-4">
                                             @if ($recordItem->image)
@@ -430,7 +442,9 @@
                                     @endif
                                     <td class="px-5 py-4">
                                         <div class="font-medium text-zinc-950">
-                                            @if ($isInvoices)
+                                            @if ($isCustomers)
+                                                {{ $recordItem->full_name ?: 'Guest' }}
+                                            @elseif ($isInvoices)
                                                 {{ $recordItem->invoice }}
                                             @elseif ($isVouchers)
                                                 {{ $recordItem->code }}
@@ -439,7 +453,9 @@
                                             @endif
                                         </div>
                                         <div class="mt-1 text-xs text-zinc-500">
-                                            @if ($isInvoices)
+                                            @if ($isCustomers)
+                                                {{ $recordItem->country ?: 'No country recorded' }}
+                                            @elseif ($isInvoices)
                                                 {{ $recordItem->full_name }}{{ $recordItem->email ? ' · ' . $recordItem->email : '' }}
                                             @elseif ($isApartments)
                                                 {{ $recordItem->property->name ?? 'No property' }}
@@ -457,7 +473,10 @@
                                         </div>
                                     </td>
                                     <td class="px-5 py-4">
-                                        @if ($isReservations)
+                                        @if ($isCustomers)
+                                            <span class="font-semibold text-zinc-950">{{ $recordItem->email ?: 'No email recorded' }}</span>
+                                            <div class="mt-1 text-xs text-zinc-500">{{ $recordItem->phone ?: 'No phone recorded' }}</div>
+                                        @elseif ($isReservations)
                                             @php($stayItem = $recordItem->invoiceItems->first())
                                             <span class="font-semibold text-zinc-950">{{ $stayItem?->name ?: 'Reservation' }}</span>
                                             <div class="mt-1 text-xs text-zinc-500">
@@ -479,7 +498,11 @@
                                         @endif
                                     </td>
                                     <td class="px-5 py-4 {{ $isReservations ? 'font-semibold text-zinc-950' : 'text-zinc-600' }}">
-                                        @if ($isReservations)
+                                        @if ($isCustomers)
+                                            <span class="rounded-full bg-[#d9b44a]/15 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-[#222052]">
+                                                {{ $recordItem->reservations_count }} {{ Illuminate\Support\Str::plural('reservation', (int) $recordItem->reservations_count) }}
+                                            </span>
+                                        @elseif ($isReservations)
                                             {{ $recordItem->currency.number_format((float) $recordItem->total, 2) }}
                                         @elseif ($isVouchers)
                                             {{ $recordItem->used_count }}{{ $recordItem->limits ? ' / '.$recordItem->limits : '' }}
@@ -489,15 +512,24 @@
                                             {{ $recordItem->updated_at->format('M j, Y') }}
                                         @endif
                                     </td>
+                                    @if ($isCustomers)
+                                        <td class="px-5 py-4 text-zinc-600">
+                                            {{ $recordItem->updated_at?->format('M j, Y') ?? 'Not recorded' }}
+                                        </td>
+                                    @endif
                                     <td class="px-5 py-4 text-right">
                                         <div class="flex items-center justify-end gap-3">
-                                            <a href="{{ route('admin.modules.record.show', [$module['slug'], $recordItem->id]) }}" class="font-semibold text-zinc-600 hover:text-zinc-950">View</a>
-                                            <a href="{{ route('admin.modules.record.edit', [$module['slug'], $recordItem->id]) }}" class="font-semibold text-[#222052] hover:text-[#d9b44a]">Edit</a>
-                                            <form method="post" action="{{ route('admin.modules.record.destroy', [$module['slug'], $recordItem->id]) }}" onsubmit="return confirm('Delete this record? This cannot be undone.');">
-                                                @csrf
-                                                @method('delete')
-                                                <button type="submit" class="font-semibold text-red-600 hover:text-red-700">Delete</button>
-                                            </form>
+                                            @if ($isCustomers)
+                                                <a href="{{ route('admin.modules.record.show', ['reservations', $recordItem->id]) }}" class="font-semibold text-[#222052] hover:text-[#d9b44a]">View latest</a>
+                                            @else
+                                                <a href="{{ route('admin.modules.record.show', [$module['slug'], $recordItem->id]) }}" class="font-semibold text-zinc-600 hover:text-zinc-950">View</a>
+                                                <a href="{{ route('admin.modules.record.edit', [$module['slug'], $recordItem->id]) }}" class="font-semibold text-[#222052] hover:text-[#d9b44a]">Edit</a>
+                                                <form method="post" action="{{ route('admin.modules.record.destroy', [$module['slug'], $recordItem->id]) }}" onsubmit="return confirm('Delete this record? This cannot be undone.');">
+                                                    @csrf
+                                                    @method('delete')
+                                                    <button type="submit" class="font-semibold text-red-600 hover:text-red-700">Delete</button>
+                                                </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>

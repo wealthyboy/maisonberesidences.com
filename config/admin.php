@@ -53,7 +53,6 @@ return [
             'icon' => 'settings',
             'items' => [
                 ['slug' => 'settings', 'label' => 'Settings', 'icon' => 'settings', 'description' => 'Manage system settings, contact details, payment rules, and brand defaults.'],
-                ['slug' => 'blocks', 'label' => 'Blocks', 'icon' => 'ban', 'description' => 'Block apartment dates and manage unavailable inventory.'],
             ],
         ],
     ],

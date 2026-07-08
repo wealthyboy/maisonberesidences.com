@@ -3,8 +3,8 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="description" content="Maison Beresidences offers refined short-stay residences and premium apartment experiences in Lagos.">
-        <title>Maison Beresidences</title>
+        <meta name="description" content="Maison Be Residence offers refined short-stay residence and premium apartment experiences in Lagos.">
+        <title>Maison Be Residence</title>
         <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon_io/apple-touch-icon.png') }}">
         <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon_io/favicon-32x32.png') }}">
         <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon_io/favicon-16x16.png') }}">
@@ -16,14 +16,14 @@
     <body class="construction-page-body">
         <main class="construction-page">
             <section class="construction-copy">
-                <a class="construction-brand" href="{{ url('/') }}" aria-label="Maison Beresidences home">
+                <a class="construction-brand" href="{{ url('/') }}" aria-label="Maison Be Residence home">
                     <span class="construction-brand-mark"><span>M</span><span>B</span></span>
-                    <span class="construction-brand-name">Maison Be <small>Residences</small></span>
+                    <span class="construction-brand-name">Maison Be <small>Residence</small></span>
                 </a>
 
                 <div class="construction-content">
                     <p class="construction-eyebrow">Launching soon</p>
-                    <h1>Contemporary luxury residences in Lagos.</h1>
+                    <h1>Contemporary luxury residence in Lagos.</h1>
                     <p class="construction-intro">A refined short-stay apartment experience shaped around privacy, comfort, and considered hospitality.</p>
                     <div class="construction-contact">
                         <p>Reservations</p>
@@ -32,7 +32,7 @@
                 </div>
 
                 <footer class="construction-footer">
-                    <span>Maison Be Residences</span>
+                    <span>Maison Be Residence</span>
                     <span>Lagos, Nigeria</span>
                 </footer>
             </section>

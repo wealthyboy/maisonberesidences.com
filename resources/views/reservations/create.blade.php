@@ -27,7 +27,7 @@
     </head>
     <body class="apartments-page checkout-page">
         <header class="results-header">
-            <a class="results-wordmark" href="{{ url('/') }}">Maison Be <small>Residences</small></a>
+            <a class="results-wordmark" href="{{ url('/') }}">Maison Be <small>Residence</small></a>
             <a href="{{ route('apartments.show', ['apartment' => $apartment, 'checkin' => $stay['checkin']->toDateString(), 'checkout' => $stay['checkout']->toDateString()]) }}" class="results-back">Back to residence</a>
         </header>
 
@@ -38,7 +38,7 @@
                 </div>
                 <p class="eyebrow">Maison Be reservations</p>
                 <h1>Booking Confirmed</h1>
-                <p>Thank you for your payment. Your booking is confirmed instantly. We look forward to hosting you at Maison Be Residences.</p>
+                <p>Thank you for your payment. Your booking is confirmed instantly. We look forward to hosting you at Maison Be Residence.</p>
                 <p class="booking-confirmed-reference" data-booking-reference></p>
                 <div class="booking-confirmed-actions">
                     <a href="#" hidden data-receipt-link>View receipt</a>

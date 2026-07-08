@@ -1,6 +1,6 @@
 @php
     $adminSections = config('admin.modules', []);
-    $pageTitle = trim(($title ?? 'Admin') . ' | Maison Beresidences');
+    $pageTitle = trim(($title ?? 'Admin') . ' | Maison Be Residence');
 @endphp
 
 <!DOCTYPE html>

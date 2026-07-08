@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>Available Residences | Maison Be</title>
+        <title>Available Residence | Maison Be</title>
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=cormorant-garamond:400,500,600|instrument-sans:400,500,600" rel="stylesheet">
         @vite(['resources/css/app.css'])
@@ -15,7 +15,7 @@
                 <button class="menu-button" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-menu" id="menu-toggle">
                     <span></span><span></span><span></span>
                 </button>
-                <a class="results-wordmark" href="{{ url('/') }}">Maison Be <small>Residences</small></a>
+                <a class="results-wordmark" href="{{ url('/') }}">Maison Be <small>Residence</small></a>
                 <div class="results-actions">
                     <a href="{{ request()->fullUrlWithQuery(['currency' => $currency['code'] === 'NGN' ? 'USD' : 'NGN']) }}" class="currency-switch">{{ $currency['code'] === 'NGN' ? 'View USD' : 'View NGN' }}</a>
                     <a href="{{ url('/') }}" class="results-back">Home</a>
@@ -27,7 +27,7 @@
         <aside class="site-menu" id="site-menu" aria-hidden="true" hidden>
             <header class="menu-header">
                 <button class="menu-close" type="button" aria-label="Close navigation" id="menu-close"><span></span><span></span></button>
-                <a class="menu-wordmark" href="/" aria-label="Maison Be Residences home">Maison Be <small>Residences</small></a>
+                <a class="menu-wordmark" href="/" aria-label="Maison Be Residence home">Maison Be <small>Residence</small></a>
                 <a class="menu-reserve" href="{{ route('apartments.index') }}">Reserve</a>
             </header>
             <div class="menu-content">

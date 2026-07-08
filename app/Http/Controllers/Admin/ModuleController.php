@@ -338,6 +338,10 @@ class ModuleController extends Controller
             return $records;
         }
 
+        if ($module['slug'] === 'customers') {
+            return $this->customerRecords();
+        }
+
         if ($module['slug'] === 'pages') {
             return Information::query()->orderBy('sort_order')->orderBy('title')->paginate(10);
         }
@@ -362,7 +366,7 @@ class ModuleController extends Controller
         return match ($module['slug']) {
             'properties' => Property::findOrFail($record),
             'apartments' => Apartment::with(['property', 'images', 'attributes'])->findOrFail($record),
-            'invoices', 'reservations' => Invoice::with('invoiceItems.apartment')->findOrFail($record),
+            'invoices', 'reservations', 'customers' => Invoice::with('invoiceItems.apartment')->findOrFail($record),
             'pages' => Information::findOrFail($record),
             'vouchers' => Voucher::findOrFail($record),
             'peak-periods' => PeakPeriod::findOrFail($record),
@@ -376,17 +380,39 @@ class ModuleController extends Controller
             return ! Property::exists();
         }
 
+        if ($module['slug'] === 'customers') {
+            return false;
+        }
+
         return true;
     }
 
     private function isDatabaseBacked(array $module): bool
     {
-        return in_array($module['slug'], ['properties', 'apartments', 'invoices', 'reservations', 'pages', 'vouchers', 'peak-periods'], true);
+        return in_array($module['slug'], ['properties', 'apartments', 'invoices', 'reservations', 'customers', 'pages', 'vouchers', 'peak-periods'], true);
     }
 
     private function isInvoiceModule(array $module): bool
     {
         return in_array($module['slug'], ['invoices', 'reservations'], true);
+    }
+
+    private function customerRecords()
+    {
+        return Invoice::query()
+            ->whereHas('invoiceItems')
+            ->selectRaw('
+                MIN(id) as id,
+                MAX(full_name) as full_name,
+                MAX(email) as email,
+                MAX(phone) as phone,
+                MAX(country) as country,
+                COUNT(*) as reservations_count,
+                MAX(updated_at) as updated_at
+            ')
+            ->groupByRaw("COALESCE(NULLIF(LOWER(email), ''), NULLIF(phone, ''), CONCAT('invoice-', id))")
+            ->orderByRaw('MAX(updated_at) DESC')
+            ->paginate(10);
     }
 
     public function checkApartmentAvailability(Request $request)

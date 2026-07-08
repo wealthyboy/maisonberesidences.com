@@ -52,8 +52,8 @@
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                                     <tr>
                                         <td>
-                                            <img src="{{ asset('brand/maison-mb-mark.png') }}" alt="Maison Be Residences logo" width="74" style="display:block;width:74px;height:auto;margin:0 0 14px;">
-                                            <p style="margin:0;color:#a78135;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Maison Be Residences</p>
+                                            <img src="{{ asset('brand/maison-mb-mark.png') }}" alt="Maison Be Residence logo" width="74" style="display:block;width:74px;height:auto;margin:0 0 14px;">
+                                            <p style="margin:0;color:#a78135;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Maison Be Residence</p>
                                         </td>
                                         <td align="right" style="color:#5e6678;font-size:13px;line-height:1.5;">
                                             Reservation<br>
@@ -119,7 +119,7 @@
                                 </table>
 
                                 <p style="margin:24px 0 0;color:#5e6678;font-size:14px;line-height:1.6;"><strong>Note:</strong> You’re required to present a valid ID upon arrival to check-in. You can also self check-in by clicking the link below to upload your ID.</p>
-                                <p style="margin:24px 0 0;color:#5e6678;font-size:14px;line-height:1.6;">This receipt confirms your instant booking at Maison Be Residences.</p>
+                                <p style="margin:24px 0 0;color:#5e6678;font-size:14px;line-height:1.6;">This receipt confirms your instant booking at Maison Be Residence.</p>
                             </td>
                         </tr>
                     </table>

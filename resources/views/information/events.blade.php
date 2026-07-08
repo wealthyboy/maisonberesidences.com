@@ -1,34 +1,34 @@
 @php
     $gallery = [
         [
-            'title' => 'Private Residences',
-            'caption' => 'Fully furnished apartments arranged for calm arrivals, quiet mornings, and easy hosting.',
-            'image' => asset('media/maisonbe-hero-source.jpg'),
-        ],
-        [
-            'title' => 'Curated Interiors',
-            'caption' => 'Warm living rooms, considered textures, and spaces that feel ready before you arrive.',
-            'image' => asset('media/maisonbe-introduction-room.png'),
-        ],
-        [
-            'title' => 'Courtyard Moments',
-            'caption' => 'Outdoor corners for slow conversations, private gatherings, and a softer Lagos pause.',
-            'image' => asset('media/maisonbe-fountain-courtyard.png'),
-        ],
-        [
             'title' => 'Dining and Hosting',
             'caption' => 'Generous dining, fitted kitchens, and in-residence service for intimate events.',
-            'image' => asset('uploads/apartments/a3f67976-5ba7-4256-acb8-17c02af59087.png'),
+            'image' => asset('media/maisonbe-hero-source.jpg'),
         ],
         [
             'title' => 'Restful Suites',
             'caption' => 'King-size comfort, premium bedding, blackout drapes, and bedrooms made for proper rest.',
-            'image' => asset('uploads/apartments/0ff64c03-05c0-45ae-ad49-e9981e3e0931.png'),
+            'image' => asset('media/maisonbe-introduction-room.png'),
         ],
         [
-            'title' => 'Arrival Support',
+            'title' => 'Private Arrivals',
             'caption' => 'A discreet hospitality experience for short stays, celebrations, and longer city visits.',
-            'image' => asset('uploads/apartments/81db6295-a31e-460c-8f33-91e3a98d3f63.png'),
+            'image' => asset('media/maisonbe-fountain-courtyard.png'),
+        ],
+        [
+            'title' => 'Curated Living',
+            'caption' => 'Warm living rooms, considered textures, and spaces that feel ready before you arrive.',
+            'image' => asset('media/maisonbe-hero-source.jpg'),
+        ],
+        [
+            'title' => 'Quiet Comfort',
+            'caption' => 'Fully furnished apartments arranged for calm arrivals, quiet mornings, and easy hosting.',
+            'image' => asset('media/maisonbe-introduction-room.png'),
+        ],
+        [
+            'title' => 'Maison Be Details',
+            'caption' => 'Refined finishes, functional amenities, and thoughtful corners for an effortless stay.',
+            'image' => asset('media/maisonbe-hero-source.jpg'),
         ],
     ];
 @endphp
@@ -45,7 +45,7 @@
     </head>
     <body class="apartments-page events-page-body">
         <header class="results-header">
-            <a class="results-wordmark" href="{{ route('home') }}">Maison Be <small>Residences</small></a>
+            <a class="results-wordmark" href="{{ route('home') }}">Maison Be <small>Residence</small></a>
             <a href="{{ route('apartments.index') }}" class="results-back">View apartments</a>
         </header>
 

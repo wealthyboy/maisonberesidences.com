@@ -177,7 +177,7 @@
 
 <label class="block lg:col-span-2">
     <span class="text-sm font-semibold text-zinc-700">Bank Details</span>
-    <textarea name="payment_info" rows="4" class="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-[#d9b44a] focus:ring-2 focus:ring-[#d9b44a]/20">{{ old('payment_info', $model->payment_info ?? "Please make payment using the following details:\nMaison Beresidences\nBank Name\nAccount Number") }}</textarea>
+    <textarea name="payment_info" rows="4" class="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-[#d9b44a] focus:ring-2 focus:ring-[#d9b44a]/20">{{ old('payment_info', $model->payment_info ?? "Please make payment using the following details:\nMaison Be Residence\nBank Name\nAccount Number") }}</textarea>
 </label>
 
 <label class="block lg:col-span-2">

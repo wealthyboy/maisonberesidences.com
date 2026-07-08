@@ -11,10 +11,10 @@ class InformationSeeder extends Seeder
     public function run(): void
     {
         collect([
-            ['title' => 'Apartments', 'teaser' => 'Explore Maison Be residences.', 'sort_order' => 10],
+            ['title' => 'Apartments', 'teaser' => 'Explore Maison Be residence.', 'sort_order' => 10],
             ['title' => 'Amenities', 'teaser' => 'Comfort, privacy, and thoughtful essentials.', 'sort_order' => 20],
-            ['title' => 'About Us', 'teaser' => 'Learn more about Maison Be Residences.', 'sort_order' => 30],
-            ['title' => 'Contact', 'teaser' => 'Get in touch with Maison Be Residences.', 'sort_order' => 40],
+            ['title' => 'About Us', 'teaser' => 'Learn more about Maison Be Residence.', 'sort_order' => 30],
+            ['title' => 'Contact', 'teaser' => 'Get in touch with Maison Be Residence.', 'sort_order' => 40],
         ])->each(function (array $page): void {
             Information::query()->updateOrCreate(
                 ['slug' => Str::slug($page['title'])],

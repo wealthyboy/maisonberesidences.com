@@ -1,6 +1,6 @@
 @extends('admin.layouts.app', ['title' => 'Dashboard'])
 
-@section('eyebrow', 'Maison Beresidences')
+@section('eyebrow', 'Maison Be Residence')
 @section('heading', 'Admin dashboard')
 
 @section('header-actions')
@@ -11,6 +11,43 @@
 
 @section('content')
     <div class="space-y-7">
+        <section class="rounded-md border border-zinc-200 bg-white p-5 shadow-sm">
+            <form method="get" action="{{ route('admin.dashboard') }}" class="grid gap-4 lg:grid-cols-[1fr_180px_180px_auto_auto] lg:items-end">
+                <div>
+                    <p class="text-sm font-semibold uppercase tracking-[0.16em] text-[#b08a2c]">Dashboard period</p>
+                    <p class="mt-1 text-sm text-zinc-600">{{ $filters['label'] }}</p>
+                </div>
+
+                <label class="block">
+                    <span class="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">From</span>
+                    <input
+                        type="date"
+                        name="from"
+                        value="{{ $filters['from'] }}"
+                        class="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-950 outline-none transition focus:border-[#d9b44a] focus:ring-2 focus:ring-[#d9b44a]/20"
+                    >
+                </label>
+
+                <label class="block">
+                    <span class="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">To</span>
+                    <input
+                        type="date"
+                        name="to"
+                        value="{{ $filters['to'] }}"
+                        class="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-950 outline-none transition focus:border-[#d9b44a] focus:ring-2 focus:ring-[#d9b44a]/20"
+                    >
+                </label>
+
+                <button type="submit" class="rounded-md bg-[#222052] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d9b44a] hover:text-[#222052]">
+                    Filter
+                </button>
+
+                <a href="{{ route('admin.dashboard') }}" class="rounded-md border border-zinc-300 px-5 py-2.5 text-center text-sm font-semibold text-zinc-700 transition hover:border-[#d9b44a] hover:text-[#222052]">
+                    Clear
+                </a>
+            </form>
+        </section>
+
         <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             @foreach ($metrics as $metric)
                 <article class="rounded-md border border-zinc-200 bg-white p-5 shadow-sm">

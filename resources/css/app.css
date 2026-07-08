@@ -434,8 +434,8 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .enquire .eyebrow { color: rgba(255,255,255,.62); }
 .enquire h2 { margin-top: 1.55rem; font-size: clamp(3.5rem, 6vw, 6.7rem); line-height: .85; }
 .enquire a { display: inline-block; margin-top: 2.2rem; padding-bottom: .38rem; border-bottom: 1px solid rgba(255,255,255,.42); color: #fff; font-size: .84rem; font-weight: 600; letter-spacing: .08em; text-decoration: none; }
-.site-footer { position: relative; padding: 2rem max(2rem, calc((100% - 1440px) / 2)); color: #f5efe5; background: #111f42; text-align: center; }
-.site-footer-inner { position: absolute; top: 50%; left: 50%; display: grid; width: min(calc(100% - 7rem), 900px); gap: .8rem; justify-items: center; transform: translate(-50%, -50%); }
+.site-footer { position: relative; padding: 1.65rem max(2rem, calc((100% - 1440px) / 2)) 2.15rem; color: #f5efe5; background: #111f42; text-align: center; }
+.site-footer-inner { display: grid; width: min(calc(100% - 7rem), 900px); margin: 0 auto; gap: .45rem; justify-items: center; }
 .site-footer-links { display: flex; width: 100%; margin-bottom: .55rem; justify-content: center; align-items: center; flex-wrap: wrap; gap: 1.8rem; }
 .site-footer-links a { color: inherit; font-size: .66rem; font-weight: 600; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; }
 .site-footer-links a:hover, .site-footer-links a:focus-visible { color: #d8b65f; }
@@ -446,7 +446,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .information-page { width: min(100% - 4rem, 900px); margin: 0 auto; padding: clamp(4rem, 8vw, 7rem) 0; }
 .information-page h1 { margin: 1rem 0 2rem; color: var(--ink); font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(3.5rem, 6vw, 6rem); font-weight: 400; line-height: .82; }
 .information-page-content { max-width: 760px; color: var(--soft-ink); font-size: 1rem; line-height: 1.8; }
-.events-page { width: min(100% - 3rem, 1280px); margin: 0 auto; padding: clamp(3rem, 6vw, 5.8rem) 0 clamp(4rem, 8vw, 7rem); }
+.events-page { width: min(100% - 3rem, 1280px); margin: 0 auto; padding: clamp(1.5rem, 3vw, 2.8rem) 0 clamp(4rem, 8vw, 7rem); }
 .events-hero { display: grid; margin-bottom: clamp(2rem, 4vw, 3.5rem); grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr); gap: clamp(1.8rem, 5vw, 5rem); align-items: end; }
 .events-hero h1 { max-width: 740px; margin: .9rem 0 0; color: var(--ink); font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(3rem, 6vw, 6.3rem); font-weight: 400; letter-spacing: 0; line-height: .84; }
 .events-hero > p { margin: 0; color: var(--soft-ink); font-size: clamp(.95rem, 1.15vw, 1.08rem); line-height: 1.75; }
@@ -617,7 +617,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
     .events-note a { width: fit-content; }
 }
 @media (max-width: 560px) {
-    .events-page { width: auto; padding: 3rem 1rem 4.5rem; }
+    .events-page { width: auto; padding: 1.5rem 1rem 4.5rem; }
     .events-gallery-card, .events-gallery-card:nth-child(1), .events-gallery-card:nth-child(2), .events-gallery-card:nth-child(3), .events-gallery-card:nth-child(4), .events-gallery-card:nth-child(5), .events-gallery-card:nth-child(6) { min-height: 300px; border-radius: 14px; }
     .events-gallery-card figcaption { right: 1rem; bottom: 1rem; left: 1rem; }
     .events-note { border-radius: 14px; }
@@ -632,6 +632,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .booking-bar { animation: maison-soft-reveal .82s .18s ease both; }
 .maison-reveal { opacity: 0; transform: translateY(30px); transition: opacity .8s ease, transform .8s cubic-bezier(.16, 1, .3, 1); transition-delay: var(--maison-delay, 0ms); will-change: opacity, transform; }
 .maison-reveal.is-visible { opacity: 1; transform: translateY(0); }
+.site-footer .maison-reveal { opacity: 1; transform: none; }
 .reserve-link, .availability-button, .menu-reserve, .introduction-cta, .residences-heading-summary a, .residence-gallery-open, .residence-story-copy a, .enquire a, .results-back, .currency-switch, .results-stay a, .reserve-residence, .reservation-form button, .apartment-availability-form button, .results-search button, .apartment-book-now, .residence-card-book, .checkout-coupon-row button, .booking-confirmed-actions a {
     font-family: "Galaxie Polaris", "Instrument Sans", Arial, sans-serif !important;
     font-weight: 700 !important;

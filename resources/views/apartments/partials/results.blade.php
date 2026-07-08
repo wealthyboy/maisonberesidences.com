@@ -3,7 +3,7 @@
 @endif
 @if (session('booking_error'))<p class="results-notice results-notice-error">{{ session('booking_error') }}</p>@endif
 @if ($apartments->count() === 0)
-    <p class="results-empty">There are no residences available for these dates. Please choose another stay.</p>
+    <p class="results-empty">There are no residence available for these dates. Please choose another stay.</p>
 @else
     <div class="results-grid residence-grid">
         @foreach ($apartments as $apartment)

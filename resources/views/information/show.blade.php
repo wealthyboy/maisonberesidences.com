@@ -10,11 +10,11 @@
     </head>
     <body class="apartments-page">
         <header class="results-header">
-            <a class="results-wordmark" href="{{ route('home') }}">Maison Be <small>Residences</small></a>
+            <a class="results-wordmark" href="{{ route('home') }}">Maison Be <small>Residence</small></a>
             <a href="{{ route('home') }}" class="results-back">Back to home</a>
         </header>
         <main class="information-page">
-            <p class="eyebrow">Maison Be Residences</p>
+            <p class="eyebrow">Maison Be Residence</p>
             <h1>{{ $information->title }}</h1>
             <div class="information-page-content">{!! nl2br(e($information->description ?: $information->teaser ?: 'Information will be available shortly.')) !!}</div>
         </main>
