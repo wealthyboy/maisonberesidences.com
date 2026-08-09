@@ -4,15 +4,11 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <meta name="description" content="Maison Be Residence. Private stays in Lagos, thoughtfully considered.">
-        <meta name="theme-color" content="#1c211e">
+        <meta name="description" content="Maison Be Residences. Private stays in Lagos, thoughtfully considered.">
+        <x-brand-head />
 
-        <title>Maison Be Residence | Lagos</title>
+        <title>Maison Be Residences | Lagos</title>
 
-        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon_io/apple-touch-icon.png') }}">
-        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon_io/favicon-32x32.png') }}">
-        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon_io/favicon-16x16.png') }}">
-        <link rel="manifest" href="{{ asset('favicon_io/site.webmanifest') }}">
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=cormorant-garamond:400,500,600|instrument-sans:400,500,600" rel="stylesheet">
 
@@ -30,9 +26,7 @@
                     <button class="menu-button" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-menu" id="menu-toggle">
                         <span></span><span></span><span></span>
                     </button>
-                    <a class="hero-wordmark" href="/" aria-label="Maison Be Residence home">
-                        Maison Be <small>Residence</small>
-                    </a>
+                    <a class="hero-wordmark" href="/" aria-label="Maison Be Residences home"><x-brand-logo tone="light" /></a>
                     <a class="reserve-link" href="#residences">Reserve</a>
                 </header>
 
@@ -54,7 +48,7 @@
             <aside class="site-menu" id="site-menu" aria-hidden="true" hidden>
                 <header class="menu-header">
                     <button class="menu-close" type="button" aria-label="Close navigation" id="menu-close"><span></span><span></span></button>
-                    <a class="menu-wordmark" href="/" aria-label="Maison Be Residence home">Maison Be <small>Residence</small></a>
+                    <a class="menu-wordmark" href="/" aria-label="Maison Be Residences home"><x-brand-logo /></a>
                     <a class="menu-reserve" href="#residences">Reserve</a>
                 </header>
                 <div class="menu-content">
@@ -73,7 +67,7 @@
             </aside>
 
             <section class="introduction" id="introduction" aria-labelledby="introduction-title" style="--introduction-room-image: url('{{ asset('media/maisonbe-introduction-room.png') }}');">
-                <p class="eyebrow">Maison Be Residence</p>
+                <p class="eyebrow">Maison Be Residences</p>
                 <div class="introduction-copy">
                     <h2 id="introduction-title">More than a place to stay, Maison Be is a place to belong.</h2>
                     <p>Built around comfort, trust and understated luxury, our residence offers a warm, composed home away from home for short stays, extended visits and every moment in between.</p>
@@ -83,7 +77,7 @@
 
             <section class="residences" id="residences" aria-labelledby="residences-title">
                 <div class="residences-heading">
-                    <p class="eyebrow">Maison Be Residence</p>
+                    <p class="eyebrow">Maison Be Residences</p>
                     <div class="residences-heading-content">
                         <h2 id="residences-title">Find your stay.</h2>
                         <div class="residences-heading-summary">

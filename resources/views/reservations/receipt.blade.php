@@ -41,14 +41,15 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Reservation {{ $invoice->invoice }} | Maison Be</title>
+        <x-brand-head />
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=cormorant-garamond:400,500,600|instrument-sans:400,500,600" rel="stylesheet">
         @vite(['resources/css/app.css'])
     </head>
     <body class="apartments-page">
-        <header class="results-header"><a class="results-wordmark" href="{{ url('/') }}">Maison Be <small>Residence</small></a></header>
+        <header class="results-header"><a class="results-wordmark" href="{{ url('/') }}" aria-label="Maison Be Residences home"><x-brand-logo /></a></header>
         <main class="receipt-main">
-            <img src="{{ asset('brand/maison-mb-mark.png') }}" alt="Maison Be Residence" style="width: 82px; height: auto; margin-bottom: 1.2rem;">
+            <img src="{{ asset('brand/maison-be-logo.png') }}" alt="Maison Be Residences" style="width: 116px; height: auto; margin-bottom: 1.2rem; border-radius: 8px;">
             <p class="eyebrow">{{ $invoice->payment_status === 'paid' ? 'Payment received' : 'Payment processing' }}</p>
             <h1>{{ $invoice->payment_status === 'paid' ? 'Booking confirmed.' : 'We are confirming your payment.' }}</h1>
             <p class="receipt-lead">Thank you, {{ $invoice->full_name }}. Your reservation reference is <strong>{{ $invoice->invoice }}</strong>.</p>
@@ -84,7 +85,7 @@
                 <div class="receipt-total"><span>Total paid in {{ $invoice->currency_code }}</span><strong>{{ $money($invoice->total) }}</strong></div>
             </section>
             <p class="receipt-note"><strong>Note:</strong> You’re required to present a valid ID upon arrival to check-in. You can also self check-in by clicking the link below to upload your ID.</p>
-            <p class="receipt-note">{{ $invoice->payment_status === 'paid' ? 'This receipt confirms your instant booking at Maison Be Residence.' : 'Please allow a moment for payment confirmation. Refresh this page shortly if the status has not changed.' }}</p>
+            <p class="receipt-note">{{ $invoice->payment_status === 'paid' ? 'This receipt confirms your instant booking at Maison Be Residences.' : 'Please allow a moment for payment confirmation. Refresh this page shortly if the status has not changed.' }}</p>
         </main>
         <x-site-footer />
     </body>

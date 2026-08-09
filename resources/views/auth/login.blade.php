@@ -5,12 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>Login | Maison Be Residence</title>
-        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon_io/apple-touch-icon.png') }}">
-        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon_io/favicon-32x32.png') }}">
-        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon_io/favicon-16x16.png') }}">
-        <link rel="shortcut icon" type="image/png" href="{{ asset('favicon_io/favicon-32x32.png') }}">
-        <link rel="manifest" href="{{ asset('favicon_io/site.webmanifest') }}">
+        <title>Login | Maison Be Residences</title>
+        <x-brand-head />
 
         @vite(['resources/css/admin.css', 'resources/js/app.js'])
     </head>
@@ -24,7 +20,7 @@
                 >
                 <div class="absolute inset-0 bg-black/55"></div>
                 <div class="relative z-10 flex h-full flex-col justify-between p-10">
-                    <a href="/" class="font-serif text-3xl tracking-[0.24em]">MAISON BE</a>
+                    <a href="/" class="inline-flex" aria-label="Maison Be Residences home"><img src="{{ asset('brand/maison-be-logo.png') }}" alt="Maison Be Residences" class="h-auto w-36 rounded-lg shadow-2xl"></a>
                     <div>
                         <p class="text-xs font-bold uppercase tracking-[0.42em] text-[#d9b44a]">Maison Portal</p>
                         <h1 class="mt-5 max-w-xl font-serif text-6xl uppercase leading-none">Contemporary Luxury</h1>
@@ -35,7 +31,7 @@
             <section class="flex items-center justify-center px-6 py-12">
                 <div class="w-full max-w-md">
                     <div class="mb-10 lg:hidden">
-                        <a href="/" class="font-serif text-3xl tracking-[0.24em]">MAISON BE</a>
+                        <a href="/" class="inline-flex" aria-label="Maison Be Residences home"><img src="{{ asset('brand/maison-be-logo.png') }}" alt="Maison Be Residences" class="h-auto w-32 rounded-lg shadow-2xl"></a>
                     </div>
 
                     <div class="rounded-md border border-white/12 bg-white/[.06] p-7 shadow-2xl backdrop-blur">
@@ -80,7 +76,7 @@
                                 Remember me
                             </label>
 
-                            <button type="submit" class="w-full rounded-md bg-[#d9b44a] px-4 py-3 text-sm font-bold uppercase tracking-[0.22em] text-[#222052] transition hover:bg-white">
+                            <button type="submit" class="w-full rounded-md bg-[#d9b44a] px-4 py-3 text-sm font-bold uppercase tracking-[0.22em] text-[#06112e] transition hover:bg-white">
                                 Login
                             </button>
                         </form>

@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>{{ $apartment->name }} | Maison Be</title>
+        <x-brand-head />
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=cormorant-garamond:400,500,600|instrument-sans:400,500,600" rel="stylesheet">
         @vite(['resources/css/app.css'])
@@ -32,11 +33,11 @@
                 $highlights = collect(preg_split('/[,;\\n]+/', $highlightSource))->map(fn ($highlight) => trim($highlight))->filter()->take(6)->values();
             }
         @endphp
-        <header class="results-header"><a class="results-wordmark" href="{{ url('/') }}">Maison Be <small>Residence</small></a><a href="{{ route('apartments.index', $filters) }}" class="results-back">All apartments</a></header>
+        <header class="results-header"><a class="results-wordmark" href="{{ url('/') }}" aria-label="Maison Be Residences home"><x-brand-logo /></a><a href="{{ route('apartments.index', $filters) }}" class="results-back">All apartments</a></header>
         <main class="apartment-show-main">
             <header class="apartment-show-heading">
                 <div>
-                    <p class="eyebrow">Maison Be Residence</p>
+                    <p class="eyebrow">Maison Be Residences</p>
                     <h1>{{ $apartment->name }}</h1>
                 </div>
             </header>

@@ -20,6 +20,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>Review and book {{ $apartment->name }} | Maison Be</title>
+        <x-brand-head />
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=cormorant-garamond:400,500,600|instrument-sans:400,500,600" rel="stylesheet">
         <script src="https://js.paystack.co/v2/inline.js" async data-payment-library onload="this.dataset.loaded='true'" onerror="this.dataset.failed='true'"></script>
@@ -27,7 +28,7 @@
     </head>
     <body class="apartments-page checkout-page">
         <header class="results-header">
-            <a class="results-wordmark" href="{{ url('/') }}">Maison Be <small>Residence</small></a>
+            <a class="results-wordmark" href="{{ url('/') }}" aria-label="Maison Be Residences home"><x-brand-logo /></a>
             <a href="{{ route('apartments.show', ['apartment' => $apartment, 'checkin' => $stay['checkin']->toDateString(), 'checkout' => $stay['checkout']->toDateString()]) }}" class="results-back">Back to residence</a>
         </header>
 
@@ -38,7 +39,7 @@
                 </div>
                 <p class="eyebrow">Maison Be reservations</p>
                 <h1>Booking Confirmed</h1>
-                <p>Thank you for your payment. Your booking is confirmed instantly. We look forward to hosting you at Maison Be Residence.</p>
+                <p>Thank you for your payment. Your booking is confirmed instantly. We look forward to hosting you at Maison Be Residences.</p>
                 <p class="booking-confirmed-reference" data-booking-reference></p>
                 <div class="booking-confirmed-actions">
                     <a href="#" hidden data-receipt-link>View receipt</a>

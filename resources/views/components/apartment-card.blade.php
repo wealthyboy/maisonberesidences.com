@@ -80,7 +80,7 @@
         @endif
     </div>
     <div class="residence-card-copy">
-        <p>Maison Be Residence</p>
+        <p>Maison Be Residences</p>
         <h3><a href="{{ $cardUrl }}">{{ $apartment->name }}</a></h3>
         <ul class="residence-card-highlights">
             <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 2.5 2.5L16 9"></path></svg>Instant confirmation</li>

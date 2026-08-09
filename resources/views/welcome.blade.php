@@ -3,12 +3,9 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="description" content="Maison Be Residence offers refined short-stay residence and premium apartment experiences in Lagos.">
-        <title>Maison Be Residence</title>
-        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon_io/apple-touch-icon.png') }}">
-        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon_io/favicon-32x32.png') }}">
-        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon_io/favicon-16x16.png') }}">
-        <link rel="manifest" href="{{ asset('favicon_io/site.webmanifest') }}">
+        <meta name="description" content="Maison Be Residences offers refined short-stay residences and premium apartment experiences in Lagos.">
+        <title>Maison Be Residences</title>
+        <x-brand-head />
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=cormorant-garamond:400,500,600|instrument-sans:400,500,600,700,800" rel="stylesheet" />
         @vite(['resources/css/app.css'])
@@ -16,10 +13,7 @@
     <body class="construction-page-body">
         <main class="construction-page">
             <section class="construction-copy">
-                <a class="construction-brand" href="{{ url('/') }}" aria-label="Maison Be Residence home">
-                    <span class="construction-brand-mark"><span>M</span><span>B</span></span>
-                    <span class="construction-brand-name">Maison Be <small>Residence</small></span>
-                </a>
+                <a class="construction-brand" href="{{ url('/') }}" aria-label="Maison Be Residences home"><x-brand-logo /></a>
 
                 <div class="construction-content">
                     <p class="construction-eyebrow">Launching soon</p>
@@ -32,13 +26,13 @@
                 </div>
 
                 <footer class="construction-footer">
-                    <span>Maison Be Residence</span>
+                    <span>Maison Be Residences</span>
                     <span>Lagos, Nigeria</span>
                 </footer>
             </section>
 
             <section class="construction-visual" aria-hidden="true">
-                <div class="construction-monogram"><span>M</span><span>B</span></div>
+                <img class="construction-monogram" src="{{ asset('brand/maison-be-mark.png') }}" alt="">
                 <div class="construction-visual-label">
                     <span>Private stays</span>
                     <p>Comfort, privacy and calm.</p>

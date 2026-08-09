@@ -1,6 +1,6 @@
 @php
     $adminSections = config('admin.modules', []);
-    $pageTitle = trim(($title ?? 'Admin') . ' | Maison Be Residence');
+    $pageTitle = trim(($title ?? 'Admin') . ' | Maison Be Residences');
 @endphp
 
 <!DOCTYPE html>
@@ -11,11 +11,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ $pageTitle }}</title>
-        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon_io/apple-touch-icon.png') }}">
-        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon_io/favicon-32x32.png') }}">
-        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon_io/favicon-16x16.png') }}">
-        <link rel="shortcut icon" type="image/png" href="{{ asset('favicon_io/favicon-32x32.png') }}">
-        <link rel="manifest" href="{{ asset('favicon_io/site.webmanifest') }}">
+        <x-brand-head />
 
         @vite(['resources/css/admin.css', 'resources/js/app.js'])
     </head>
@@ -23,9 +19,14 @@
         <div class="min-h-screen lg:grid lg:grid-cols-[300px_1fr]">
             <aside class="border-b border-zinc-800 bg-zinc-950 text-white lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:border-b-0 lg:border-r">
                 <div class="flex items-center justify-between border-b border-zinc-800 px-5 py-4">
-                    <a href="{{ route('admin.dashboard') }}" class="min-w-0">
-                        <span class="block text-sm font-semibold uppercase tracking-[0.18em] text-[#d9b44a]">Maison</span>
-                        <span class="block truncate text-lg font-semibold text-white">Admin</span>
+                    <a href="{{ route('admin.dashboard') }}" class="min-w-0" aria-label="Maison Be Residences admin home">
+                        <span class="flex items-center gap-3">
+                            <img src="{{ asset('brand/maison-be-mark.png') }}" alt="" class="h-12 w-12 rounded-lg object-cover shadow-lg" aria-hidden="true">
+                            <span class="min-w-0">
+                                <span class="block text-sm font-semibold uppercase tracking-[0.15em] text-[#d9b44a]">Maison Be</span>
+                                <span class="block truncate text-sm font-semibold text-white">Residences Admin</span>
+                            </span>
+                        </span>
                     </a>
                     <span class="rounded-full bg-amber-300 px-3 py-1 text-xs font-semibold text-zinc-950">Fresh</span>
                 </div>

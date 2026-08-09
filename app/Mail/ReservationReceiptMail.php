@@ -17,7 +17,7 @@ class ReservationReceiptMail extends Mailable
     public function build(): self
     {
         return $this
-            ->subject('Your Maison Be booking is confirmed')
+            ->subject('Your Maison Be Residences booking is confirmed')
             ->view('emails.reservation-receipt');
     }
 }

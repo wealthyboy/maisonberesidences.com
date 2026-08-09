@@ -39,13 +39,14 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Amenities and Events | Maison Be</title>
+        <x-brand-head />
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=cormorant-garamond:400,500,600|instrument-sans:400,500,600" rel="stylesheet">
         @vite(['resources/css/app.css'])
     </head>
     <body class="apartments-page events-page-body">
         <header class="results-header">
-            <a class="results-wordmark" href="{{ route('home') }}">Maison Be <small>Residence</small></a>
+            <a class="results-wordmark" href="{{ route('home') }}" aria-label="Maison Be Residences home"><x-brand-logo /></a>
             <a href="{{ route('apartments.index') }}" class="results-back">View apartments</a>
         </header>
 

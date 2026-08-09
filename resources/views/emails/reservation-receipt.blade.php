@@ -42,7 +42,7 @@
         <meta charset="utf-8">
         <title>Your Maison Be booking is confirmed</title>
     </head>
-    <body style="margin:0;background:#f8f4ec;color:#18264a;font-family:Arial,sans-serif;">
+    <body style="margin:0;background:#f8f4ec;color:#06112e;font-family:Arial,sans-serif;">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f8f4ec;padding:32px 16px;">
             <tr>
                 <td align="center">
@@ -52,17 +52,17 @@
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                                     <tr>
                                         <td>
-                                            <img src="{{ asset('brand/maison-mb-mark.png') }}" alt="Maison Be Residence logo" width="74" style="display:block;width:74px;height:auto;margin:0 0 14px;">
-                                            <p style="margin:0;color:#a78135;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Maison Be Residence</p>
+                                            <img src="{{ asset('brand/maison-be-logo.png') }}" alt="Maison Be Residences logo" width="108" style="display:block;width:108px;height:auto;margin:0 0 14px;border-radius:8px;">
+                                            <p style="margin:0;color:#a78135;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Maison Be Residences</p>
                                         </td>
                                         <td align="right" style="color:#5e6678;font-size:13px;line-height:1.5;">
                                             Reservation<br>
-                                            <strong style="color:#18264a;">{{ $invoice->invoice }}</strong>
+                                            <strong style="color:#06112e;">{{ $invoice->invoice }}</strong>
                                         </td>
                                     </tr>
                                 </table>
 
-                                <h1 style="margin:24px 0 14px;color:#18264a;font-size:32px;line-height:1.05;">Booking Confirmed</h1>
+                                <h1 style="margin:24px 0 14px;color:#06112e;font-size:32px;line-height:1.05;">Booking Confirmed</h1>
                                 <p style="margin:0 0 26px;color:#5e6678;font-size:15px;line-height:1.6;">Thank you, {{ $invoice->full_name }}. Your instant booking is confirmed.</p>
 
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-top:1px solid #d8cba9;border-bottom:1px solid #d8cba9;">
@@ -119,7 +119,7 @@
                                 </table>
 
                                 <p style="margin:24px 0 0;color:#5e6678;font-size:14px;line-height:1.6;"><strong>Note:</strong> You’re required to present a valid ID upon arrival to check-in. You can also self check-in by clicking the link below to upload your ID.</p>
-                                <p style="margin:24px 0 0;color:#5e6678;font-size:14px;line-height:1.6;">This receipt confirms your instant booking at Maison Be Residence.</p>
+                                <p style="margin:24px 0 0;color:#5e6678;font-size:14px;line-height:1.6;">This receipt confirms your instant booking at Maison Be Residences.</p>
                             </td>
                         </tr>
                     </table>

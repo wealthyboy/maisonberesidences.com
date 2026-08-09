@@ -1,6 +1,6 @@
 @extends('admin.layouts.app', ['title' => 'Dashboard'])
 
-@section('eyebrow', 'Maison Be Residence')
+@section('eyebrow', 'Maison Be Residences')
 @section('heading', 'Admin dashboard')
 
 @section('header-actions')

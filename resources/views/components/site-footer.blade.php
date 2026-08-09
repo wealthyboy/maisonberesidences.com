@@ -21,7 +21,7 @@
                 @endif
             @endauth
         </div>
-        <p>&copy; {{ now()->year }} Maison Be Residence. All rights reserved.</p>
+        <p>&copy; {{ now()->year }} Maison Be Residences. All rights reserved.</p>
     </div>
     @if ($whatsAppDigits !== '')
         <a class="site-footer-whatsapp" href="https://wa.me/{{ $whatsAppDigits }}" target="_blank" rel="noopener noreferrer" aria-label="Chat with Maison Be on WhatsApp">

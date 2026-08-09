@@ -1,4 +1,4 @@
-:root { --ink: #1d2d53; --soft-ink: #5e6678; --paper: #fcf9f1; --warm: #f1eadc; --deep: #18264a; --gold: #c7a34d; --line: rgba(255,255,255,.42); --dark-line: #d8cba9; }
+:root { --ink: #0a1738; --soft-ink: #5e6678; --paper: #fcf9f1; --warm: #f1eadc; --deep: #06112e; --gold: #d9aa4c; --line: rgba(255,255,255,.42); --dark-line: #d8cba9; }
 @font-face { font-display: swap; font-family: "Galaxie Polaris"; font-style: normal; font-weight: 400; src: url("/fonts/GalaxiePolaris-Book.otf") format("opentype"); }
 @font-face { font-display: swap; font-family: "Galaxie Polaris"; font-style: normal; font-weight: 700; src: url("/fonts/GalaxiePolaris-Bold.otf") format("opentype"); }
 @font-face { font-display: swap; font-family: "Galaxie Polaris Condensed"; font-style: normal; font-weight: 700; src: url("/fonts/GalaxiePolarisCondensed-Bold-1.otf") format("opentype"); }
@@ -15,16 +15,22 @@ h1, h2, h3, p { overflow-wrap: break-word; }
 body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .reserve-link, .availability-button, .menu-reserve, .introduction-cta, .residences-heading-summary a, .residence-gallery-open, .residence-story-copy a, .enquire a, .results-back, .currency-switch, .results-stay a, .reserve-residence, .reservation-form button { font-weight: 700; }
 
+.brand-lockup { display: inline-flex; min-width: 0; align-items: center; gap: .8rem; }
+.brand-lockup-mark { display: block; width: 3.35rem; height: 3.35rem; border-radius: .48rem; flex: 0 0 auto; object-fit: cover; box-shadow: 0 8px 26px rgba(6,17,46,.18); }
+.brand-lockup-copy { display: grid; min-width: 0; color: var(--deep); line-height: 1; text-align: left; text-transform: uppercase; }
+.brand-lockup-copy strong { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.28rem; font-weight: 600; letter-spacing: .14em; white-space: nowrap; }
+.brand-lockup-copy small { margin-top: .38rem; font-family: "Instrument Sans", Arial, sans-serif; font-size: .47rem; font-weight: 700; letter-spacing: .42em; white-space: nowrap; }
+.brand-lockup--light .brand-lockup-copy { color: #fff; }
+.brand-lockup--light .brand-lockup-mark { box-shadow: 0 8px 26px rgba(0,0,0,.24); }
+.brand-lockup--compact .brand-lockup-mark { width: 2.8rem; height: 2.8rem; }
+.brand-lockup--compact .brand-lockup-copy strong { font-size: 1.02rem; }
+.brand-lockup--compact .brand-lockup-copy small { font-size: .4rem; }
+
 .construction-page-body { background: var(--paper); }
 .construction-page { display: grid; min-height: 100svh; grid-template-columns: minmax(0, 57%) minmax(360px, 43%); }
 .construction-copy { display: flex; min-height: 100svh; padding: clamp(2rem, 5vw, 4.75rem) clamp(1.5rem, 7vw, 7.5rem); flex-direction: column; background: var(--paper); }
 .construction-brand { display: inline-flex; width: fit-content; color: var(--deep); align-items: center; gap: 1rem; text-decoration: none; }
-.construction-brand-mark { position: relative; display: block; width: 3.4rem; height: 3.4rem; font-family: "Cormorant Garamond", Georgia, serif; font-size: 2.55rem; line-height: .8; }
-.construction-brand-mark span { position: absolute; }
-.construction-brand-mark span:first-child { top: 0; left: 0; color: var(--gold); }
-.construction-brand-mark span:last-child { right: 0; bottom: 0; }
-.construction-brand-name { color: var(--deep); font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.3rem; letter-spacing: .12em; line-height: .78; text-transform: uppercase; }
-.construction-brand-name small { display: block; margin-top: .45rem; font-family: "Instrument Sans", Arial, sans-serif; font-size: .48rem; font-weight: 700; letter-spacing: .48em; }
+.construction-brand .brand-lockup-mark { width: 4.25rem; height: 4.25rem; }
 .construction-content { width: min(100%, 710px); margin: auto 0; padding: clamp(4rem, 10vh, 8.5rem) 0; }
 .construction-eyebrow { display: flex; margin: 0 0 1.75rem; color: var(--gold); align-items: center; gap: 1rem; font-size: .68rem; font-weight: 800; letter-spacing: .25em; text-transform: uppercase; }
 .construction-eyebrow::before { width: 2.5rem; height: 1px; background: var(--gold); content: ""; }
@@ -39,11 +45,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .construction-visual::before, .construction-visual::after { position: absolute; z-index: 1; content: ""; pointer-events: none; }
 .construction-visual::before { top: 12%; right: 10%; bottom: 12%; left: 10%; border: 1px solid rgba(255,255,255,.14); }
 .construction-visual::after { top: clamp(2rem, 5vw, 4.75rem); right: clamp(2rem, 4vw, 4rem); width: 34%; aspect-ratio: 1; border-top: 1px solid rgba(255,255,255,.35); border-right: 1px solid rgba(255,255,255,.35); }
-.construction-monogram { position: absolute; top: 50%; left: 50%; width: min(68%, 31rem); aspect-ratio: 1; color: rgba(255,255,255,.94); font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(10rem, 23vw, 25rem); line-height: .72; transform: translate(-50%, -53%); }
-.construction-monogram::before { position: absolute; top: -8%; right: -4%; width: 45%; height: 45%; border-radius: 50%; background: rgba(199,163,77,.08); content: ""; }
-.construction-monogram span { position: absolute; }
-.construction-monogram span:first-child { top: 8%; left: 0; color: var(--gold); }
-.construction-monogram span:last-child { right: 0; bottom: 5%; }
+.construction-monogram { position: absolute; top: 50%; left: 50%; display: block; width: min(74%, 35rem); height: auto; border-radius: 1.1rem; object-fit: contain; transform: translate(-50%, -54%); filter: drop-shadow(0 28px 45px rgba(0,0,0,.18)); }
 .construction-visual-label { position: absolute; right: clamp(1.5rem, 4vw, 4rem); bottom: clamp(2rem, 5vw, 4.75rem); left: clamp(1.5rem, 4vw, 4rem); z-index: 2; display: flex; padding-top: 1.25rem; border-top: 1px solid rgba(255,255,255,.35); color: #fff; align-items: flex-start; justify-content: space-between; gap: 2rem; }
 .construction-visual-label span { color: rgba(255,255,255,.62); font-size: .65rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
 .construction-visual-label p { margin: 0; font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(1.25rem, 2vw, 1.8rem); line-height: 1.25; text-align: right; }
@@ -55,7 +57,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .hero-header:hover, .hero-header:focus-within { background: rgba(24,38,74,.74); }
 .menu-button { justify-self: start; display: grid; width: 78px; height: 78px; margin: 0; padding: 0 24px; border: 0; border-right: 1px solid var(--line); background: transparent; align-content: center; gap: 5px; }
 .menu-button span { display: block; width: 100%; height: 2px; background: #fff; }
-.hero-wordmark { color: #fff; font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(1.7rem, 1.9vw, 2.45rem); letter-spacing: .13em; line-height: .72; text-align: center; text-decoration: none; text-transform: uppercase; }
+.hero-wordmark { color: #fff; text-align: center; text-decoration: none; }
 .hero-wordmark small { display: block; margin-top: .38rem; font-family: "Instrument Sans", Arial, sans-serif; font-size: .32rem; font-weight: 600; letter-spacing: .46em; }
 .reserve-link { justify-self: end; display: flex; width: 145px; height: 78px; border-left: 1px solid var(--line); color: #fff; align-items: center; justify-content: center; font-size: .75rem; font-weight: 600; letter-spacing: .22em; text-decoration: none; text-transform: uppercase; }
 .hero-title-wrap { position: absolute; top: 50%; left: 50%; z-index: 1; width: min(90%, 900px); transform: translate(-50%, -45%); text-align: center; }
@@ -144,7 +146,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .menu-close span { position: absolute; top: 50%; left: 24px; width: 31px; height: 1.5px; background: var(--ink); }
 .menu-close span:first-child { transform: rotate(45deg); }
 .menu-close span:last-child { transform: rotate(-45deg); }
-.menu-wordmark { color: var(--ink); font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(1.7rem, 1.9vw, 2.45rem); letter-spacing: .13em; line-height: .72; text-align: center; text-decoration: none; text-transform: uppercase; }
+.menu-wordmark { color: var(--ink); text-align: center; text-decoration: none; }
 .menu-wordmark small { display: block; margin-top: .38rem; font-family: "Instrument Sans", Arial, sans-serif; font-size: .32rem; font-weight: 600; letter-spacing: .46em; }
 .menu-reserve { justify-self: end; display: flex; width: 145px; height: 78px; border-left: 1px solid var(--dark-line); align-items: center; justify-content: center; font-size: .75rem; font-weight: 600; letter-spacing: .22em; text-decoration: none; text-transform: uppercase; }
 .menu-content { display: grid; min-height: calc(100svh - 78px); padding: clamp(3.2rem, 7vw, 7rem) clamp(2rem, 5vw, 5rem); grid-template-columns: minmax(240px, .8fr) minmax(0, 1.6fr); gap: clamp(3rem, 7vw, 8rem); }
@@ -475,7 +477,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .results-menu { display: grid; width: 2.4rem; gap: .32rem; text-decoration: none; }.results-menu span { display: block; height: 3px; border-radius: 999px; background: #fff; }
 .results-hero-copy { position: absolute; right: 1.5rem; bottom: clamp(2.8rem, 7vw, 5.2rem); left: 1.5rem; text-align: center; }.results-hero-copy h1 { margin: 0; color: #fff; font-family: "Instrument Sans", Arial, sans-serif; font-size: clamp(2.2rem, 4vw, 4rem); font-weight: 600; line-height: 1; }.results-hero-copy p { margin: .55rem 0 0; color: rgba(255,255,255,.9); font-size: clamp(.82rem, 1.18vw, 1.05rem); }
 .results-header { display: flex; min-height: 78px; padding: 0 max(2rem, calc((100% - 1440px) / 2)); border-bottom: 1px solid var(--dark-line); color: var(--ink); align-items: center; justify-content: space-between; }
-.results-wordmark { font-family: "Cormorant Garamond", Georgia, serif; font-size: 2rem; letter-spacing: .13em; line-height: .72; text-decoration: none; text-transform: uppercase; }
+.results-wordmark { display: inline-flex; text-decoration: none; }
 .results-wordmark small { display: block; margin-top: .4rem; font-family: "Instrument Sans", Arial, sans-serif; font-size: .32rem; font-weight: 600; letter-spacing: .46em; }
 .results-actions { display: flex; align-items: center; gap: 1.4rem; }
 .results-back { font-size: .67rem; font-weight: 600; letter-spacing: .15em; text-decoration: none; text-transform: uppercase; }
