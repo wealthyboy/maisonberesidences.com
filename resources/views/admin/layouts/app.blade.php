@@ -21,7 +21,7 @@
                 <div class="flex items-center justify-between border-b border-zinc-800 px-5 py-4">
                     <a href="{{ route('admin.dashboard') }}" class="min-w-0" aria-label="Maison Be Residences admin home">
                         <span class="flex items-center gap-3">
-                            <img src="{{ asset('brand/maison-be-mark.png') }}" alt="" class="h-12 w-12 rounded-lg object-cover shadow-lg" aria-hidden="true">
+                            <img src="{{ asset('brand/maison-be-mark-official.png') }}" alt="" class="h-12 w-12 rounded-lg object-cover shadow-lg" aria-hidden="true">
                             <span class="min-w-0">
                                 <span class="block text-sm font-semibold uppercase tracking-[0.15em] text-[#d9b44a]">Maison Be</span>
                                 <span class="block truncate text-sm font-semibold text-white">Residences Admin</span>

@@ -20,7 +20,7 @@
                 >
                 <div class="absolute inset-0 bg-black/55"></div>
                 <div class="relative z-10 flex h-full flex-col justify-between p-10">
-                    <a href="/" class="inline-flex" aria-label="Maison Be Residences home"><img src="{{ asset('brand/maison-be-logo.png') }}" alt="Maison Be Residences" class="h-auto w-36 rounded-lg shadow-2xl"></a>
+                    <a href="/" class="inline-flex" aria-label="Maison Be Residences home"><img src="{{ asset('brand/maison-be-logo-official.png') }}" alt="Maison Be Residences" class="h-auto w-36 rounded-lg shadow-2xl"></a>
                     <div>
                         <p class="text-xs font-bold uppercase tracking-[0.42em] text-[#d9b44a]">Maison Portal</p>
                         <h1 class="mt-5 max-w-xl font-serif text-6xl uppercase leading-none">Contemporary Luxury</h1>
@@ -31,7 +31,7 @@
             <section class="flex items-center justify-center px-6 py-12">
                 <div class="w-full max-w-md">
                     <div class="mb-10 lg:hidden">
-                        <a href="/" class="inline-flex" aria-label="Maison Be Residences home"><img src="{{ asset('brand/maison-be-logo.png') }}" alt="Maison Be Residences" class="h-auto w-32 rounded-lg shadow-2xl"></a>
+                        <a href="/" class="inline-flex" aria-label="Maison Be Residences home"><img src="{{ asset('brand/maison-be-logo-official.png') }}" alt="Maison Be Residences" class="h-auto w-32 rounded-lg shadow-2xl"></a>
                     </div>
 
                     <div class="rounded-md border border-white/12 bg-white/[.06] p-7 shadow-2xl backdrop-blur">

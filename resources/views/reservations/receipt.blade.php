@@ -49,7 +49,7 @@
     <body class="apartments-page">
         <header class="results-header"><a class="results-wordmark" href="{{ url('/') }}" aria-label="Maison Be Residences home"><x-brand-logo /></a></header>
         <main class="receipt-main">
-            <img src="{{ asset('brand/maison-be-logo.png') }}" alt="Maison Be Residences" style="width: 116px; height: auto; margin-bottom: 1.2rem; border-radius: 8px;">
+            <img src="{{ asset('brand/maison-be-logo-official.png') }}" alt="Maison Be Residences" style="display:block;width:170px;max-width:42vw;height:auto;margin:0 0 1.75rem;border-radius:10px;box-shadow:0 14px 34px rgba(6,17,46,.16);">
             <p class="eyebrow">{{ $invoice->payment_status === 'paid' ? 'Payment received' : 'Payment processing' }}</p>
             <h1>{{ $invoice->payment_status === 'paid' ? 'Booking confirmed.' : 'We are confirming your payment.' }}</h1>
             <p class="receipt-lead">Thank you, {{ $invoice->full_name }}. Your reservation reference is <strong>{{ $invoice->invoice }}</strong>.</p>

@@ -52,8 +52,7 @@
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                                     <tr>
                                         <td>
-                                            <img src="{{ asset('brand/maison-be-logo.png') }}" alt="Maison Be Residences logo" width="108" style="display:block;width:108px;height:auto;margin:0 0 14px;border-radius:8px;">
-                                            <p style="margin:0;color:#a78135;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Maison Be Residences</p>
+                                            <img src="{{ asset('brand/maison-be-logo-official.png') }}" alt="Maison Be Residences logo" width="150" style="display:block;width:150px;max-width:100%;height:auto;margin:0;border-radius:10px;">
                                         </td>
                                         <td align="right" style="color:#5e6678;font-size:13px;line-height:1.5;">
                                             Reservation<br>
