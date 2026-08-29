@@ -17,8 +17,8 @@
 
                 <div class="construction-content">
                     <p class="construction-eyebrow">Launching soon</p>
-                    <h1>Contemporary luxury residence in Lagos.</h1>
-                    <p class="construction-intro">A refined short-stay apartment experience shaped around privacy, comfort, and considered hospitality.</p>
+                    <h1>A contemporary boutique apart-hotel in the heart of Ikoyi, Lagos.</h1>
+                    <p class="construction-intro">Thoughtfully designed for exceptional comfort, complete privacy and warm, impeccable hospitality.</p>
                     <div class="construction-contact">
                         <p>Reservations</p>
                         <a href="mailto:reservations@maisonberesidences.com">reservations@maisonberesidences.com</a>
@@ -34,8 +34,7 @@
             <section class="construction-visual" aria-hidden="true">
                 <img class="construction-monogram" src="{{ asset('brand/maison-be-mark-official.png') }}" alt="">
                 <div class="construction-visual-label">
-                    <span>Private stays</span>
-                    <p>Comfort, privacy and calm.</p>
+                    <p>Live Beautifully</p>
                 </div>
             </section>
         </main>
