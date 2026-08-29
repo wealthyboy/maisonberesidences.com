@@ -21,6 +21,12 @@ class CurrencyService
             return $this->context($requestedCurrency, 'manual selection');
         }
 
+        // Localhost cannot be geolocated meaningfully. Avoid blocking the
+        // request on an external lookup when developing without internet.
+        if (app()->environment('local')) {
+            return $this->context('USD', 'Local development');
+        }
+
         $countryCode = $this->countryCodeFromHeaders($request);
 
         if ($countryCode !== '') {
