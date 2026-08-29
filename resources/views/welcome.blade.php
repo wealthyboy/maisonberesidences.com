@@ -34,7 +34,8 @@
             <section class="construction-visual" aria-hidden="true">
                 <img class="construction-monogram" src="{{ asset('brand/maison-be-mark-official.png') }}" alt="">
                 <div class="construction-visual-label">
-                    <p>Live Beautifully</p>
+                    <span>Live Beautifully</span>
+                    <p>Comfort, privacy and calm.</p>
                 </div>
             </section>
         </main>
