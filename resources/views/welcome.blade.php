@@ -17,7 +17,7 @@
 
                 <div class="construction-content">
                     <p class="construction-eyebrow">Launching soon</p>
-                    <h2>A contemporary boutique apart-hotel in the heart of Ikoyi, Lagos.</h2>
+                    <h1>A contemporary boutique apart-hotel in the heart of Ikoyi, Lagos.</h1>
                     <p class="construction-intro">Thoughtfully designed for exceptional comfort, complete privacy and warm, impeccable hospitality.</p>
                     <div class="construction-contact">
                         <p>Reservations</p>
