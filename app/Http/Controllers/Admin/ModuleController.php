@@ -107,6 +107,66 @@ class ModuleController extends Controller
             ->with('status', Str::singular($module['label']) . ' created.');
     }
 
+
+    public function duplicateApartment(string $record): RedirectResponse
+    {
+        $source = Apartment::with(['images', 'attributes'])->findOrFail($record);
+
+        $copy = DB::transaction(function () use ($source): Apartment {
+            $copy = $source->replicate(['slug', 'uuid', 'sort_order']);
+            $copy->name = $this->nextApartmentCopyName($source->name);
+            $copy->slug = $this->uniqueApartmentSlug(Str::slug($copy->name));
+            $copy->uuid = (string) Str::uuid();
+            $copy->sort_order = ((int) Apartment::max('sort_order')) + 1;
+            $copy->save();
+
+            foreach ($source->images as $image) {
+                $copy->images()->create([
+                    'image' => $image->image,
+                    'caption' => $image->caption,
+                    'image_id' => $image->image_id,
+                    'property_id' => $copy->property_id,
+                ]);
+            }
+
+            $copy->attributes()->sync($source->attributes->pluck('id')->all());
+
+            return $copy;
+        });
+
+        return redirect()
+            ->route('admin.modules.record.edit', ['apartments', $copy->id])
+            ->with('status', $copy->name.' created from '.$source->name.'.');
+    }
+
+    public function reorderApartments(Request $request)
+    {
+        $data = $request->validate([
+            'order' => ['required', 'array', 'min:1'],
+            'order.*' => ['required', 'integer', 'distinct', 'exists:apartments,id'],
+        ]);
+
+        $requestedIds = collect($data['order'])->map(fn ($id) => (int) $id)->values();
+        $remainingIds = Apartment::query()
+            ->whereNotIn('id', $requestedIds)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->pluck('id');
+
+        $orderedIds = $requestedIds->concat($remainingIds)->values();
+
+        DB::transaction(function () use ($orderedIds): void {
+            $orderedIds->each(function ($id, $index): void {
+                Apartment::whereKey($id)->update(['sort_order' => $index + 1]);
+            });
+        });
+
+        return response()->json([
+            'saved' => true,
+            'order' => $orderedIds,
+        ]);
+    }
+
     public function show(string $module, string $record): View
     {
         return $this->view($module, 'show', $record);
@@ -291,7 +351,7 @@ class ModuleController extends Controller
             'model' => $this->record($module, $record),
             'canCreate' => $this->canCreate($module),
             'properties' => Property::orderBy('name')->get(),
-            'apartments' => Apartment::orderBy('name')->get(),
+            'apartments' => Apartment::orderBy('sort_order')->orderBy('id')->get(),
             'attributeGroups' => ApartmentAttribute::query()
                 ->whereNull('parent_id')
                 ->where('type', 'apartment_facility')
@@ -322,7 +382,7 @@ class ModuleController extends Controller
         }
 
         if ($module['slug'] === 'apartments') {
-            return Apartment::with('property')->latest()->paginate(10);
+            return Apartment::with('property')->orderBy('sort_order')->orderBy('id')->get();
         }
 
         if ($this->isInvoiceModule($module)) {
@@ -620,7 +680,7 @@ class ModuleController extends Controller
             'wifi_password' => $data['wifi_password'] ?? null,
             'wifi_ssid' => $data['wifi_ssid'] ?? null,
             'teaser' => $data['teaser'] ?? null,
-            'image' => $data['main_image'] ?? $apartment?->image,
+            'image' => $request->exists('main_image') ? ($data['main_image'] ?? null) : $apartment?->image,
             'bedroom_1' => $data['bedroom_1'] ?? null,
             'bedroom_2' => $data['bedroom_2'] ?? null,
             'bedroom_3' => $data['bedroom_3'] ?? null,
@@ -630,7 +690,8 @@ class ModuleController extends Controller
             'description' => $data['description'] ?? null,
             'type' => 'multiple',
             'allow' => $data['status'] === 'active',
-            'uuid' => $apartment?->uuid ?? (string) time(),
+            'sort_order' => $apartment?->sort_order ?? (((int) Apartment::max('sort_order')) + 1),
+            'uuid' => $apartment?->uuid ?? (string) Str::uuid(),
             'slug' => $this->uniqueApartmentSlug(Str::slug($name), $apartment),
         ];
     }
@@ -777,6 +838,33 @@ class ModuleController extends Controller
         $nextId = ((int) Invoice::max('id')) + 1;
 
         return 'INV-' . date('Y') . '-' . $nextId . random_int(1000, 9999);
+    }
+
+
+    private function nextApartmentCopyName(string $name): string
+    {
+        if (preg_match('/^(.*?)(\d+)\s*$/', trim($name), $matches)) {
+            $prefix = rtrim($matches[1]);
+            $number = ((int) $matches[2]) + 1;
+
+            do {
+                $candidate = trim($prefix.' '.$number);
+                $number++;
+            } while (Apartment::where('name', $candidate)->exists());
+
+            return $candidate;
+        }
+
+        $base = trim($name).' Copy';
+        $candidate = $base;
+        $number = 2;
+
+        while (Apartment::where('name', $candidate)->exists()) {
+            $candidate = $base.' '.$number;
+            $number++;
+        }
+
+        return $candidate;
     }
 
     private function uniqueApartmentSlug(string $slug, ?Apartment $apartment = null): string

@@ -385,7 +385,12 @@
         @if ($screen === 'index')
         <section class="rounded-md border border-zinc-200 bg-white shadow-sm">
             <div class="flex flex-col gap-3 border-b border-zinc-200 px-5 py-4 md:flex-row md:items-center md:justify-between">
-                <h2 class="text-base font-semibold text-zinc-950">{{ $module['label'] }} records</h2>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-base font-semibold text-zinc-950">{{ $module['label'] }} records</h2>
+                    @if ($isApartments)
+                        <span class="text-xs font-semibold text-zinc-400" data-apartment-order-status>Drag rows to reorder</span>
+                    @endif
+                </div>
                 @unless ($isCustomers)
                     <button type="submit" form="bulkDeleteForm" class="rounded-md border border-red-200 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-red-600 transition hover:bg-red-50">
                         Delete selected
@@ -401,6 +406,9 @@
                 <table class="min-w-full divide-y divide-zinc-200 text-left text-sm">
                     <thead class="bg-zinc-50 text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
                         <tr>
+                            @if ($isApartments)
+                                <th class="w-14 px-3 py-3 text-center">Order</th>
+                            @endif
                             @unless ($isCustomers)
                                 <th class="w-10 px-5 py-3">
                                     <input type="checkbox" class="h-4 w-4 rounded border-zinc-300 text-[#222052] focus:ring-[#222052]" data-bulk-check-all aria-label="Select all records">
@@ -418,10 +426,17 @@
                             <th class="px-5 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-100">
+                    <tbody class="divide-y divide-zinc-100" @if ($isApartments) data-apartment-sortable @endif>
                         @if ($records)
                             @forelse ($records as $recordItem)
-                                <tr>
+                                <tr @if ($isApartments) data-apartment-row data-apartment-id="{{ $recordItem->id }}" @endif>
+                                    @if ($isApartments)
+                                        <td class="px-3 py-4 align-middle text-center">
+                                            <button type="button" data-apartment-drag-handle class="inline-flex h-9 w-9 cursor-grab items-center justify-center rounded-md border border-zinc-200 bg-white text-lg font-bold text-zinc-400 transition hover:border-[#d9b44a] hover:text-[#222052] active:cursor-grabbing" aria-label="Drag {{ $recordItem->name }} to reorder" title="Drag to reorder">
+                                                ⋮⋮
+                                            </button>
+                                        </td>
+                                    @endif
                                     @unless ($isCustomers)
                                         <td class="px-5 py-4 align-top">
                                             <input form="bulkDeleteForm" type="checkbox" name="record_ids[]" value="{{ $recordItem->id }}" class="h-4 w-4 rounded border-zinc-300 text-[#222052] focus:ring-[#222052]" data-bulk-check-row aria-label="Select {{ $isInvoices ? $recordItem->invoice : ($recordItem->name ?? $recordItem->title ?? 'record') }}">
@@ -524,6 +539,12 @@
                                             @else
                                                 <a href="{{ route('admin.modules.record.show', [$module['slug'], $recordItem->id]) }}" class="font-semibold text-zinc-600 hover:text-zinc-950">View</a>
                                                 <a href="{{ route('admin.modules.record.edit', [$module['slug'], $recordItem->id]) }}" class="font-semibold text-[#222052] hover:text-[#d9b44a]">Edit</a>
+                                                @if ($isApartments)
+                                                    <form method="post" action="{{ route('admin.apartments.duplicate', $recordItem->id) }}">
+                                                        @csrf
+                                                        <button type="submit" class="font-semibold text-emerald-700 hover:text-emerald-800">Copy</button>
+                                                    </form>
+                                                @endif
                                                 <form method="post" action="{{ route('admin.modules.record.destroy', [$module['slug'], $recordItem->id]) }}" onsubmit="return confirm('Delete this record? This cannot be undone.');">
                                                     @csrf
                                                     @method('delete')
@@ -535,7 +556,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ $isApartments ? 6 : 5 }}" class="px-5 py-10 text-center text-sm text-zinc-500">No {{ strtolower($module['label']) }} records yet.</td>
+                                    <td colspan="{{ $isApartments ? 7 : 5 }}" class="px-5 py-10 text-center text-sm text-zinc-500">No {{ strtolower($module['label']) }} records yet.</td>
                                 </tr>
                             @endforelse
                         @endif
@@ -543,7 +564,7 @@
                 </table>
             </div>
 
-            @if ($records && $records->hasPages())
+            @if ($records && method_exists($records, 'hasPages') && $records->hasPages())
                 <div class="border-t border-zinc-200 px-5 py-4">
                     {{ $records->links() }}
                 </div>
@@ -570,6 +591,7 @@
 
 @if ($isApartments && $screen === 'index')
     @push('scripts')
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
         <div id="apartmentImageZoom" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4">
             <button type="button" data-zoom-close class="absolute right-5 top-5 rounded-md bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20">
                 Close
@@ -582,6 +604,42 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', function () {
+                const sortableBody = document.querySelector('[data-apartment-sortable]');
+                const orderStatus = document.querySelector('[data-apartment-order-status]');
+
+                if (sortableBody && window.Sortable) {
+                    const saveApartmentOrder = async function () {
+                        const order = Array.from(sortableBody.querySelectorAll('[data-apartment-row]'))
+                            .map(function (row) { return Number(row.getAttribute('data-apartment-id')); });
+
+                        if (orderStatus) orderStatus.textContent = 'Saving order...';
+
+                        try {
+                            const response = await fetch(@json(route('admin.apartments.reorder')), {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                },
+                                body: JSON.stringify({ order: order }),
+                            });
+
+                            if (!response.ok) throw new Error('Unable to save apartment order.');
+                            if (orderStatus) orderStatus.textContent = 'Order saved';
+                        } catch (error) {
+                            if (orderStatus) orderStatus.textContent = 'Could not save order — refresh and try again';
+                        }
+                    };
+
+                    new Sortable(sortableBody, {
+                        animation: 160,
+                        handle: '[data-apartment-drag-handle]',
+                        ghostClass: 'opacity-50',
+                        onEnd: saveApartmentOrder,
+                    });
+                }
+
                 const zoom = document.getElementById('apartmentImageZoom');
                 if (!zoom) return;
 

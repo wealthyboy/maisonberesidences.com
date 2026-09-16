@@ -11,6 +11,7 @@ class Apartment extends Model
 
     protected $fillable = [
         'name',
+        'sort_order',
         'property_id',
         'price',
         'sale_price',
@@ -49,6 +50,7 @@ class Apartment extends Model
             'sale_price' => 'decimal:2',
             'toilets' => 'decimal:1',
             'allow' => 'boolean',
+            'sort_order' => 'integer',
             'sale_price_expires' => 'date',
         ];
     }

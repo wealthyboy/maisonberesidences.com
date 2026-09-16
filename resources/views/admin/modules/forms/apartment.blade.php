@@ -138,8 +138,15 @@
     <textarea name="description" rows="5" class="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-[#d9b44a] focus:ring-2 focus:ring-[#d9b44a]/20">{{ old('description', $model->description ?? '') }}</textarea>
 </label>
 
-<div class="border-b border-zinc-200 pb-2 pt-2 lg:col-span-2">
+<div class="flex items-center justify-between gap-3 border-b border-zinc-200 pb-2 pt-2 lg:col-span-2">
     <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-zinc-500">Images</h3>
+    <button
+        type="button"
+        data-clear-apartment-images
+        class="{{ ($model?->images ?? collect())->isNotEmpty() ? '' : 'hidden' }} rounded-md border border-red-200 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.1em] text-red-600 transition hover:bg-red-50"
+    >
+        Clear all images
+    </button>
 </div>
 
 <div class="j-drop lg:col-span-2 min-h-80 cursor-pointer rounded-md border-2 border-dotted border-zinc-300 bg-white p-5 transition" data-has-images="{{ ($model?->images ?? collect())->isNotEmpty() ? '1' : '0' }}">
@@ -287,6 +294,8 @@
             const uploadText = dropzone.querySelector('.upload-text');
             const details = dropzone.querySelector('.j-details');
             const mainInput = dropzone.querySelector('input[name="main_image"]');
+            const clearButton = document.querySelector('[data-clear-apartment-images]');
+            let uploadGeneration = 0;
             const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
             const refreshPrompt = () => {
@@ -294,6 +303,7 @@
                 uploadText.classList.toggle('hidden', hasCards);
                 uploadText.classList.toggle('hide', hasCards);
                 dropzone.dataset.hasImages = hasCards ? '1' : '0';
+                if (clearButton) clearButton.classList.toggle('hidden', !hasCards);
             };
 
             const updateOrder = () => {
@@ -357,6 +367,7 @@
             };
 
             const uploadSingleFile = async (file) => {
+                const generation = uploadGeneration;
                 const holder = loader(file);
                 const form = new FormData();
                 form.append('file', file);
@@ -376,6 +387,10 @@
                     }
 
                     const data = await response.json();
+                    if (generation !== uploadGeneration) {
+                        refreshPrompt();
+                        return;
+                    }
                     if (data.path) card(data.path);
                     refreshPrompt();
                 } catch (error) {
@@ -385,6 +400,15 @@
             };
 
             const handleFiles = (files) => [...files].forEach(uploadSingleFile);
+
+            clearButton?.addEventListener('click', () => {
+                uploadGeneration++;
+                details.querySelectorAll('[data-image-card], [data-loader]').forEach((item) => item.remove());
+                mainInput.value = '';
+                input.value = '';
+                updateOrder();
+                refreshPrompt();
+            });
 
             dropzone.addEventListener('click', (event) => {
                 if (event.target.closest('input, textarea, button, a, .select-main-image')) return;

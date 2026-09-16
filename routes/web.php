@@ -39,6 +39,8 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
 
     Route::post('upload/image', [UploadController::class, 'image'])->name('upload.image');
     Route::post('apartments/check-availability', [ModuleController::class, 'checkApartmentAvailability'])->name('apartments.check-availability');
+    Route::post('apartments/reorder', [ModuleController::class, 'reorderApartments'])->name('apartments.reorder');
+    Route::post('apartments/{record}/duplicate', [ModuleController::class, 'duplicateApartment'])->name('apartments.duplicate');
 
     Route::get('{module}', [ModuleController::class, 'index'])
         ->where('module', AdminModules::allowedSlugs())

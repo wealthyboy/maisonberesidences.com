@@ -52,7 +52,8 @@ class ApartmentSearchController extends Controller
                 filled($filters['rooms'] ?? null) && (int) $filters['rooms'] > 1,
                 fn ($query) => $query->where('no_of_rooms', '>=', $filters['rooms'])
             )
-            ->orderBy('name')
+            ->orderBy('sort_order')
+            ->orderBy('id')
             ->paginate(6)
             ->withQueryString();
 
