@@ -205,20 +205,20 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .residence-card-copy h3 a { color: inherit; text-decoration: none; }
 .residence-card-copy h3 a:hover, .residence-card-copy h3 a:focus-visible { color: #a78135; }
 .residence-gallery-slide img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.apartment-card-modal { width: min(860px, calc(100vw - 2rem)); max-height: min(92svh, 820px); padding: 0; border: 0; border-radius: 16px; color: var(--ink); background: var(--paper); box-shadow: 0 24px 90px rgba(9,18,42,.35); opacity: 0; overflow: auto; transform: translateY(22px) scale(.982); transition: opacity .34s ease, transform .42s cubic-bezier(.16, 1, .3, 1); }
+.apartment-card-modal { width: min(760px, calc(100vw - 2rem)); max-height: 86svh; margin: 7svh auto; padding: 0; border: 0; border-radius: 18px; color: var(--ink); background: #fff; box-shadow: 0 24px 90px rgba(9,18,42,.35); opacity: 0; overflow: auto; transform: translateY(22px) scale(.982); transition: opacity .34s ease, transform .42s cubic-bezier(.16, 1, .3, 1); }
 .apartment-card-modal.is-open { opacity: 1; transform: translateY(0) scale(1); }
 .apartment-card-modal.is-closing { opacity: 0; transform: translateY(14px) scale(.982); }
 .apartment-card-modal::backdrop { background: rgba(13,20,34,0); backdrop-filter: blur(0); transition: background .34s ease, backdrop-filter .34s ease; }
 .apartment-card-modal.is-open::backdrop { background: rgba(13,20,34,.66); backdrop-filter: blur(3px); }
 .apartment-card-modal.is-closing::backdrop { background: rgba(13,20,34,0); backdrop-filter: blur(0); }
-.apartment-card-modal-header { display: flex; padding: 1.15rem 1.7rem; align-items: center; justify-content: space-between; gap: 1rem; }
-.apartment-card-modal-header h2 { margin: .3rem 0 0; font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(2.1rem, 4vw, 3.6rem); font-weight: 400; line-height: .95; }
-.apartment-card-modal-header button { display: grid; width: 2.5rem; height: 2.5rem; padding: 0; border: 1px solid var(--dark-line); border-radius: 50%; color: var(--ink); background: transparent; place-items: center; font-size: 1.8rem; line-height: 1; }
-.apartment-card-modal-slider { position: relative; height: min(42svh, 360px); overflow: hidden; background: #e7dfd0; }
+.apartment-card-modal-header { display: flex; min-height: 76px; padding: 1rem 1.5rem; align-items: center; justify-content: space-between; gap: 1rem; }
+.apartment-card-modal-header h2 { margin: 0; font-family: Instrument Sans, Arial, sans-serif; font-size: clamp(1.25rem, 2vw, 1em); font-weight: 700; line-height: 1; }
+.apartment-card-modal-header button { display: grid; width: 2.45rem; height: 2.45rem; padding: 0; border: 0; border-radius: 50%; color: #1769e8; background: transparent; place-items: center; font-size: 2rem; line-height: 1; }
+.apartment-card-modal-slider { position: relative; height: min(66svh, 620px); margin: 0 1.5rem; overflow: hidden; border-radius: 18px; background: #e7dfd0; }
 .apartment-card-modal-slide { position: absolute; inset: 0; margin: 0; opacity: 0; transform: scale(1.015); transition: opacity .34s ease, transform .58s cubic-bezier(.16, 1, .3, 1); }
 .apartment-card-modal-slide.is-active { z-index: 1; opacity: 1; transform: scale(1); }
 .apartment-card-modal-slide img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.apartment-card-modal-control { position: absolute; top: 50%; z-index: 3; display: grid; width: 3.1rem; height: 3.1rem; padding: 0; border: 0; border-radius: 50%; color: var(--ink); background: rgba(255,255,255,.92); place-items: center; transform: translateY(-50%); box-shadow: 0 14px 34px rgba(9,18,42,.16); }
+.apartment-card-modal-control { position: absolute; top: 50%; z-index: 3; display: grid; width: 2.1rem; height: 2.1rem; padding: 0; border: 0; border-radius: 50%; color: var(--ink); background: #ffffffeb; place-items: center; transform: translateY(-50%); box-shadow: 0 14px 34px #09122a29; }
 .apartment-card-modal-control:hover, .apartment-card-modal-control:focus-visible { color: #fff; background: var(--deep); }
 .apartment-card-modal-control svg { width: 1.35rem; height: 1.35rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.2; }
 .apartment-card-modal-control.is-previous { left: 1.1rem; }
@@ -227,20 +227,29 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .apartment-card-modal-progress { position: absolute; right: 1.1rem; bottom: .4rem; left: 1.1rem; z-index: 3; display: flex; gap: .35rem; }
 .apartment-card-modal-progress span { height: 3px; flex: 1; background: rgba(255,255,255,.52); }
 .apartment-card-modal-progress span.is-active { background: #fff; }
-.apartment-card-modal-body { padding: 1.35rem 1.7rem 1.7rem; }
+.apartment-card-modal-body { padding: 1.55rem 1.5rem 1.8rem; }
 .apartment-card-modal-body > p { max-width: 720px; margin: 0; color: var(--soft-ink); line-height: 1.65; }
 .apartment-card-modal-body h3 { margin: 1.45rem 0 .8rem; font-size: clamp(1.25rem, 1.8vw, 1.75rem); line-height: 1.05; }
+.apartment-card-modal-body .apartment-modal-room-name { margin: 0 0 1.15rem; color: var(--ink); font-family: Instrument Sans, Arial, sans-serif; font-size: clamp(1.35rem, 2.2vw, 1rem); font-weight: 700; }
+.apartment-modal-feature-grid { display: grid; margin: 0; padding: 1.2rem; border-radius: 16px; background: #f1f4f8; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem 1rem; list-style: none; }
+.apartment-modal-feature-grid li { display: grid; min-width: 0; color: var(--ink); justify-items: center; gap: .55rem; font-size: .82rem; line-height: 1.25; text-align: center; }
+.apartment-modal-feature-grid svg { width: 1.7rem; height: 1.7rem; color: var(--ink); stroke-width: 1.8; }
+.apartment-modal-facts { display: grid; margin: 1.35rem 0 0; padding: 0; gap: .7rem; color: var(--ink); list-style: none; }
+.apartment-modal-facts li { display: flex; align-items: center; gap: .65rem; font-size: .9rem; }
+.apartment-modal-facts svg { width: 1.35rem; height: 1.35rem; flex: 0 0 1.35rem; }
+.apartment-modal-facts .is-parking { color: #258452; }
 .apartment-card-modal-highlights { padding: .9rem; border: 1px solid rgba(167,129,53,.22); border-radius: 12px; background: linear-gradient(135deg, #fffaf0 0%, #fff 100%); }
 .apartment-card-modal-highlights > span { display: block; margin-bottom: .55rem; color: var(--gold); font-size: .62rem; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
 .apartment-card-modal-highlights ul { display: flex; margin: 0; padding: 0; flex-wrap: wrap; gap: .45rem; list-style: none; }
 .apartment-card-modal-highlights li { display: inline-flex; min-height: 2rem; padding: .38rem .58rem; border: 1px solid rgba(167,129,53,.34); border-radius: 999px; color: var(--ink); background: #fff; align-items: center; gap: .36rem; font-size: .76rem; font-weight: 800; line-height: 1; }
 .apartment-card-modal-highlights svg { width: .85rem; height: .85rem; flex: 0 0 .85rem; fill: none; stroke: var(--gold); stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.2; }
-.apartment-modal-amenities { margin-top: 1.35rem; padding-top: 1.15rem; border-top: 1px solid var(--dark-line); }
-.apartment-modal-amenities > h3 { margin: 0 0 1rem; color: #050505; font-family: "Instrument Sans", Arial, sans-serif; font-size: clamp(1.55rem, 2.3vw, 2rem); font-weight: 600; line-height: 1; }
-.apartment-modal-amenities-grid { display: grid; gap: 1.2rem 2.4rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.apartment-modal-amenity-group h4 { display: flex; margin: 0 0 .55rem; color: #050505; align-items: center; gap: .62rem; font-size: 1.12rem; font-weight: 600; line-height: 1.15; }
-.apartment-modal-amenity-group h4 span { font-size: .96rem; }
-.apartment-modal-amenity-group ul { display: grid; margin: 0; padding-left: 2rem; gap: .28rem; color: #1d243d; font-size: .95rem; line-height: 1.28; }
+.apartment-modal-amenities { margin-top: 1.7rem; padding-top: 1.45rem; border-top: 1px solid #dfe3ea; }
+.apartment-modal-amenities > h3 { margin: 0 0 1.1rem; color: var(--ink); font-family: "Instrument Sans", Arial, sans-serif; font-size: clamp(1.2rem, 1.8vw, 1.5rem); font-weight: 700; line-height: 1; }
+.apartment-modal-amenities-grid { display: grid; gap: 1.8rem 3rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.apartment-modal-amenity-group h4 { display: flex; margin: 0 0 .58rem; color: var(--ink); align-items: center; gap: .58rem; font-size: .92rem; font-weight: 700; line-height: 1.15; }
+.apartment-modal-amenity-group h4 svg { width: 1.1rem; height: 1.1rem; flex: 0 0 1.1rem; }
+.apartment-modal-amenity-group ul { display: grid; margin: 0; padding-left: 1.85rem; gap: .34rem; color: #1d243d; font-size: .76rem; line-height: 1.34; }
+.apartment-modal-booking { margin-top: 1.8rem; padding-top: .2rem; border-top: 1px solid #dfe3ea; }
 .apartment-availability-form { display: grid; grid-template-columns: minmax(240px, 1.5fr) .65fr auto; gap: .6rem; align-items: end; }
 .apartment-availability-form label, .results-search label { display: grid; gap: .3rem; color: #767b86; font-size: .69rem; font-weight: 600; letter-spacing: .03em; }
 .apartment-availability-form input, .results-search input { min-width: 0; padding: .72rem .8rem; border: 1px solid var(--dark-line); border-radius: 8px; color: var(--ink); background: #fff; font: inherit; }
@@ -662,9 +671,18 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .introduction-cta, .residences-heading-summary a, .residence-story-copy a, .enquire a { transition: color .22s ease, border-color .22s ease; }
 
 @media (prefers-reduced-motion: reduce) { .hero-header, .hero-title-wrap, .booking-bar, .hero-scroll span { animation: none; } .maison-reveal { opacity: 1; transform: none; transition: none; } .introduction-cta, .residences-heading-summary a, .residence-story-copy a, .enquire a { transition: none; } }
+@media (max-width: 760px) { .apartment-card-modal-control { width: 2.1rem; height: 2.1rem; } }
+@media (max-width: 760px) { .apartment-card-modal { max-height: 94svh; margin: 3svh auto; } }
 @media (max-width: 560px) {
     .booking-guests .rooms-guests-trigger {
         width: fit-content;
         margin-left: max(0rem, calc(25% - 1.75rem));
     }
+    .apartment-card-modal { width: calc(100vw - 1rem); border-radius: 14px; }
+    .apartment-card-modal-header { min-height: 62px; }
+    .apartment-card-modal-slider { height: min(40svh, 300px); margin: 0 .75rem; border-radius: 12px; }
+    .apartment-card-modal-body { padding: 1rem .9rem 1.35rem; }
+    .apartment-modal-feature-grid { padding: .9rem .65rem; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem .65rem; }
+    .apartment-modal-feature-grid li { font-size: .76rem; }
+    .apartment-modal-amenities-grid { grid-template-columns: 1fr; }
 }

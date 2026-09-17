@@ -25,7 +25,8 @@
         $images->push($resolveApartmentImage($apartment->image) ?: asset('media/maisonbe-hero-source.jpg'));
     }
 
-    $slides = $images->take(10)->values();
+    $cardSlides = $images->take(10)->values();
+    $modalSlides = $images->values();
     $highlightSource = $apartment->teaser ?: strip_tags((string) $apartment->description);
     $knownHighlights = ['Air conditioning', 'Flat-screen TV', 'Pillowtop bed', 'Premium bedding', 'Blackout drapes/curtains', 'Private Family Lounge'];
     $highlights = collect($knownHighlights)
@@ -59,6 +60,36 @@
     $cardAmenities = $amenityGroups->flatten(1);
     $parkingAmenity = $cardAmenities->first(fn ($attribute) => strtolower(trim($attribute->name)) === 'parking included');
     $wifiAmenity = $cardAmenities->first(fn ($attribute) => strtolower(trim($attribute->name)) === 'free wifi');
+    $featurePriority = collect([
+        'Climate-controlled air conditioning',
+        'Blackout drapes/curtains',
+        'Flat-screen TV',
+        'Cinema',
+        'Hot tub/Jacuzzi',
+        'Elevator',
+    ])->flip();
+    $modalFeatureAmenities = $cardAmenities
+        ->reject(fn ($attribute) => in_array(strtolower(trim($attribute->name)), [
+            'parking included',
+            'free wifi',
+            'breakfast buffet',
+            'reserve now, pay later',
+        ], true))
+        ->sortBy(fn ($attribute) => $featurePriority->get($attribute->name, 1000 + $attribute->sort_order))
+        ->take(6);
+    $groupIcons = [
+        'Bathroom' => 'bathroom',
+        'Bedroom' => 'bed',
+        'Outdoors' => 'pool',
+        'Living Area' => 'sofa',
+        'Entertainment' => 'tv',
+        'Internet' => 'wifi',
+        'Wellness' => 'hot-tub',
+        'Kitchen & Dining' => 'kitchen',
+        'Food and drink' => 'room-service',
+        'More' => 'check',
+        'Accessibility' => 'elevator',
+    ];
     $bedSummary = collect([
         $apartment->bedroom_1,
         $apartment->bedroom_2,
@@ -83,12 +114,12 @@
 
 <article class="residence-card" data-apartment-card>
     <div class="residence-gallery" data-card-gallery>
-        @foreach ($slides as $index => $image)
+        @foreach ($cardSlides as $index => $image)
             <button class="residence-gallery-slide {{ $index === 0 ? 'is-active' : '' }}" type="button" style="--slide-image: url('{{ $image }}');" data-card-slide data-card-modal-open aria-controls="{{ $modalId }}" aria-label="View {{ $apartment->name }} photos">
                 <img src="{{ $image }}" alt="{{ $apartment->name }} at Maison Be" loading="{{ $index === 0 ? 'eager' : 'lazy' }}" decoding="async" onerror="this.onerror=null;this.src='{{ asset('media/maisonbe-hero-source.jpg') }}';">
             </button>
         @endforeach
-        @if ($slides->count() > 1)
+        @if ($cardSlides->count() > 1)
             <button class="residence-gallery-control is-previous" type="button" aria-label="Previous photo" data-card-previous><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
             <button class="residence-gallery-control is-next" type="button" aria-label="Next photo" data-card-next><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
         @endif
@@ -96,9 +127,9 @@
             <span class="residence-gallery-caption">{{ $apartment->name }}</span>
             <button class="residence-gallery-open" type="button" data-card-modal-open aria-controls="{{ $modalId }}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="8.5" cy="9" r="1.25"></circle><path d="m21 15-4.5-4.5L8 19"></path></svg>{{ $images->count() }} View all</button>
         </div>
-        @if ($slides->count() > 1)
+        @if ($cardSlides->count() > 1)
             <div class="residence-gallery-progress" aria-hidden="true">
-                @foreach ($slides as $index => $image)<span class="{{ $index === 0 ? 'is-active' : '' }}" data-card-progress></span>@endforeach
+                @foreach ($cardSlides as $index => $image)<span class="{{ $index === 0 ? 'is-active' : '' }}" data-card-progress></span>@endforeach
             </div>
         @endif
     </div>
@@ -131,52 +162,55 @@
     </div>
 
     <dialog class="apartment-card-modal" id="{{ $modalId }}" data-card-modal>
-        <div class="apartment-card-modal-header"><div><p class="eyebrow">Apartment information</p><h2>{{ $apartment->name }}</h2></div><button type="button" data-card-modal-close aria-label="Close apartment information">×</button></div>
+        <div class="apartment-card-modal-header">
+            <h2>Room information</h2>
+            <button type="button" data-card-modal-close aria-label="Close room information">×</button>
+        </div>
         <div class="apartment-card-modal-slider" data-modal-slider>
-            @foreach ($slides as $index => $image)
+            @foreach ($modalSlides as $index => $image)
                 <figure class="apartment-card-modal-slide {{ $index === 0 ? 'is-active' : '' }}" data-modal-slide>
                     <img src="{{ $image }}" alt="{{ $apartment->name }} at Maison Be" loading="{{ $index === 0 ? 'eager' : 'lazy' }}" decoding="async" onerror="this.onerror=null;this.src='{{ asset('media/maisonbe-hero-source.jpg') }}';">
                 </figure>
             @endforeach
-            @if ($slides->count() > 1)
+            @if ($modalSlides->count() > 1)
                 <button class="apartment-card-modal-control is-previous" type="button" aria-label="Previous apartment photo" data-modal-previous><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
                 <button class="apartment-card-modal-control is-next" type="button" aria-label="Next apartment photo" data-modal-next><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
-                <span class="apartment-card-modal-count" data-modal-count>1 / {{ $slides->count() }}</span>
+                <span class="apartment-card-modal-count" data-modal-count>1 / {{ $modalSlides->count() }}</span>
                 <div class="apartment-card-modal-progress" aria-hidden="true">
-                    @foreach ($slides as $index => $image)<span class="{{ $index === 0 ? 'is-active' : '' }}" data-modal-progress></span>@endforeach
+                    @foreach ($modalSlides as $index => $image)<span class="{{ $index === 0 ? 'is-active' : '' }}" data-modal-progress></span>@endforeach
                 </div>
             @endif
         </div>
         <div class="apartment-card-modal-body">
-            @if ($highlights->isNotEmpty())
-                <div class="apartment-card-modal-highlights">
-                    <span>Highlights</span>
-                    <ul>
-                        @foreach ($highlights as $highlight)
-                            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>{{ $highlight }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @elseif (filled($apartment->teaser ?: strip_tags((string) $apartment->description)))
-                <p>{{ $apartment->teaser ?: \Illuminate\Support\Str::limit(strip_tags((string) $apartment->description), 180) }}</p>
+            <h3 class="apartment-modal-room-name">{{ \Illuminate\Support\Str::title(\Illuminate\Support\Str::lower($apartment->name)) }}</h3>
+
+            @if ($modalFeatureAmenities->isNotEmpty())
+                <ul class="apartment-modal-feature-grid">
+                    @foreach ($modalFeatureAmenities as $attribute)
+                        <li>
+                            <x-amenity-icon :name="$attribute->icon ?: 'check'" />
+                            <span>{{ $attribute->name }}</span>
+                        </li>
+                    @endforeach
+                </ul>
             @endif
-            @if ($bookingEnabled)
-                <h3>Check availability for {{ $apartment->name }}</h3>
-                <form class="apartment-availability-form" action="{{ route('apartments.availability', $apartment) }}" data-availability-form>
-                    <x-date-range-picker class="availability-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" required />
-                    <label>Guests<input type="number" name="guests" min="1" max="{{ $apartment->max_adults ?: 20 }}" value="{{ $filters['guests'] ?? 1 }}"></label>
-                    <button type="submit" data-availability-submit>Check availability</button>
-                </form>
-                <p class="apartment-availability-status" aria-live="polite" data-availability-status></p>
-                <a class="apartment-book-now" href="#" hidden data-book-now>Book now <span aria-hidden="true">→</span></a>
-            @endif
+
+            <ul class="apartment-modal-facts">
+                @if ($parkingAmenity)<li class="is-parking"><x-amenity-icon name="parking" />{{ $parkingAmenity->name }}</li>@endif
+                @if ($displaySize)<li><x-amenity-icon name="area" />{{ $displaySize }}</li>@endif
+                @if ($beds)<li><x-amenity-icon name="bedrooms" />{{ $beds }} {{ \Illuminate\Support\Str::plural('Bedroom', $beds) }}</li>@endif
+                @if ($apartment->max_adults)<li><x-amenity-icon name="guests" />Sleeps {{ $apartment->max_adults }}</li>@endif
+                @if ($bedSummary)<li><x-amenity-icon name="bed" />{{ \Illuminate\Support\Str::title($bedSummary) }}</li>@endif
+                @if ($wifiAmenity || filled($apartment->wifi_ssid))<li><x-amenity-icon name="wifi" />Free WiFi</li>@endif
+            </ul>
+
             @if ($amenityGroups->isNotEmpty())
                 <section class="apartment-modal-amenities">
-                    <h3>Apartment amenities</h3>
+                    <h3>Room amenities</h3>
                     <div class="apartment-modal-amenities-grid">
                         @foreach ($amenityGroups as $groupName => $attributes)
                             <article class="apartment-modal-amenity-group">
-                                <h4><span aria-hidden="true">✓</span>{{ $groupName }}</h4>
+                                <h4><x-amenity-icon :name="$groupIcons[$groupName] ?? ($attributes->first()?->icon ?: 'check')" />{{ $groupName }}</h4>
                                 <ul>
                                     @foreach ($attributes as $attribute)
                                         <li>{{ $attribute->name }}</li>
@@ -185,6 +219,19 @@
                             </article>
                         @endforeach
                     </div>
+                </section>
+            @endif
+
+            @if ($bookingEnabled)
+                <section class="apartment-modal-booking">
+                    <h3>Check availability for {{ \Illuminate\Support\Str::title(\Illuminate\Support\Str::lower($apartment->name)) }}</h3>
+                    <form class="apartment-availability-form" action="{{ route('apartments.availability', $apartment) }}" data-availability-form>
+                        <x-date-range-picker class="availability-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" required />
+                        <label>Guests<input type="number" name="guests" min="1" max="{{ $apartment->max_adults ?: 20 }}" value="{{ $filters['guests'] ?? 1 }}"></label>
+                        <button type="submit" data-availability-submit>Check availability</button>
+                    </form>
+                    <p class="apartment-availability-status" aria-live="polite" data-availability-status></p>
+                    <a class="apartment-book-now" href="#" hidden data-book-now>Book now <span aria-hidden="true">→</span></a>
                 </section>
             @endif
         </div>
