@@ -194,6 +194,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .residence-gallery-caption { font-weight: 500; }
 .residence-gallery-caption { max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .residence-gallery-open { display: inline-flex; border: 0; align-items: center; gap: .3rem; pointer-events: auto; white-space: nowrap; }
+.residence-gallery-open { margin-left: auto; }
 .residence-gallery-open:hover, .residence-gallery-open:focus-visible { background: var(--deep); }
 .residence-gallery-open svg { width: .9rem; height: .9rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.9; }
 .residence-gallery-progress { position: absolute; right: 1.35rem; bottom: .35rem; left: 1.35rem; z-index: 2; display: flex; gap: .32rem; }
@@ -418,9 +419,9 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .residence-card-details { display: grid; margin-top: .82rem; gap: .62rem; font-family: "Galaxie Polaris", "Instrument Sans", Arial, sans-serif; }
 .residence-card-details > span { display: inline-flex; color: #22283a; align-items: center; gap: .35rem; font-size: .72rem; }
 .residence-card-details > span svg { width: 1rem; height: 1rem; flex: 0 0 1rem; }
-.residence-card-details > a { display: inline-flex; width: fit-content; color: #1769e8; align-items: center; gap: .32rem; font-size: .76rem; text-decoration: none; }
-.residence-card-details > a:hover, .residence-card-details > a:focus-visible { color: #0b4fb9; }
-.residence-card-details > a svg { width: .9rem; height: .9rem; stroke-width: 2.2; }
+.residence-card-details > button { display: inline-flex; width: fit-content; padding: 0; border: 0; color: #1769e8; background: transparent; align-items: center; gap: .32rem; font: inherit; font-size: .76rem; text-decoration: none; cursor: pointer; }
+.residence-card-details > button:hover, .residence-card-details > button:focus-visible { color: #0b4fb9; }
+.residence-card-details > button svg { width: .9rem; height: .9rem; stroke-width: 2.2; }
 .residence-card-footer { display: flex; width: 100%; margin-top: auto; padding-top: 1rem; flex-direction: column; align-items: flex-start; gap: .8rem; }
 .residence-card-rate { display: flex; width: 100%; min-height: 3.15rem; align-items: flex-end; justify-content: flex-start; gap: 1rem; text-align: left; }
 .residence-card-price { display: flex; margin: 0; color: #050505; flex-direction: column; align-items: flex-start; justify-content: flex-end; font-family: "Centra No2", "Instrument Sans", Arial, sans-serif; letter-spacing: 0; line-height: 1; text-align: left; white-space: nowrap; }
@@ -671,6 +672,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .introduction-cta, .residences-heading-summary a, .residence-story-copy a, .enquire a { transition: color .22s ease, border-color .22s ease; }
 
 @media (prefers-reduced-motion: reduce) { .hero-header, .hero-title-wrap, .booking-bar, .hero-scroll span { animation: none; } .maison-reveal { opacity: 1; transform: none; transition: none; } .introduction-cta, .residences-heading-summary a, .residence-story-copy a, .enquire a { transition: none; } }
+@media (max-width: 800px) { .hero-wordmark .brand-lockup-copy, .reserve-link { display: none; } }
 @media (max-width: 760px) { .apartment-card-modal-control { width: 2.1rem; height: 2.1rem; } }
 @media (max-width: 760px) { .apartment-card-modal { max-height: 94svh; margin: 3svh auto; } }
 @media (max-width: 560px) {

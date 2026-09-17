@@ -18,11 +18,17 @@
     };
 
     $images = $apartment->images->map(function ($image) use ($resolveApartmentImage) {
-        return $resolveApartmentImage($image->image);
-    })->filter()->values();
+        return [
+            'url' => $resolveApartmentImage($image->image),
+            'caption' => trim((string) $image->caption),
+        ];
+    })->filter(fn ($image) => filled($image['url']))->values();
 
     if ($images->isEmpty()) {
-        $images->push($resolveApartmentImage($apartment->image) ?: asset('media/maisonbe-hero-source.jpg'));
+        $images->push([
+            'url' => $resolveApartmentImage($apartment->image) ?: asset('media/maisonbe-hero-source.jpg'),
+            'caption' => '',
+        ]);
     }
 
     $cardSlides = $images->take(10)->values();
@@ -43,7 +49,6 @@
 
     $query = collect($filters)->only(['checkin', 'checkout', 'guests', 'rooms'])->filter()->all();
     $showUrl = route('apartments.show', $apartment).($query ? '?'.http_build_query($query) : '');
-    $cardUrl = $linkUrl ?: $showUrl;
     $beds = $apartment->no_of_rooms ?: collect([$apartment->bedroom_1, $apartment->bedroom_2, $apartment->bedroom_3, $apartment->bedroom_4, $apartment->bedroom_5, $apartment->bedroom_6])->filter()->count();
     $amenityGroups = $apartment->attributes
         ->filter(fn ($attribute) => $attribute->parent && $attribute->type === 'apartment_facility')
@@ -102,9 +107,12 @@
     })->implode(', ');
     $size = trim((string) ($apartment->size_sq_ft ?: $apartment->property?->size ?? ''));
     $displaySize = $size !== '' ? (is_numeric($size) ? number_format((float) $size).' sq ft' : $size) : null;
-    $refundability = $apartment->property?->is_refundable
-        ? (((float) ($apartment->property?->cancellation_fee ?? 0)) > 0 ? 'Partially refundable' : 'Refundable')
-        : 'Non-refundable';
+    $bathroomValue = $apartment->toilets
+        ?: $apartment->property?->bathrooms
+        ?: $apartment->property?->toilets
+        ?: 3.5;
+    $bathrooms = rtrim(rtrim(number_format((float) $bathroomValue, 1), '0'), '.');
+    $refundability = 'Refundable 14 days or more before check-in';
     $modalId = 'apartment-card-modal-'.$apartment->id;
     $hasStayDates = filled($filters['checkin'] ?? null) && filled($filters['checkout'] ?? null);
     $bookUrl = $hasStayDates
@@ -115,8 +123,8 @@
 <article class="residence-card" data-apartment-card>
     <div class="residence-gallery" data-card-gallery>
         @foreach ($cardSlides as $index => $image)
-            <button class="residence-gallery-slide {{ $index === 0 ? 'is-active' : '' }}" type="button" style="--slide-image: url('{{ $image }}');" data-card-slide data-card-modal-open aria-controls="{{ $modalId }}" aria-label="View {{ $apartment->name }} photos">
-                <img src="{{ $image }}" alt="{{ $apartment->name }} at Maison Be" loading="{{ $index === 0 ? 'eager' : 'lazy' }}" decoding="async" onerror="this.onerror=null;this.src='{{ asset('media/maisonbe-hero-source.jpg') }}';">
+            <button class="residence-gallery-slide {{ $index === 0 ? 'is-active' : '' }}" type="button" style="--slide-image: url('{{ $image['url'] }}');" data-card-slide data-caption="{{ $image['caption'] }}" data-card-modal-open aria-controls="{{ $modalId }}" aria-label="View {{ $apartment->name }} photos">
+                <img src="{{ $image['url'] }}" alt="{{ $image['caption'] ?: $apartment->name.' at Maison Be' }}" loading="{{ $index === 0 ? 'eager' : 'lazy' }}" decoding="async" onerror="this.onerror=null;this.src='{{ asset('media/maisonbe-hero-source.jpg') }}';">
             </button>
         @endforeach
         @if ($cardSlides->count() > 1)
@@ -124,8 +132,8 @@
             <button class="residence-gallery-control is-next" type="button" aria-label="Next photo" data-card-next><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
         @endif
         <div class="residence-gallery-meta">
-            <span class="residence-gallery-caption">{{ $apartment->name }}</span>
-            <button class="residence-gallery-open" type="button" data-card-modal-open aria-controls="{{ $modalId }}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="8.5" cy="9" r="1.25"></circle><path d="m21 15-4.5-4.5L8 19"></path></svg>{{ $images->count() }} View all</button>
+            <span class="residence-gallery-caption" data-card-caption @if(blank($cardSlides->first()['caption'] ?? null)) hidden @endif>{{ $cardSlides->first()['caption'] ?? '' }}</span>
+            <button class="residence-gallery-open" type="button" data-card-modal-open aria-controls="{{ $modalId }}" aria-label="View all {{ $images->count() }} photos"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="8.5" cy="9" r="1.25"></circle><path d="m21 15-4.5-4.5L8 19"></path></svg>{{ $images->count() }}</button>
         </div>
         @if ($cardSlides->count() > 1)
             <div class="residence-gallery-progress" aria-hidden="true">
@@ -135,18 +143,19 @@
     </div>
     <div class="residence-card-copy">
         <p>Maison Be Residences</p>
-        <h3><a href="{{ $cardUrl }}">{{ \Illuminate\Support\Str::title(\Illuminate\Support\Str::lower($apartment->name)) }}</a></h3>
+        <h3><a href="{{ $showUrl }}">{{ \Illuminate\Support\Str::title(\Illuminate\Support\Str::lower($apartment->name)) }}</a></h3>
         <ul class="residence-card-highlights">
             @if ($parkingAmenity)<li class="is-parking"><x-amenity-icon name="parking" />{{ $parkingAmenity->name }}</li>@endif
             @if ($displaySize)<li><x-amenity-icon name="area" />{{ $displaySize }}</li>@endif
             @if ($beds)<li><x-amenity-icon name="bedrooms" />{{ $beds }} {{ \Illuminate\Support\Str::plural('Bedroom', $beds) }}</li>@endif
+            @if ($bathrooms)<li><x-amenity-icon name="bathroom" />{{ $bathrooms }} {{ \Illuminate\Support\Str::plural('Bathroom', (float) $bathrooms) }}</li>@endif
             @if ($apartment->max_adults)<li><x-amenity-icon name="guests" />Sleeps {{ $apartment->max_adults }}</li>@endif
             @if ($bedSummary)<li><x-amenity-icon name="bed" />{{ \Illuminate\Support\Str::title($bedSummary) }}</li>@endif
             @if ($wifiAmenity || filled($apartment->wifi_ssid))<li><x-amenity-icon name="wifi" />Free WiFi</li>@endif
         </ul>
         <div class="residence-card-details">
             <span>{{ $refundability }} <x-amenity-icon name="info" /></span>
-            <a href="{{ $showUrl }}">More details <x-amenity-icon name="chevron-right" /></a>
+            <button type="button" data-card-modal-open aria-controls="{{ $modalId }}">More details <x-amenity-icon name="chevron-right" /></button>
         </div>
         <div class="residence-card-footer">
             <div class="residence-card-rate">
@@ -169,7 +178,7 @@
         <div class="apartment-card-modal-slider" data-modal-slider>
             @foreach ($modalSlides as $index => $image)
                 <figure class="apartment-card-modal-slide {{ $index === 0 ? 'is-active' : '' }}" data-modal-slide>
-                    <img src="{{ $image }}" alt="{{ $apartment->name }} at Maison Be" loading="{{ $index === 0 ? 'eager' : 'lazy' }}" decoding="async" onerror="this.onerror=null;this.src='{{ asset('media/maisonbe-hero-source.jpg') }}';">
+                    <img src="{{ $image['url'] }}" alt="{{ $image['caption'] ?: $apartment->name.' at Maison Be' }}" loading="{{ $index === 0 ? 'eager' : 'lazy' }}" decoding="async" onerror="this.onerror=null;this.src='{{ asset('media/maisonbe-hero-source.jpg') }}';">
                 </figure>
             @endforeach
             @if ($modalSlides->count() > 1)
@@ -199,6 +208,7 @@
                 @if ($parkingAmenity)<li class="is-parking"><x-amenity-icon name="parking" />{{ $parkingAmenity->name }}</li>@endif
                 @if ($displaySize)<li><x-amenity-icon name="area" />{{ $displaySize }}</li>@endif
                 @if ($beds)<li><x-amenity-icon name="bedrooms" />{{ $beds }} {{ \Illuminate\Support\Str::plural('Bedroom', $beds) }}</li>@endif
+                @if ($bathrooms)<li><x-amenity-icon name="bathroom" />{{ $bathrooms }} {{ \Illuminate\Support\Str::plural('Bathroom', (float) $bathrooms) }}</li>@endif
                 @if ($apartment->max_adults)<li><x-amenity-icon name="guests" />Sleeps {{ $apartment->max_adults }}</li>@endif
                 @if ($bedSummary)<li><x-amenity-icon name="bed" />{{ \Illuminate\Support\Str::title($bedSummary) }}</li>@endif
                 @if ($wifiAmenity || filled($apartment->wifi_ssid))<li><x-amenity-icon name="wifi" />Free WiFi</li>@endif
@@ -289,10 +299,15 @@
                     const gallery = galleryButton.closest('[data-card-gallery]');
                     const slides = [...gallery.querySelectorAll('[data-card-slide]')];
                     const progress = [...gallery.querySelectorAll('[data-card-progress]')];
+                    const caption = gallery.querySelector('[data-card-caption]');
                     let active = slides.findIndex((slide) => slide.classList.contains('is-active'));
                     active = (active + (galleryButton.matches('[data-card-next]') ? 1 : -1) + slides.length) % slides.length;
                     slides.forEach((slide, index) => slide.classList.toggle('is-active', index === active));
                     progress.forEach((item, index) => item.classList.toggle('is-active', index === active));
+                    if (caption) {
+                        caption.textContent = slides[active].dataset.caption ?? '';
+                        caption.hidden = caption.textContent.trim() === '';
+                    }
                 }
 
                 const open = event.target.closest('[data-card-modal-open]');
