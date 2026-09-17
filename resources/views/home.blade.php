@@ -92,7 +92,7 @@
 
                 <div class="residence-grid">
                     @foreach ($apartments as $apartment)
-                        <x-apartment-card :apartment="$apartment" :quote="$apartment->home_quote" :link-url="route('apartments.index')" />
+                        <x-apartment-card :apartment="$apartment" :quote="$apartment->home_quote" :link-url="route('apartments.index')" :booking-enabled="false" />
                     @endforeach
                 </div>
             </section>

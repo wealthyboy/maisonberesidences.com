@@ -12,6 +12,7 @@ class Attribute extends Model
     protected $fillable = [
         'parent_id',
         'name',
+        'icon',
         'slug',
         'type',
         'sort_order',

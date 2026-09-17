@@ -3,6 +3,7 @@
     'quote',
     'filters' => [],
     'linkUrl' => null,
+    'bookingEnabled' => true,
 ])
 
 @php
@@ -55,11 +56,29 @@
             $b->name,
         ])
         ->groupBy(fn ($attribute) => $attribute->parent->name);
+    $cardAmenities = $amenityGroups->flatten(1);
+    $parkingAmenity = $cardAmenities->first(fn ($attribute) => strtolower(trim($attribute->name)) === 'parking included');
+    $wifiAmenity = $cardAmenities->first(fn ($attribute) => strtolower(trim($attribute->name)) === 'free wifi');
+    $bedSummary = collect([
+        $apartment->bedroom_1,
+        $apartment->bedroom_2,
+        $apartment->bedroom_3,
+        $apartment->bedroom_4,
+        $apartment->bedroom_5,
+        $apartment->bedroom_6,
+    ])->filter()->countBy()->map(function ($count, $bed) {
+        return $count > 1 ? $count.' '.\Illuminate\Support\Str::plural($bed, $count) : $bed;
+    })->implode(', ');
+    $size = trim((string) ($apartment->size_sq_ft ?: $apartment->property?->size ?? ''));
+    $displaySize = $size !== '' ? (is_numeric($size) ? number_format((float) $size).' sq ft' : $size) : null;
+    $refundability = $apartment->property?->is_refundable
+        ? (((float) ($apartment->property?->cancellation_fee ?? 0)) > 0 ? 'Partially refundable' : 'Refundable')
+        : 'Non-refundable';
     $modalId = 'apartment-card-modal-'.$apartment->id;
     $hasStayDates = filled($filters['checkin'] ?? null) && filled($filters['checkout'] ?? null);
     $bookUrl = $hasStayDates
         ? route('reservations.create', $apartment).'?'.http_build_query($query)
-        : $showUrl;
+        : null;
 @endphp
 
 <article class="residence-card" data-apartment-card>
@@ -87,21 +106,30 @@
         <p>Maison Be Residences</p>
         <h3><a href="{{ $cardUrl }}">{{ $apartment->name }}</a></h3>
         <ul class="residence-card-highlights">
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 2.5 2.5L16 9"></path></svg>Instant confirmation</li>
-            @if ($beds)<li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20V9a2 2 0 0 1 2-2h8v13"></path><path d="M13 20V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v16"></path><path d="M3 20h18"></path></svg>{{ $beds }} {{ \Illuminate\Support\Str::plural('bedroom', $beds) }}</li>@endif
-            @if ($apartment->toilets)<li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16"></path><path d="M6 12v3a6 6 0 0 0 12 0v-3"></path><path d="M8 12V7a4 4 0 0 1 8 0v5"></path><path d="M4 20h16"></path></svg>{{ rtrim(rtrim(number_format((float) $apartment->toilets, 1), '0'), '.') }} {{ \Illuminate\Support\Str::plural('bathroom', (float) $apartment->toilets) }}</li>@endif
-            @for ($bedroom = 1; $bedroom <= min((int) $beds, 6); $bedroom++)
-                <li class="residence-card-bed"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20V9"></path><path d="M3 14h18v6"></path><path d="M7 14V8h5a3 3 0 0 1 3 3v3"></path><path d="M7 11h3"></path></svg><span>Bedroom {{ $bedroom }}</span><strong>King Size Bed</strong></li>
-            @endfor
+            @if ($parkingAmenity)<li class="is-parking"><x-amenity-icon name="parking" />{{ $parkingAmenity->name }}</li>@endif
+            @if ($displaySize)<li><x-amenity-icon name="area" />{{ $displaySize }}</li>@endif
+            @if ($beds)<li><x-amenity-icon name="bedrooms" />{{ $beds }} {{ \Illuminate\Support\Str::plural('bedroom', $beds) }}</li>@endif
+            @if ($apartment->max_adults)<li><x-amenity-icon name="guests" />Sleeps {{ $apartment->max_adults }}</li>@endif
+            @if ($bedSummary)<li><x-amenity-icon name="bed" />{{ $bedSummary }}</li>@endif
+            @if ($wifiAmenity || filled($apartment->wifi_ssid))<li><x-amenity-icon name="wifi" />Free WiFi</li>@endif
         </ul>
+        <div class="residence-card-details">
+            <span>{{ $refundability }} <x-amenity-icon name="info" /></span>
+            <a href="{{ $showUrl }}">More details <x-amenity-icon name="chevron-right" /></a>
+        </div>
         <div class="residence-card-footer">
             <div class="residence-card-rate">
-                <span class="residence-card-price">{{ $quote['display_nightly'] }} <small>/ night</small></span>
+                <span class="residence-card-price">
+                    <strong>{{ $quote['display_nightly'] }}</strong>
+                    <small>per night</small>
+                </span>
                 @if ($hasStayDates && ($quote['nights'] ?? 1) > 1)
                     <span class="residence-card-total"><strong>{{ $quote['display_total'] }}</strong> total</span>
                 @endif
             </div>
-            <a class="residence-card-book" href="{{ $bookUrl }}">Book now</a>
+            @if ($bookingEnabled && $bookUrl)
+                <a class="residence-card-book" href="{{ $bookUrl }}">Book now</a>
+            @endif
         </div>
     </div>
 
@@ -135,14 +163,16 @@
             @elseif (filled($apartment->teaser ?: strip_tags((string) $apartment->description)))
                 <p>{{ $apartment->teaser ?: \Illuminate\Support\Str::limit(strip_tags((string) $apartment->description), 180) }}</p>
             @endif
-            <h3>Check availability for {{ $apartment->name }}</h3>
-            <form class="apartment-availability-form" action="{{ route('apartments.availability', $apartment) }}" data-availability-form>
-                <x-date-range-picker class="availability-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" required />
-                <label>Guests<input type="number" name="guests" min="1" max="{{ $apartment->max_adults ?: 20 }}" value="{{ $filters['guests'] ?? 1 }}"></label>
-                <button type="submit" data-availability-submit>Check availability</button>
-            </form>
-            <p class="apartment-availability-status" aria-live="polite" data-availability-status></p>
-            <a class="apartment-book-now" href="#" hidden data-book-now>Book now <span aria-hidden="true">→</span></a>
+            @if ($bookingEnabled)
+                <h3>Check availability for {{ $apartment->name }}</h3>
+                <form class="apartment-availability-form" action="{{ route('apartments.availability', $apartment) }}" data-availability-form>
+                    <x-date-range-picker class="availability-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" required />
+                    <label>Guests<input type="number" name="guests" min="1" max="{{ $apartment->max_adults ?: 20 }}" value="{{ $filters['guests'] ?? 1 }}"></label>
+                    <button type="submit" data-availability-submit>Check availability</button>
+                </form>
+                <p class="apartment-availability-status" aria-live="polite" data-availability-status></p>
+                <a class="apartment-book-now" href="#" hidden data-book-now>Book now <span aria-hidden="true">→</span></a>
+            @endif
             @if ($amenityGroups->isNotEmpty())
                 <section class="apartment-modal-amenities">
                     <h3>Apartment amenities</h3>

@@ -199,7 +199,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .residence-gallery-progress { position: absolute; right: 1.35rem; bottom: .35rem; left: 1.35rem; z-index: 2; display: flex; gap: .32rem; }
 .residence-gallery-progress span { height: 3px; flex: 1; background: rgba(255,255,255,.48); transition: background 180ms ease; }
 .residence-gallery-progress span.is-active { background: #fff; }
-.residence-card-copy { display: flex; min-height: 0; flex: 1 1 auto; padding: 1.6rem 1.55rem 1.7rem; background: #fff; flex-direction: column; font-family: "Galaxie Polaris", "Instrument Sans", Arial, sans-serif; }
+.residence-card-copy { display: flex; min-height: 0; flex: 1 1 auto; padding: 1.12rem 1.15rem 1.2rem; background: #fff; flex-direction: column; font-family: "Galaxie Polaris", "Instrument Sans", Arial, sans-serif; }
 .residence-card-copy p { margin: 0 0 .62rem; color: #778096; font-size: .57rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; }
 .residence-card-copy h3 { margin: 0; color: #050505; font-family: "Centra No2", "Instrument Sans", Arial, sans-serif; font-size: clamp(1.42rem, 1.72vw, 1.78rem); font-weight: 500; letter-spacing: -.025em; line-height: 1.02; text-transform: none; }
 .residence-card-copy h3 a { color: inherit; text-decoration: none; }
@@ -401,20 +401,27 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .checkout-total { margin-top: 0; border-top: 1px solid var(--dark-line); font-size: .95rem; }
 .checkout-total strong { color: var(--deep); font-size: 1.2rem; line-height: 1; }
 .checkout-error { margin-bottom: 1.5rem; padding: .85rem 1rem; border: 1px solid #e3aaa2; border-radius: 8px; color: #9a261b; background: #fef1ef; }
-.residence-card-highlights { display: grid; margin: 1.15rem 0 0; padding: 0; gap: .58rem; list-style: none; color: #50596f; font-family: "Galaxie Polaris", "Instrument Sans", Arial, sans-serif; font-size: .76rem; }
+.residence-card-highlights { display: grid; margin: .85rem 0 0; padding: 0; gap: .42rem; list-style: none; color: #22283a; font-family: "Galaxie Polaris", "Instrument Sans", Arial, sans-serif; font-size: .73rem; line-height: 1.2; }
 .residence-card-highlights li { display: flex; align-items: center; gap: .5rem; }
-.residence-card-highlights svg { width: 1rem; height: 1rem; flex: 0 0 auto; stroke: var(--gold); fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
-.residence-card-highlights .residence-card-bed { display: grid; grid-template-columns: 1rem minmax(0, .95fr) minmax(0, 1.12fr); column-gap: .55rem; color: var(--ink); }
-.residence-card-highlights .residence-card-bed strong { font-weight: 700; }
-.residence-card-footer { display: flex; width: 100%; margin-top: auto; padding-top: 1.35rem; border-top: 1px solid #e6dcc2; flex-direction: column; gap: .95rem; }
-.residence-card-rate { display: flex; min-height: 2.7rem; align-items: flex-end; justify-content: flex-end; gap: 1rem; text-align: right; }
-.residence-card-price { display: block; margin: 0; color: #050505; font-family: "Centra No2", "Instrument Sans", Arial, sans-serif; font-size: clamp(1.14rem, 1.42vw, 1.52rem); font-weight: 800; letter-spacing: 0; line-height: 1.05; white-space: nowrap; }
-.residence-card-price small { display: inline; margin-left: .18rem; color: var(--ink); font-family: "Galaxie Polaris", "Instrument Sans", Arial, sans-serif; font-size: .72rem; font-weight: 400; letter-spacing: .02em; }
-.residence-card-total { display: grid; color: var(--soft-ink); font-size: .65rem; line-height: 1.05; white-space: nowrap; }
+.residence-card-highlights svg { width: 1.08rem; height: 1.08rem; flex: 0 0 1.08rem; color: #050505; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.residence-card-highlights .is-parking { color: #258452; }
+.residence-card-highlights .is-parking svg { color: currentColor; }
+.residence-card-details { display: grid; margin-top: .82rem; gap: .62rem; font-family: "Galaxie Polaris", "Instrument Sans", Arial, sans-serif; }
+.residence-card-details > span { display: inline-flex; color: #22283a; align-items: center; gap: .35rem; font-size: .72rem; }
+.residence-card-details > span svg { width: 1rem; height: 1rem; flex: 0 0 1rem; }
+.residence-card-details > a { display: inline-flex; width: fit-content; color: #1769e8; align-items: center; gap: .32rem; font-size: .76rem; text-decoration: none; }
+.residence-card-details > a:hover, .residence-card-details > a:focus-visible { color: #0b4fb9; }
+.residence-card-details > a svg { width: .9rem; height: .9rem; stroke-width: 2.2; }
+.residence-card-footer { display: flex; width: 100%; margin-top: auto; padding-top: 1rem; flex-direction: column; align-items: flex-start; gap: .8rem; }
+.residence-card-rate { display: flex; width: 100%; min-height: 3.15rem; align-items: flex-end; justify-content: flex-start; gap: 1rem; text-align: left; }
+.residence-card-price { display: flex; margin: 0; color: #050505; flex-direction: column; align-items: flex-start; justify-content: flex-end; font-family: "Centra No2", "Instrument Sans", Arial, sans-serif; letter-spacing: 0; line-height: 1; text-align: left; white-space: nowrap; }
+.residence-card-price strong { display: block; font-size: clamp(1.35rem, 1.6vw, 1.72rem); font-weight: 800; line-height: 1; }
+.residence-card-price small { display: block; margin-top: .38rem; color: var(--soft-ink); font-family: "Galaxie Polaris", "Instrument Sans", Arial, sans-serif; font-size: .67rem; font-weight: 600; letter-spacing: .04em; line-height: 1; text-align: left; text-transform: lowercase; }
+.residence-card-total { display: grid; margin-bottom: .08rem; color: var(--soft-ink); font-size: .65rem; line-height: 1.05; white-space: nowrap; }
 .residence-card-total strong { color: var(--ink); font-size: .88rem; font-weight: 800; }
-.residence-card-book { display: flex; width: 100%; min-height: 52px; margin: 0; padding: .75rem 1.25rem; border: 0; border-radius: 999px; color: #fff; background: #1f6fdf; align-items: center; justify-content: center; font-family: "Galaxie Polaris", "Instrument Sans", Arial, sans-serif; font-size: .82rem; font-weight: 800; letter-spacing: .01em; text-align: center; text-decoration: none; text-transform: none; transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease; }
-.residence-card-book:hover, .residence-card-book:focus-visible { color: #fff; background: #155fc4; box-shadow: 0 8px 20px rgba(31,111,223,.22); transform: translateY(-1px); }
-.residence-card-book:focus-visible { outline: 3px solid rgba(31,111,223,.22); outline-offset: 2px; }
+.residence-card-book { display: inline-flex; width: 100%; min-width: 0; min-height: 2.15rem; margin: 0; padding: 0 1.5rem; border: 0; border-radius: 999px; color: #fff; background: #06112e; align-items: center; justify-content: center; font-family: "Galaxie Polaris", "Instrument Sans", Arial, sans-serif; font-size: .8rem; font-weight: 700; letter-spacing: .055em; line-height: 1; text-align: center; text-decoration: none; text-transform: uppercase; box-shadow: 0 7px 16px rgba(6,17,46,.17); transition: background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease; }
+.residence-card-book:hover, .residence-card-book:focus-visible { color: #06112e; background: var(--gold); box-shadow: 0 9px 20px rgba(6,17,46,.2); transform: translateY(-1px); }
+.residence-card-book:focus-visible { outline: 3px solid rgba(217,170,76,.32); outline-offset: 2px; }
 .enquire a span { margin-left: .6rem; font-size: 1.1rem; }
 .residence-stories { background: var(--paper); }
 .residence-story { display: grid; min-height: 620px; grid-template-columns: repeat(2, minmax(0, 1fr)); }

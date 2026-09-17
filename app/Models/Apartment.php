@@ -20,6 +20,7 @@ class Apartment extends Model
         'quantity',
         'max_adults',
         'no_of_rooms',
+        'size_sq_ft',
         'toilets',
         'type',
         'uuid',

@@ -1,6 +1,6 @@
 @php
     $floors = ['1st floor', '2nd floor', '3rd floor', '4th floor', '5th floor', '6th floor', '7th floor', '8th floor', '9th floor'];
-    $bedOptions = ['Single bed', 'Double bed', 'Queen bed', 'King bed', 'Extra-large double bed'];
+    $bedOptions = ['Single bed', 'Twin bed', '2 Twin beds', 'Double bed', 'Queen bed', 'King bed', 'Extra-large double bed'];
     $toiletOptions = ['1', '1.5', '2', '2.5', '3', '3.5', '4', '4.5', '5'];
     $selectedAttributeIds = collect(old('attribute_ids', $model?->attributes?->pluck('id')->all() ?? []))->map(fn ($id) => (string) $id)->all();
 @endphp
@@ -66,6 +66,11 @@
 <label class="block">
     <span class="text-sm font-semibold text-zinc-700">Bedrooms</span>
     <input type="number" min="0" name="room_number" value="{{ old('room_number', $model->no_of_rooms ?? '') }}" class="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-[#d9b44a] focus:ring-2 focus:ring-[#d9b44a]/20">
+</label>
+
+<label class="block">
+    <span class="text-sm font-semibold text-zinc-700">Apartment size (sq ft)</span>
+    <input type="number" min="1" name="room_size_sq_ft" value="{{ old('room_size_sq_ft', $model->size_sq_ft ?? '') }}" class="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-[#d9b44a] focus:ring-2 focus:ring-[#d9b44a]/20">
 </label>
 
 <label class="block">
@@ -187,6 +192,7 @@
                         <label class="flex items-center gap-3 text-sm text-zinc-600">
                             <input type="checkbox" name="attribute_ids[]" value="{{ $attribute->id }}" @checked(in_array((string) $attribute->id, $selectedAttributeIds, true)) class="sr-only peer">
                             <span class="relative inline-flex h-6 w-11 shrink-0 rounded-full bg-zinc-300 transition after:absolute after:left-1 after:top-1 after:h-4 after:w-4 after:rounded-full after:bg-white after:shadow after:transition peer-checked:bg-[#222052] peer-checked:after:translate-x-5 peer-focus-visible:ring-2 peer-focus-visible:ring-[#d9b44a]/40"></span>
+                            <x-amenity-icon :name="$attribute->icon ?: 'check'" class="h-5 w-5 shrink-0 text-zinc-950" />
                             <span>{{ $attribute->name }}</span>
                         </label>
                     @endforeach
