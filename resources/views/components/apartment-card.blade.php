@@ -56,9 +56,13 @@
         ])
         ->groupBy(fn ($attribute) => $attribute->parent->name);
     $modalId = 'apartment-card-modal-'.$apartment->id;
+    $hasStayDates = filled($filters['checkin'] ?? null) && filled($filters['checkout'] ?? null);
+    $bookUrl = $hasStayDates
+        ? route('reservations.create', $apartment).'?'.http_build_query($query)
+        : $showUrl;
 @endphp
 
-<article class="residence-card" data-apartment-card style="height:100%;align-self:stretch;">
+<article class="residence-card" data-apartment-card>
     <div class="residence-gallery" data-card-gallery>
         @foreach ($slides as $index => $image)
             <button class="residence-gallery-slide {{ $index === 0 ? 'is-active' : '' }}" type="button" style="--slide-image: url('{{ $image }}');" data-card-slide data-card-modal-open aria-controls="{{ $modalId }}" aria-label="View {{ $apartment->name }} photos">
@@ -79,7 +83,7 @@
             </div>
         @endif
     </div>
-    <div class="residence-card-copy" style="display:grid;flex:1 1 auto;grid-template-rows:auto auto 1fr auto;">
+    <div class="residence-card-copy">
         <p>Maison Be Residences</p>
         <h3><a href="{{ $cardUrl }}">{{ $apartment->name }}</a></h3>
         <ul class="residence-card-highlights">
@@ -90,11 +94,14 @@
                 <li class="residence-card-bed"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20V9"></path><path d="M3 14h18v6"></path><path d="M7 14V8h5a3 3 0 0 1 3 3v3"></path><path d="M7 11h3"></path></svg><span>Bedroom {{ $bedroom }}</span><strong>King Size Bed</strong></li>
             @endfor
         </ul>
-        <div class="residence-card-footer" style="margin-top:0;align-self:end;width:100%;">
-            <span class="residence-card-price" style="display:block;white-space:nowrap;">{{ $quote['display_nightly'] }} / night</span>
-            @if (filled($filters['checkin'] ?? null) && filled($filters['checkout'] ?? null))
-                <a class="residence-card-book" href="{{ route('reservations.create', $apartment).'?'.http_build_query($query) }}">Book now <span aria-hidden="true">→</span></a>
-            @endif
+        <div class="residence-card-footer">
+            <div class="residence-card-rate">
+                <span class="residence-card-price">{{ $quote['display_nightly'] }} <small>/ night</small></span>
+                @if ($hasStayDates && ($quote['nights'] ?? 1) > 1)
+                    <span class="residence-card-total"><strong>{{ $quote['display_total'] }}</strong> total</span>
+                @endif
+            </div>
+            <a class="residence-card-book" href="{{ $bookUrl }}">Book now</a>
         </div>
     </div>
 
