@@ -12,7 +12,7 @@
     'stroke-linejoin' => 'round',
 ]) }}>
     @switch($icon)
-        @case('parking') <path d="M5 21V3h8a6 6 0 0 1 0 12H9v6M9 7v4h4a2 2 0 0 0 0-4H9Z"></path> @break
+        @case('parking') <rect x="3" y="3" width="18" height="18" rx="2.5"></rect><path d="M9 17V7h4a3.5 3.5 0 0 1 0 7H9M9 10h4"></path> @break
         @case('area') <path d="M9 3H3v6M15 3h6v6M21 15v6h-6M3 15v6h6M3 9l6-6M15 3l6 6M21 15l-6 6M9 21l-6-6"></path> @break
         @case('bedrooms') <path d="M4 21V5h7v16M4 11h7M7.5 8h.01M11 9h7a2 2 0 0 1 2 2v10M15 13h.01M15 17h.01"></path> @break
         @case('guests') <circle cx="9" cy="8" r="3"></circle><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5v2"></path> @break

@@ -123,9 +123,6 @@
                     <strong>{{ $quote['display_nightly'] }}</strong>
                     <small>per night</small>
                 </span>
-                @if ($hasStayDates && ($quote['nights'] ?? 1) > 1)
-                    <span class="residence-card-total"><strong>{{ $quote['display_total'] }}</strong> total</span>
-                @endif
             </div>
             @if ($bookingEnabled && $bookUrl)
                 <a class="residence-card-book" href="{{ $bookUrl }}">Book now</a>
