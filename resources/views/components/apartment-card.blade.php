@@ -104,13 +104,13 @@
     </div>
     <div class="residence-card-copy">
         <p>Maison Be Residences</p>
-        <h3><a href="{{ $cardUrl }}">{{ $apartment->name }}</a></h3>
+        <h3><a href="{{ $cardUrl }}">{{ \Illuminate\Support\Str::title(\Illuminate\Support\Str::lower($apartment->name)) }}</a></h3>
         <ul class="residence-card-highlights">
             @if ($parkingAmenity)<li class="is-parking"><x-amenity-icon name="parking" />{{ $parkingAmenity->name }}</li>@endif
             @if ($displaySize)<li><x-amenity-icon name="area" />{{ $displaySize }}</li>@endif
-            @if ($beds)<li><x-amenity-icon name="bedrooms" />{{ $beds }} {{ \Illuminate\Support\Str::plural('bedroom', $beds) }}</li>@endif
+            @if ($beds)<li><x-amenity-icon name="bedrooms" />{{ $beds }} {{ \Illuminate\Support\Str::plural('Bedroom', $beds) }}</li>@endif
             @if ($apartment->max_adults)<li><x-amenity-icon name="guests" />Sleeps {{ $apartment->max_adults }}</li>@endif
-            @if ($bedSummary)<li><x-amenity-icon name="bed" />{{ $bedSummary }}</li>@endif
+            @if ($bedSummary)<li><x-amenity-icon name="bed" />{{ \Illuminate\Support\Str::title($bedSummary) }}</li>@endif
             @if ($wifiAmenity || filled($apartment->wifi_ssid))<li><x-amenity-icon name="wifi" />Free WiFi</li>@endif
         </ul>
         <div class="residence-card-details">
