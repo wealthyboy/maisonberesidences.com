@@ -33,7 +33,13 @@
                 $highlights = collect(preg_split('/[,;\\n]+/', $highlightSource))->map(fn ($highlight) => trim($highlight))->filter()->take(6)->values();
             }
         @endphp
-        <header class="results-header"><a class="results-wordmark" href="{{ url('/') }}" aria-label="Maison Be Residences home"><x-brand-logo /></a><a href="{{ route('apartments.index', $filters) }}" class="results-back">All apartments</a></header>
+        <header class="results-header">
+            <a class="results-wordmark" href="{{ url('/') }}" aria-label="Maison Be Residences home"><x-brand-logo /></a>
+            <div class="results-actions">
+                <x-currency-selector :currency="$currency" />
+                <a href="{{ route('apartments.index', $filters) }}" class="results-back">All apartments</a>
+            </div>
+        </header>
         <main class="apartment-show-main">
             <header class="apartment-show-heading">
                 <div>
@@ -79,7 +85,7 @@
                 </article>
                 <aside class="apartment-booking-panel">
                     <p class="eyebrow">Reserve {{ $apartment->name }}</p>
-                    <strong>{{ $apartment->stay_quote['display_nightly'] }} <small>per night</small></strong>
+                    <strong>{{ $apartment->stay_quote['display_nightly'] }} <small>/ night</small></strong>
                     <form action="{{ route('apartments.availability', $apartment) }}" class="apartment-availability-form" data-availability-form>
                         <x-date-range-picker class="availability-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" required />
                         <label>Guests<input type="number" name="guests" min="1" max="{{ $apartment->max_adults ?: 20 }}" value="{{ $filters['guests'] ?? 1 }}"></label>

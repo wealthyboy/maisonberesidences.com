@@ -27,7 +27,10 @@
                         <span></span><span></span><span></span>
                     </button>
                     <a class="hero-wordmark" href="/" aria-label="Maison Be Residences home"><x-brand-logo tone="light" /></a>
-                    <a class="reserve-link" href="#residences">Reserve</a>
+                    <div class="hero-actions">
+                        <x-currency-selector :currency="$currency" tone="light" />
+                        <a class="reserve-link" href="#residences">Reserve</a>
+                    </div>
                 </header>
 
                 <div class="hero-title-wrap">

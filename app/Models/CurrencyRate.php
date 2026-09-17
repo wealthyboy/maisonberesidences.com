@@ -13,6 +13,7 @@ class CurrencyRate extends Model
         'base_currency',
         'quote_currency',
         'rate',
+        'adjustment_percent',
         'retrieved_at',
     ];
 
@@ -20,6 +21,7 @@ class CurrencyRate extends Model
     {
         return [
             'rate' => 'decimal:6',
+            'adjustment_percent' => 'decimal:3',
             'retrieved_at' => 'datetime',
         ];
     }

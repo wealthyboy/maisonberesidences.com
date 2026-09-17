@@ -18,7 +18,7 @@
                 </button>
                 <a class="results-wordmark" href="{{ url('/') }}" aria-label="Maison Be Residences home"><x-brand-logo tone="light" /></a>
                 <div class="results-actions">
-                    <a href="{{ request()->fullUrlWithQuery(['currency' => $currency['code'] === 'NGN' ? 'USD' : 'NGN']) }}" class="currency-switch">{{ $currency['code'] === 'NGN' ? 'View USD' : 'View NGN' }}</a>
+                    <x-currency-selector :currency="$currency" tone="light" />
                     <a href="{{ url('/') }}" class="results-back">Home</a>
                 </div>
             </nav>

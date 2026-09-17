@@ -52,6 +52,7 @@ return [
             'section' => 'Settings',
             'icon' => 'settings',
             'items' => [
+                ['slug' => 'currency-rates', 'label' => 'Currency Rates', 'icon' => 'chart-line', 'description' => 'Review the live USD to NGN rate and apply customer-facing markup or markdown.'],
                 ['slug' => 'settings', 'label' => 'Settings', 'icon' => 'settings', 'description' => 'Manage system settings, contact details, payment rules, and brand defaults.'],
             ],
         ],

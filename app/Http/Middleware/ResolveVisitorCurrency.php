@@ -13,6 +13,14 @@ class ResolveVisitorCurrency
 
     public function handle(Request $request, Closure $next): Response
     {
+        $requestedCurrency = strtoupper((string) $request->query('currency'));
+
+        if (in_array($requestedCurrency, ['USD', 'NGN'], true)) {
+            $request->session()->put('currency_preference', $requestedCurrency);
+        } elseif ($requestedCurrency === 'AUTO') {
+            $request->session()->forget('currency_preference');
+        }
+
         if ($request->is('apartments/*/availability')) {
             $context = $request->session()->get('currency', [
                 'code' => 'USD',
@@ -29,6 +37,7 @@ class ResolveVisitorCurrency
         $context = $this->currencies->resolveFor($request);
         $request->attributes->set('currency', $context);
         $request->session()->put('currency', $context);
+
         return $next($request);
     }
 }

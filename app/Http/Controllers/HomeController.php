@@ -30,7 +30,7 @@ class HomeController extends Controller
         $settings = Schema::hasTable('system_settings') ? SystemSetting::query()->first() : null;
 
         if (! Schema::hasTable('apartments')) {
-            return view('home', compact('information', 'settings') + ['apartments' => collect()]);
+            return view('home', compact('information', 'settings', 'currency') + ['apartments' => collect()]);
         }
 
         $apartments = Apartment::query()
@@ -44,6 +44,6 @@ class HomeController extends Controller
             $apartment->setAttribute('home_quote', $this->quotes->quote($apartment, null, null, $currency));
         });
 
-        return view('home', compact('apartments', 'information', 'settings'));
+        return view('home', compact('apartments', 'information', 'settings', 'currency'));
     }
 }
