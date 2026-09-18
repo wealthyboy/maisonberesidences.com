@@ -69,7 +69,17 @@
                 </div>
             </aside>
 
-            <section class="introduction" id="introduction" aria-labelledby="introduction-title" style="--introduction-room-image: url('{{ asset('media/maisonbe-introduction-room.png') }}');">
+            <section class="introduction" id="introduction" aria-labelledby="introduction-title" style="--introduction-room-image: url('{{ asset('media/maisonbe-introduction-room.png') }}');" data-introduction-slider>
+                <div class="introduction-room-slides" aria-hidden="true">
+                    @foreach ($bedroomImages as $index => $bedroomImage)
+                        @php
+                            $bedroomImageUrl = str_starts_with($bedroomImage->image, 'http://') || str_starts_with($bedroomImage->image, 'https://')
+                                ? $bedroomImage->image
+                                : asset($bedroomImage->image);
+                        @endphp
+                        <span class="introduction-room-slide {{ $index === 0 ? 'is-active' : '' }}" style="--introduction-slide-image: url('{{ $bedroomImageUrl }}');"></span>
+                    @endforeach
+                </div>
                 <p class="eyebrow">Maison Be Residences</p>
                 <div class="introduction-copy">
                     <h2 id="introduction-title">More than a place to stay, Maison Be is a place to belong.</h2>
@@ -184,6 +194,19 @@
         <script>
             (() => {
                 const staySearch = document.getElementById('stay-search');
+
+                const introductionSlider = document.querySelector('[data-introduction-slider]');
+                const introductionSlides = Array.from(introductionSlider?.querySelectorAll('.introduction-room-slide') ?? []);
+
+                if (introductionSlides.length > 1 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    let introductionSlideIndex = 0;
+
+                    window.setInterval(() => {
+                        introductionSlides[introductionSlideIndex].classList.remove('is-active');
+                        introductionSlideIndex = (introductionSlideIndex + 1) % introductionSlides.length;
+                        introductionSlides[introductionSlideIndex].classList.add('is-active');
+                    }, 5000);
+                }
 
                 staySearch.addEventListener('submit', (event) => {
                     if (event.defaultPrevented) return;
