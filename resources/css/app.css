@@ -175,7 +175,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .introduction-cta { display: inline-block; margin-top: 2.1rem; padding-bottom: .38rem; border-bottom: 1px solid var(--gold); color: var(--ink); font-size: .7rem; font-weight: 600; letter-spacing: .14em; text-decoration: none; text-transform: uppercase; }
 .introduction-cta:hover, .introduction-cta:focus-visible { color: #a78135; }
 .introduction-cta span { margin-left: .55rem; font-size: 1.1rem; }
-.residences { padding: clamp(5rem, 9vw, 8.5rem) max(2rem, calc((100% - 1440px) / 2)); background-color: var(--warm); background-image: linear-gradient(rgba(246,241,231,.74), rgba(246,241,231,.84)), url('/media/StellarMedia-5.jpg'); background-position: center top; background-size: cover; background-repeat: no-repeat; }
+.residences { padding: clamp(5rem, 9vw, 8.5rem) max(2rem, calc((100% - 1440px) / 2)); background-color: var(--warm); }
 .residences-heading { display: grid; margin-bottom: 3.7rem; grid-template-columns: minmax(200px, .8fr) minmax(0, 1.8fr); gap: 3rem; align-items: end; }
 .residences-heading h2 { font-size: clamp(3.2rem, 5.2vw, 5.8rem); line-height: .85; }
 .residences-heading-summary { display: flex; margin-top: 1.5rem; align-items: center; justify-content: space-between; gap: 1.5rem; }
