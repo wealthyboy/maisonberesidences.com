@@ -30,10 +30,14 @@ class CurrencyService
             return $this->context($preferredCurrency, 'Manual selection');
         }
 
-        // Localhost cannot be geolocated meaningfully. Avoid blocking the
-        // request on an external lookup when developing without internet.
-        if (app()->environment('local')) {
-            return $this->context('USD', 'Local development');
+        $resolvedCurrency = $request->session()->get('currency');
+
+        if (
+            $request->session()->get('currency_auto_resolved') === true
+            && is_array($resolvedCurrency)
+            && in_array(strtoupper((string) ($resolvedCurrency['code'] ?? '')), ['USD', 'NGN'], true)
+        ) {
+            return $resolvedCurrency;
         }
 
         $countryCode = $this->countryCodeFromHeaders($request);
@@ -42,8 +46,15 @@ class CurrencyService
             return $this->context($countryCode === 'NG' ? 'NGN' : 'USD', $countryCode);
         }
 
+        $visitorIp = $this->visitorIp($request);
+
+        // Private and reserved addresses cannot be geolocated meaningfully.
+        if (! filter_var($visitorIp, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            return $this->context('USD', 'Local network');
+        }
+
         try {
-            $position = Location::get($this->visitorIp($request));
+            $position = Location::get($visitorIp);
             $countryCode = strtoupper((string) ($position?->countryCode ?? ''));
 
             return $this->context($countryCode === 'NG' ? 'NGN' : 'USD', $position?->countryName);
