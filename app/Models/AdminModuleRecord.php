@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class AdminModuleRecord extends Model
 {
@@ -25,5 +26,10 @@ class AdminModuleRecord extends Model
             'meta' => 'array',
             'published_at' => 'datetime',
         ];
+    }
+
+    public function video(): MorphOne
+    {
+        return $this->morphOne(Video::class, 'videoable');
     }
 }

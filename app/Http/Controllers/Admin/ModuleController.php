@@ -12,6 +12,7 @@ use App\Models\InvoiceItem;
 use App\Models\PeakPeriod;
 use App\Models\Property;
 use App\Models\Voucher;
+use App\Services\VideoUploader\VideoUploader;
 use App\Support\AdminModules;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -98,6 +99,27 @@ class ModuleController extends Controller
             return redirect()
                 ->route('admin.modules.record.show', [$module['slug'], $peakPeriod->id])
                 ->with('status', 'Peak period created.');
+        }
+
+        if ($module['slug'] === 'banners') {
+            $banner = DB::transaction(function () use ($request, $module): AdminModuleRecord {
+                $banner = AdminModuleRecord::create($this->bannerData($request, $module));
+
+                if ($request->hasFile('video')) {
+                    VideoUploader::uploadAndEncode(
+                        $request->file('video'),
+                        $banner->video()->firstOrNew(),
+                        config('video.disk'),
+                        config('video.source_directory'),
+                    );
+                }
+
+                return $banner;
+            });
+
+            return redirect()
+                ->route('admin.modules.record.show', [$module['slug'], $banner->id])
+                ->with('status', $banner->video ? 'Banner created. Video encoding has been queued.' : 'Banner created.');
         }
 
         AdminModuleRecord::create($this->genericRecordData($request, $module));
@@ -235,6 +257,29 @@ class ModuleController extends Controller
             return redirect()
                 ->route('admin.modules.record.show', [$module['slug'], $peakPeriod->id])
                 ->with('status', 'Peak period updated.');
+        }
+
+        if ($module['slug'] === 'banners') {
+            $banner = AdminModuleRecord::where('module_slug', $module['slug'])->findOrFail($record);
+
+            DB::transaction(function () use ($request, $module, $banner): void {
+                $banner->update($this->bannerData($request, $module));
+
+                if ($request->hasFile('video')) {
+                    VideoUploader::uploadAndEncode(
+                        $request->file('video'),
+                        $banner->video()->firstOrNew(),
+                        config('video.disk'),
+                        config('video.source_directory'),
+                    );
+                }
+            });
+
+            $banner->load('video');
+
+            return redirect()
+                ->route('admin.modules.record.show', [$module['slug'], $banner->id])
+                ->with('status', $request->hasFile('video') ? 'Banner updated. Video encoding has been queued.' : 'Banner updated.');
         }
 
         $recordModel = AdminModuleRecord::where('module_slug', $module['slug'])->findOrFail($record);
@@ -414,6 +459,13 @@ class ModuleController extends Controller
             return PeakPeriod::query()->latest()->paginate(10);
         }
 
+        if ($module['slug'] === 'banners') {
+            return AdminModuleRecord::with('video')
+                ->where('module_slug', $module['slug'])
+                ->latest()
+                ->paginate(10);
+        }
+
         return AdminModuleRecord::where('module_slug', $module['slug'])->latest()->paginate(10);
     }
 
@@ -430,6 +482,7 @@ class ModuleController extends Controller
             'pages' => Information::findOrFail($record),
             'vouchers' => Voucher::findOrFail($record),
             'peak-periods' => PeakPeriod::findOrFail($record),
+            'banners' => AdminModuleRecord::with('video')->where('module_slug', $module['slug'])->findOrFail($record),
             default => AdminModuleRecord::where('module_slug', $module['slug'])->findOrFail($record),
         };
     }
@@ -509,6 +562,32 @@ class ModuleController extends Controller
             'summary' => ['nullable', 'string', 'max:2000'],
             'content' => ['nullable', 'string'],
             'published_at' => ['nullable', 'date'],
+        ]);
+
+        return [
+            'module_slug' => $module['slug'],
+            'title' => $data['title'],
+            'status' => $data['status'],
+            'summary' => $data['summary'] ?? null,
+            'content' => $data['content'] ?? null,
+            'published_at' => $data['published_at'] ?? null,
+        ];
+    }
+
+    private function bannerData(Request $request, array $module): array
+    {
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'status' => ['required', 'in:draft,active,archived'],
+            'summary' => ['nullable', 'string', 'max:2000'],
+            'content' => ['nullable', 'string'],
+            'published_at' => ['nullable', 'date'],
+            'video' => [
+                'nullable',
+                'file',
+                'mimetypes:video/mp4,video/quicktime,video/webm,video/x-matroska,application/octet-stream',
+                'max:'.config('video.max_upload_kilobytes', 1048576),
+            ],
         ]);
 
         return [

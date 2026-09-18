@@ -9,6 +9,7 @@
     $isPages = $module['slug'] === 'pages';
     $isVouchers = $module['slug'] === 'vouchers';
     $isPeakPeriods = $module['slug'] === 'peak-periods';
+    $isBanners = $module['slug'] === 'banners';
     $isDatabaseBacked = $isProperties || $isApartments || $isInvoices || $isCustomers || $isPages || $isVouchers || $isPeakPeriods;
     $recordName = $model ? ($isInvoices ? $model->invoice : ($isCustomers ? $model->full_name : ($isPages ? $model->title : ($isVouchers ? $model->code : ($isDatabaseBacked ? $model->name : $model->title))))) : null;
 @endphp
@@ -70,13 +71,13 @@
                     </a>
                 </div>
 
-                <form id="{{ $isInvoices ? 'invoiceForm' : 'moduleForm' }}" method="post" action="{{ $screen === 'edit' ? route('admin.modules.record.update', [$module['slug'], $record]) : route('admin.modules.store', $module['slug']) }}" class="mt-6 grid gap-5 lg:grid-cols-2">
+                <form id="{{ $isInvoices ? 'invoiceForm' : 'moduleForm' }}" method="post" action="{{ $screen === 'edit' ? route('admin.modules.record.update', [$module['slug'], $record]) : route('admin.modules.store', $module['slug']) }}" class="mt-6 grid gap-5 lg:grid-cols-2" @if($isBanners) enctype="multipart/form-data" @endif>
                     @csrf
 
                     @if ($screen === 'edit')
                         @method('put')
                     @else
-                        @unless ($isInvoices || $isPages || $isApartments || $isVouchers || $isPeakPeriods)
+                        @unless ($isInvoices || $isPages || $isApartments || $isVouchers || $isPeakPeriods || $isBanners)
                             <div class="border-b border-zinc-200 pb-2 lg:col-span-2">
                                 <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-zinc-500">{{ Illuminate\Support\Str::singular($module['label']) }} details</h3>
                             </div>
@@ -118,7 +119,9 @@
                         </div>
                     @endif
 
-                    @if ($isInvoices)
+                    @if ($isBanners)
+                        @include('admin.modules.forms.banner')
+                    @elseif ($isInvoices)
                         @include('admin.modules.forms.invoice')
                     @elseif ($isApartments)
                         @include('admin.modules.forms.apartment')
@@ -367,6 +370,46 @@
                     <div class="mt-5 rounded-md border border-zinc-200 p-4 text-sm leading-6 text-zinc-700">
                         {{ $model->description ?: 'No description entered.' }}
                     </div>
+                @elseif ($isBanners && $model)
+                    <div class="mt-5 grid gap-5 lg:grid-cols-2">
+                        <div class="rounded-md border border-zinc-200 p-4">
+                            <h3 class="text-sm font-semibold text-zinc-950">Banner copy</h3>
+                            <p class="mt-3 text-sm leading-6 text-zinc-700">{{ $model->summary ?: 'No summary entered.' }}</p>
+                            @if ($model->content)
+                                <p class="mt-3 whitespace-pre-line text-sm leading-6 text-zinc-700">{{ $model->content }}</p>
+                            @endif
+                        </div>
+
+                        <div class="rounded-md border border-zinc-200 p-4">
+                            <div class="flex items-center justify-between gap-3">
+                                <h3 class="text-sm font-semibold text-zinc-950">Banner video</h3>
+                                @if ($model->video)
+                                    <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $model->video->status === 'ready' ? 'bg-emerald-100 text-emerald-800' : ($model->video->status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800') }}">
+                                        {{ ucfirst($model->video->status) }}
+                                    </span>
+                                @endif
+                            </div>
+
+                            @if ($model->video?->source_url)
+                                <video controls preload="metadata" class="mt-4 aspect-video w-full rounded-md bg-black object-contain">
+                                    <source src="{{ $model->video->source_url }}">
+                                    Your browser does not support video playback.
+                                </video>
+                                <p class="mt-3 break-all text-xs text-zinc-500">{{ $model->video->filename }}</p>
+                                <div class="mt-3 flex flex-wrap gap-3 text-sm font-semibold">
+                                    <a href="{{ $model->video->source_url }}" target="_blank" rel="noopener" class="text-[#222052] hover:text-[#d9b44a]">Open source</a>
+                                    @if ($model->video->encoded && $model->video->playback_url)
+                                        <a href="{{ $model->video->playback_url }}" target="_blank" rel="noopener" class="text-[#222052] hover:text-[#d9b44a]">Open adaptive stream</a>
+                                    @endif
+                                </div>
+                                @if ($model->video->error_message)
+                                    <p class="mt-3 rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">{{ $model->video->error_message }}</p>
+                                @endif
+                            @else
+                                <p class="mt-3 text-sm text-zinc-500">No video uploaded.</p>
+                            @endif
+                        </div>
+                    </div>
                 @elseif ($model)
                     <div class="mt-5 grid gap-4 md:grid-cols-2">
                         <div class="rounded-md border border-zinc-200 p-4">
@@ -482,6 +525,8 @@
                                                 {{ $recordItem->expires ? 'Expires '.$recordItem->expires->format('M j, Y') : 'No expiry' }}
                                             @elseif ($isPeakPeriods)
                                                 {{ $recordItem->is_active ? 'Active' : 'Inactive' }}{{ $recordItem->days_limit ? ' · '.$recordItem->days_limit.' day limit' : '' }}
+                                            @elseif ($isBanners)
+                                                {{ $recordItem->video ? 'Video: '.ucfirst($recordItem->video->status) : 'No video uploaded' }}
                                             @else
                                                 {{ $recordItem->summary ? Illuminate\Support\Str::limit($recordItem->summary, 90) : 'No summary entered.' }}
                                             @endif

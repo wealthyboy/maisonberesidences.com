@@ -12,13 +12,28 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=cormorant-garamond:400,500,600|instrument-sans:400,500,600" rel="stylesheet">
 
-        @vite(['resources/css/app.css'])
+        @vite(['resources/css/app.css', 'resources/js/home.js'])
     </head>
     <body>
         <main>
             <section class="hero" aria-labelledby="hero-title">
-                <video class="hero-video" autoplay muted loop playsinline poster="{{ asset('media/maisonbe-hero-source.jpg') }}" aria-hidden="true">
-                    <source src="https://uploads.pendry.com/redesign/wp-content/uploads/2025/07/14163533/PHR-Hero-Page-2025-1280x640-1.mp4" type="video/mp4">
+                <video
+                    class="hero-video"
+                    autoplay
+                    muted
+                    loop
+                    playsinline
+                    poster="{{ asset('media/maisonbe-hero-source.jpg') }}"
+                    aria-hidden="true"
+                    @if ($heroBanner?->video?->encoded && $heroBanner->video->playback_url)
+                        data-hls-source="{{ $heroBanner->video->playback_url }}"
+                    @endif
+                >
+                    @if ($heroBanner?->video?->source_url)
+                        <source src="{{ $heroBanner->video->source_url }}">
+                    @else
+                        <source src="{{ asset('MAISON BEAUFORT.mp4') }}" type="video/mp4">
+                    @endif
                 </video>
                 <div class="hero-overlay"></div>
 
