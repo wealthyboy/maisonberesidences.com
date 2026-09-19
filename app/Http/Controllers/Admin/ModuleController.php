@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdditionalService;
 use App\Models\AdminModuleRecord;
 use App\Models\Apartment;
 use App\Models\Attribute as ApartmentAttribute;
@@ -69,6 +70,15 @@ class ModuleController extends Controller
                 ->with('status', 'Apartment created.');
         }
 
+        if ($module['slug'] === 'additional-services') {
+            $service = AdditionalService::create($this->additionalServiceData($request));
+            $this->syncAdditionalServiceApartments($request, $service);
+
+            return redirect()
+                ->route('admin.modules.record.show', [$module['slug'], $service->id])
+                ->with('status', 'Additional service created.');
+        }
+
         if ($this->isInvoiceModule($module)) {
             $invoice = $this->storeInvoice($request);
 
@@ -126,9 +136,8 @@ class ModuleController extends Controller
 
         return redirect()
             ->route('admin.modules.show', $module['slug'])
-            ->with('status', Str::singular($module['label']) . ' created.');
+            ->with('status', Str::singular($module['label']).' created.');
     }
-
 
     public function duplicateApartment(string $record): RedirectResponse
     {
@@ -223,6 +232,16 @@ class ModuleController extends Controller
                 ->with('status', 'Apartment updated.');
         }
 
+        if ($module['slug'] === 'additional-services') {
+            $service = AdditionalService::findOrFail($record);
+            $service->update($this->additionalServiceData($request, $service));
+            $this->syncAdditionalServiceApartments($request, $service);
+
+            return redirect()
+                ->route('admin.modules.record.show', [$module['slug'], $service->id])
+                ->with('status', 'Additional service updated.');
+        }
+
         if ($this->isInvoiceModule($module)) {
             $invoice = Invoice::with('invoiceItems')->findOrFail($record);
             $this->updateInvoice($request, $invoice);
@@ -287,7 +306,7 @@ class ModuleController extends Controller
 
         return redirect()
             ->route('admin.modules.record.show', [$module['slug'], $recordModel->id])
-            ->with('status', Str::singular($module['label']) . ' updated.');
+            ->with('status', Str::singular($module['label']).' updated.');
     }
 
     public function destroy(string $module, string $record): RedirectResponse
@@ -308,6 +327,14 @@ class ModuleController extends Controller
             return redirect()
                 ->route('admin.modules.show', $module['slug'])
                 ->with('status', 'Apartment deleted.');
+        }
+
+        if ($module['slug'] === 'additional-services') {
+            AdditionalService::findOrFail($record)->delete();
+
+            return redirect()
+                ->route('admin.modules.show', $module['slug'])
+                ->with('status', 'Additional service deleted.');
         }
 
         if ($this->isInvoiceModule($module)) {
@@ -346,7 +373,7 @@ class ModuleController extends Controller
 
         return redirect()
             ->route('admin.modules.show', $module['slug'])
-            ->with('status', Str::singular($module['label']) . ' deleted.');
+            ->with('status', Str::singular($module['label']).' deleted.');
     }
 
     public function bulkDestroy(Request $request, string $module): RedirectResponse
@@ -365,6 +392,8 @@ class ModuleController extends Controller
             $deleted = Property::whereIn('id', $ids)->delete();
         } elseif ($module['slug'] === 'apartments') {
             $deleted = Apartment::whereIn('id', $ids)->delete();
+        } elseif ($module['slug'] === 'additional-services') {
+            $deleted = AdditionalService::whereIn('id', $ids)->delete();
         } elseif ($this->isInvoiceModule($module)) {
             $deleted = Invoice::whereIn('id', $ids)->delete();
         } elseif ($module['slug'] === 'pages') {
@@ -401,7 +430,7 @@ class ModuleController extends Controller
                 ->whereNull('parent_id')
                 ->where('type', 'apartment_facility')
                 ->where('is_active', true)
-                ->with(['children' => fn($children) => $children
+                ->with(['children' => fn ($children) => $children
                     ->where('type', 'apartment_facility')
                     ->where('is_active', true)])
                 ->orderBy('sort_order')
@@ -430,8 +459,12 @@ class ModuleController extends Controller
             return Apartment::with('property')->orderBy('sort_order')->orderBy('id')->get();
         }
 
+        if ($module['slug'] === 'additional-services') {
+            return AdditionalService::withCount('apartments')->orderBy('sort_order')->orderBy('name')->paginate(20);
+        }
+
         if ($this->isInvoiceModule($module)) {
-            $records = Invoice::with('invoiceItems.apartment')->latest()->paginate(10);
+            $records = Invoice::with(['invoiceItems.apartment', 'serviceItems'])->latest()->paginate(10);
 
             if ($module['slug'] === 'reservations') {
                 Log::info('Admin reservations loaded from invoices.', [
@@ -478,7 +511,8 @@ class ModuleController extends Controller
         return match ($module['slug']) {
             'properties' => Property::findOrFail($record),
             'apartments' => Apartment::with(['property', 'images', 'attributes'])->findOrFail($record),
-            'invoices', 'reservations', 'customers' => Invoice::with('invoiceItems.apartment')->findOrFail($record),
+            'additional-services' => AdditionalService::with('apartments')->findOrFail($record),
+            'invoices', 'reservations', 'customers' => Invoice::with(['invoiceItems.apartment', 'serviceItems'])->findOrFail($record),
             'pages' => Information::findOrFail($record),
             'vouchers' => Voucher::findOrFail($record),
             'peak-periods' => PeakPeriod::findOrFail($record),
@@ -502,7 +536,7 @@ class ModuleController extends Controller
 
     private function isDatabaseBacked(array $module): bool
     {
-        return in_array($module['slug'], ['properties', 'apartments', 'invoices', 'reservations', 'customers', 'pages', 'vouchers', 'peak-periods'], true);
+        return in_array($module['slug'], ['properties', 'apartments', 'additional-services', 'invoices', 'reservations', 'customers', 'pages', 'vouchers', 'peak-periods'], true);
     }
 
     private function isInvoiceModule(array $module): bool
@@ -615,7 +649,7 @@ class ModuleController extends Controller
         $counter = 2;
 
         while (Information::query()->where('slug', $slug)->when($page, fn ($query) => $query->whereKeyNot($page->id))->exists()) {
-            $slug = $baseSlug . '-' . $counter;
+            $slug = $baseSlug.'-'.$counter;
             $counter++;
         }
 
@@ -682,6 +716,53 @@ class ModuleController extends Controller
             'days_limit' => $data['days_limit'] ?? null,
             'is_active' => (bool) $data['is_active'],
         ];
+    }
+
+    private function additionalServiceData(Request $request, ?AdditionalService $service = null): array
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'price_usd' => ['required', 'numeric', 'min:0.01', 'max:999999.99'],
+            'is_active' => ['required', 'boolean'],
+            'available_for_all_apartments' => ['required', 'boolean'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
+            'apartment_ids' => ['required_if:available_for_all_apartments,0', 'nullable', 'array'],
+            'apartment_ids.*' => ['integer', 'exists:apartments,id'],
+        ]);
+
+        $baseSlug = Str::slug($data['name']) ?: 'service';
+        $slug = $baseSlug;
+        $counter = 2;
+
+        while (AdditionalService::query()
+            ->where('slug', $slug)
+            ->when($service, fn ($query) => $query->whereKeyNot($service->id))
+            ->exists()) {
+            $slug = $baseSlug.'-'.$counter;
+            $counter++;
+        }
+
+        return [
+            'name' => $data['name'],
+            'slug' => $slug,
+            'description' => $data['description'] ?? null,
+            'price_usd' => $data['price_usd'],
+            'is_active' => (bool) $data['is_active'],
+            'available_for_all_apartments' => (bool) $data['available_for_all_apartments'],
+            'sort_order' => $data['sort_order'] ?? 0,
+        ];
+    }
+
+    private function syncAdditionalServiceApartments(Request $request, AdditionalService $service): void
+    {
+        if ($service->available_for_all_apartments) {
+            $service->apartments()->detach();
+
+            return;
+        }
+
+        $service->apartments()->sync($request->input('apartment_ids', []));
     }
 
     private function propertyData(Request $request, ?Property $property = null): array
@@ -884,10 +965,10 @@ class ModuleController extends Controller
             $apartment = Apartment::find($item['apartment_id']);
             $checkin = Carbon::parse($item['checkin']);
             $checkout = Carbon::parse($item['checkout']);
-            $name = 'Booking for ' . ($item['name'] ?: $apartment?->name ?: 'Apartment')
-                . ' from ' . $checkin->format('D, M d, Y')
-                . ' to ' . $checkout->format('D, M d, Y')
-                . ' - ' . ($item['qty'] ?? 1) . ' night(s)';
+            $name = 'Booking for '.($item['name'] ?: $apartment?->name ?: 'Apartment')
+                .' from '.$checkin->format('D, M d, Y')
+                .' to '.$checkout->format('D, M d, Y')
+                .' - '.($item['qty'] ?? 1).' night(s)';
 
             $invoice->invoiceItems()->create([
                 'name' => $name,
@@ -918,9 +999,8 @@ class ModuleController extends Controller
     {
         $nextId = ((int) Invoice::max('id')) + 1;
 
-        return 'INV-' . date('Y') . '-' . $nextId . random_int(1000, 9999);
+        return 'INV-'.date('Y').'-'.$nextId.random_int(1000, 9999);
     }
-
 
     private function nextApartmentCopyName(string $name): string
     {
@@ -959,7 +1039,7 @@ class ModuleController extends Controller
                 ->when($apartment, fn ($query) => $query->whereKeyNot($apartment->id))
                 ->exists()
         ) {
-            $slug = $originalSlug . '-' . $count;
+            $slug = $originalSlug.'-'.$count;
             $count++;
         }
 
@@ -977,7 +1057,7 @@ class ModuleController extends Controller
                 ->when($property, fn ($query) => $query->whereKeyNot($property->id))
                 ->exists()
         ) {
-            $slug = $originalSlug . '-' . $count;
+            $slug = $originalSlug.'-'.$count;
             $count++;
         }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Apartment;
 use App\Models\Invoice;
+use App\Services\AdditionalServiceQuoteService;
 use App\Services\ApartmentQuoteService;
 use App\Services\CouponService;
 use App\Services\CurrencyService;
@@ -11,14 +12,15 @@ use App\Services\PaystackBookingService;
 use App\Services\PaystackService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ReservationController extends Controller
 {
     public function __construct(
         private readonly ApartmentQuoteService $quotes,
+        private readonly AdditionalServiceQuoteService $serviceQuotes,
         private readonly PaystackService $paystack,
         private readonly CouponService $coupons,
         private readonly CurrencyService $currencies,
@@ -34,8 +36,9 @@ class ReservationController extends Controller
         }
 
         $quote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $request->attributes->get('currency'));
+        $additionalServices = $this->serviceQuotes->availableFor($apartment, $quote['currency']);
 
-        return view('reservations.create', compact('apartment', 'stay', 'quote'));
+        return view('reservations.create', compact('apartment', 'stay', 'quote', 'additionalServices'));
     }
 
     public function store(Request $request, Apartment $apartment): JsonResponse|RedirectResponse
@@ -58,6 +61,8 @@ class ReservationController extends Controller
             'phone' => ['required', 'string', 'max:40'],
             'country' => ['nullable', 'string', 'max:100'],
             'coupon_code' => ['nullable', 'string', 'max:40'],
+            'services' => ['nullable', 'array'],
+            'services.*' => ['nullable', 'integer', 'min:0', 'max:20'],
         ]);
 
         $data['phone'] = trim($data['country_code'].' '.ltrim($data['phone'], '0 '));
@@ -78,6 +83,7 @@ class ReservationController extends Controller
         }
 
         $quote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $request->attributes->get('currency'));
+        $servicesQuote = $this->serviceQuotes->quoteSelection($apartment, $data['services'] ?? [], $quote['currency']);
 
         try {
             $coupon = $this->coupons->apply($data['coupon_code'] ?? null, $quote['total'], $quote['currency']);
@@ -91,7 +97,7 @@ class ReservationController extends Controller
 
         if ($request->expectsJson()) {
             try {
-                $payment = $this->inlinePaymentPayload($apartment, $stay, $quote, $coupon, $data);
+                $payment = $this->inlinePaymentPayload($apartment, $stay, $quote, $coupon, $servicesQuote, $data);
             } catch (\Throwable $exception) {
                 return response()->json(['message' => $exception->getMessage()], 422);
             }
@@ -116,11 +122,14 @@ class ReservationController extends Controller
 
         $data = $request->validate([
             'coupon_code' => ['nullable', 'string', 'max:40'],
+            'services' => ['nullable', 'array'],
+            'services.*' => ['nullable', 'integer', 'min:0', 'max:20'],
         ]);
 
         try {
             $quote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $request->attributes->get('currency'));
             $coupon = $this->coupons->apply($data['coupon_code'] ?? null, $quote['total'], $quote['currency']);
+            $servicesQuote = $this->serviceQuotes->quoteSelection($apartment, $data['services'] ?? [], $quote['currency']);
         } catch (\Throwable $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
         }
@@ -128,16 +137,18 @@ class ReservationController extends Controller
         return response()->json([
             'coupon' => $coupon['code'],
             'discount' => $coupon['discount'],
-            'total' => $coupon['total'],
+            'services_total' => $servicesQuote['subtotal'],
+            'display_services_total' => $servicesQuote['display_subtotal'],
+            'total' => round($coupon['total'] + $servicesQuote['subtotal'], 2),
             'display_discount' => $coupon['display_discount'],
-            'display_total' => $coupon['display_total'],
+            'display_total' => $this->currencies->format($coupon['total'] + $servicesQuote['subtotal'], $quote['currency']),
             'message' => $coupon['code'] ? 'Coupon applied.' : 'Coupon removed.',
         ]);
     }
 
     public function receipt(Invoice $invoice): View
     {
-        return view('reservations.receipt', ['invoice' => $invoice->load('invoiceItems.apartment.property', 'invoiceItems.apartment.images')]);
+        return view('reservations.receipt', ['invoice' => $invoice->load('invoiceItems.apartment.property', 'invoiceItems.apartment.images', 'serviceItems')]);
     }
 
     public function receiptByReference(Request $request): View|RedirectResponse
@@ -220,12 +231,20 @@ class ReservationController extends Controller
         return $number;
     }
 
-    private function inlinePaymentPayload(Apartment $apartment, array $stay, array $quote, array $coupon, array $data): array
+    private function inlinePaymentPayload(Apartment $apartment, array $stay, array $quote, array $coupon, array $servicesQuote, array $data): array
     {
         $reference = $this->nextPaymentReference();
         $invoiceNumber = $this->nextInvoiceNumber();
         $paymentQuote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $this->currencies->paystackCurrency());
         $paymentCoupon = $this->coupons->apply($coupon['code'], $paymentQuote['total'], $paymentQuote['currency']);
+        $serviceQuantities = collect($servicesQuote['items'])
+            ->mapWithKeys(fn (array $item) => [$item['additional_service_id'] => $item['quantity']])
+            ->all();
+        $paymentServices = $this->serviceQuotes->quoteSelection($apartment, $serviceQuantities, $paymentQuote['currency']);
+        $paymentSubtotal = round($paymentQuote['total'] + $paymentServices['subtotal'], 2);
+        $paymentTotal = round($paymentCoupon['total'] + $paymentServices['subtotal'], 2);
+        $displaySubtotal = round($quote['total'] + $servicesQuote['subtotal'], 2);
+        $displayTotal = round($coupon['total'] + $servicesQuote['subtotal'], 2);
         $booking = [
             'invoice_number' => $invoiceNumber,
             'reference' => $reference,
@@ -238,25 +257,30 @@ class ReservationController extends Controller
             'display_currency' => $quote['currency']['code'],
             'display_currency_symbol' => $quote['currency']['symbol'],
             'display_exchange_rate' => (float) $quote['currency']['rate'],
-            'display_subtotal' => (float) $quote['total'],
+            'display_accommodation_subtotal' => (float) $quote['total'],
+            'display_services_subtotal' => (float) $servicesQuote['subtotal'],
+            'display_subtotal' => $displaySubtotal,
             'display_discount' => (float) $coupon['discount'],
-            'display_total' => (float) $coupon['total'],
+            'display_total' => $displayTotal,
             'currency' => $paymentQuote['currency']['code'],
             'currency_symbol' => $paymentQuote['currency']['symbol'],
             'exchange_rate' => (float) $paymentQuote['currency']['rate'],
             'length_of_stay' => $quote['nights'],
-            'subtotal' => (float) $paymentQuote['total'],
+            'accommodation_subtotal' => (float) $paymentQuote['total'],
+            'services_subtotal' => (float) $paymentServices['subtotal'],
+            'subtotal' => $paymentSubtotal,
             'discount' => (float) $paymentCoupon['discount'],
             'discount_type' => $paymentCoupon['type'],
             'coupon' => $paymentCoupon['code'],
-            'total' => (float) $paymentCoupon['total'],
-            'original_amount' => (float) $paymentQuote['total'],
+            'total' => $paymentTotal,
+            'original_amount' => $paymentSubtotal,
             'payment_currency' => $paymentQuote['currency']['code'],
-            'payment_total' => (float) $paymentCoupon['total'],
+            'payment_total' => $paymentTotal,
             'from' => $stay['checkin']->toDateString(),
             'to' => $stay['checkout']->toDateString(),
             'apartment_id' => $apartment->id,
             'apartment_name' => $apartment->name,
+            'services' => $paymentServices['items'],
             'page_url' => url()->previous() ?: route('reservations.create', [
                 'apartment' => $apartment,
                 'checkin' => $stay['checkin']->toDateString(),
@@ -284,7 +308,7 @@ class ReservationController extends Controller
         return [
             'key' => $this->paystack->publicKey(),
             'email' => $data['email'],
-            'amount' => (int) round((float) $paymentCoupon['total'] * 100),
+            'amount' => (int) round($paymentTotal * 100),
             'currency' => $paymentQuote['currency']['code'],
             'reference' => $reference,
             'receipt_url' => route('reservations.receipt-reference', ['reference' => $reference]),

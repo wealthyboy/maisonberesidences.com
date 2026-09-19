@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Mail\ReservationReceiptMail;
+use App\Models\AdditionalService;
 use App\Models\Apartment;
 use App\Models\Invoice;
 use App\Models\Voucher;
@@ -120,11 +121,27 @@ class PaystackBookingService
                 'apartment_id' => $apartment->id,
                 'name' => (string) data_get($booking, 'apartment_name', $apartment->name),
                 'quantity' => $nights,
-                'price' => round((float) data_get($booking, 'subtotal') / $nights, 2),
-                'total' => (float) data_get($booking, 'subtotal'),
+                'price' => round((float) data_get($booking, 'accommodation_subtotal', data_get($booking, 'subtotal')) / $nights, 2),
+                'total' => (float) data_get($booking, 'accommodation_subtotal', data_get($booking, 'subtotal')),
                 'checkin' => $checkin,
                 'checkout' => $checkout,
             ]);
+
+            foreach ((array) data_get($booking, 'services', []) as $service) {
+                $quantity = max(1, (int) data_get($service, 'quantity', 1));
+                $unitPrice = (float) data_get($service, 'unit_price');
+                $serviceId = (int) data_get($service, 'additional_service_id');
+
+                $invoice->serviceItems()->create([
+                    'additional_service_id' => AdditionalService::query()->whereKey($serviceId)->exists() ? $serviceId : null,
+                    'apartment_id' => $apartment->id,
+                    'name' => (string) data_get($service, 'name', 'Additional service'),
+                    'quantity' => $quantity,
+                    'unit_price' => $unitPrice,
+                    'total' => (float) data_get($service, 'total', $unitPrice * $quantity),
+                    'unit_price_usd' => data_get($service, 'unit_price_usd'),
+                ]);
+            }
 
             if (filled($invoice->coupon_code)) {
                 Voucher::query()
@@ -146,7 +163,7 @@ class PaystackBookingService
 
         $this->sendReceipt($invoice);
 
-        return $invoice->fresh('invoiceItems.apartment.property');
+        return $invoice->fresh(['invoiceItems.apartment.property', 'serviceItems']);
     }
 
     private function sendReceipt(Invoice $invoice): void
@@ -167,7 +184,7 @@ class PaystackBookingService
         try {
             Mail::to($invoice->email)
                 ->bcc('info@maisonberesidences.com')
-                ->send(new ReservationReceiptMail($invoice->loadMissing('invoiceItems.apartment.property', 'invoiceItems.apartment.images')));
+                ->send(new ReservationReceiptMail($invoice->loadMissing('invoiceItems.apartment.property', 'invoiceItems.apartment.images', 'serviceItems')));
 
             Log::info('Reservation receipt email sent.', [
                 'invoice_id' => $invoice->id,

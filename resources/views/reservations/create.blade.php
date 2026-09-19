@@ -122,9 +122,42 @@
                         <p>By continuing, you acknowledge that you have read and understand the rules and regulations of this residence.</p>
                     </section>
 
+                    @if ($additionalServices->isNotEmpty())
+                        <section class="checkout-section checkout-services">
+                            <div class="checkout-section-heading">
+                                <span>3</span>
+                                <div>
+                                    <h2>Additional services</h2>
+                                    <p>Add breakfast, lunch, or other optional services to your stay.</p>
+                                </div>
+                            </div>
+                            <div class="checkout-service-list">
+                                @foreach ($additionalServices as $service)
+                                    @php($selectedQuantity = (int) old('services.'.$service['id'], 0))
+                                    <div class="checkout-service-option" data-service-option="{{ $service['id'] }}">
+                                        <label>
+                                            <input type="checkbox" data-service-toggle="{{ $service['id'] }}" @checked($selectedQuantity > 0)>
+                                            <span>
+                                                <strong>{{ $service['name'] }}</strong>
+                                                @if ($service['description'])
+                                                    <small>{{ $service['description'] }}</small>
+                                                @endif
+                                                <b>{{ $service['display_price'] }} per unit</b>
+                                            </span>
+                                        </label>
+                                        <label class="checkout-service-quantity">
+                                            Qty
+                                            <input type="number" name="services[{{ $service['id'] }}]" value="{{ $selectedQuantity }}" min="0" max="20" inputmode="numeric" data-service-quantity="{{ $service['id'] }}" data-service-name="{{ $service['name'] }}" data-service-price="{{ $service['unit_price'] }}">
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </section>
+                    @endif
+
                     <section class="checkout-section checkout-coupon">
                         <div class="checkout-section-heading">
-                            <span>3</span>
+                            <span>{{ $additionalServices->isNotEmpty() ? '4' : '3' }}</span>
                             <div>
                                 <h2>Coupon</h2>
                                 <p>Apply a valid coupon before making payment.</p>
@@ -153,6 +186,13 @@
                             <span>{{ $quote['display_nightly'] }} × {{ $quote['nights'] }} {{ \Illuminate\Support\Str::plural('night', $quote['nights']) }}<small>per night</small></span>
                             <strong>{{ $quote['display_total'] }}</strong>
                         </div>
+                        @foreach ($additionalServices as $service)
+                            @php($selectedQuantity = (int) old('services.'.$service['id'], 0))
+                            <div class="checkout-price-line checkout-service-price-line" @if($selectedQuantity < 1) hidden @endif data-service-line="{{ $service['id'] }}">
+                                <span>{{ $service['name'] }}<small data-service-line-quantity>× {{ $selectedQuantity }}</small></span>
+                                <strong data-service-line-total>{{ $quote['currency']['symbol'] }}0</strong>
+                            </div>
+                        @endforeach
                         <div class="checkout-price-line checkout-discount-line" hidden data-discount-line>
                             <span>Coupon discount<small data-discount-code></small></span>
                             <strong>-<span data-discount-amount>{{ $quote['currency']['symbol'] }}0</span></strong>
@@ -208,18 +248,68 @@
                 const discountAmount = document.querySelector('[data-discount-amount]');
                 const total = document.querySelector('[data-checkout-total]');
                 const form = document.querySelector('.checkout-form');
+                const serviceQuantities = Array.from(document.querySelectorAll('[data-service-quantity]'));
+                const accommodationTotal = Number(@json((float) $quote['total']));
+                const currencyCode = @json($quote['currency']['code']);
+                const currencySymbol = @json($quote['currency']['symbol']);
+                let currentDiscount = 0;
 
                 if (!input || !apply || !status || !discountLine || !discountAmount || !total || !form) return;
+
+                const formatMoney = (amount) => {
+                    const decimals = currencyCode === 'NGN' ? 0 : (Math.abs(amount - Math.round(amount)) < 0.005 ? 0 : 2);
+                    return currencySymbol + Number(amount).toLocaleString('en-US', {
+                        minimumFractionDigits: decimals,
+                        maximumFractionDigits: decimals,
+                    });
+                };
+
+                const refreshTotal = () => {
+                    let servicesTotal = 0;
+
+                    serviceQuantities.forEach((quantityInput) => {
+                        const id = quantityInput.dataset.serviceQuantity;
+                        const quantity = Math.max(0, Math.min(20, Number(quantityInput.value) || 0));
+                        const unitPrice = Number(quantityInput.dataset.servicePrice) || 0;
+                        const toggle = document.querySelector('[data-service-toggle="' + id + '"]');
+                        const option = document.querySelector('[data-service-option="' + id + '"]');
+                        const line = document.querySelector('[data-service-line="' + id + '"]');
+
+                        quantityInput.value = quantity;
+                        if (toggle) toggle.checked = quantity > 0;
+                        if (option) option.classList.toggle('is-selected', quantity > 0);
+
+                        if (line) {
+                            line.hidden = quantity < 1;
+                            const quantityLabel = line.querySelector('[data-service-line-quantity]');
+                            const lineTotal = line.querySelector('[data-service-line-total]');
+                            if (quantityLabel) quantityLabel.textContent = '× ' + quantity;
+                            if (lineTotal) lineTotal.textContent = formatMoney(unitPrice * quantity);
+                        }
+
+                        servicesTotal += unitPrice * quantity;
+                    });
+
+                    total.textContent = formatMoney(Math.max(0, accommodationTotal - currentDiscount + servicesTotal));
+                };
+
+                document.querySelectorAll('[data-service-toggle]').forEach((toggle) => {
+                    toggle.addEventListener('change', () => {
+                        const quantity = document.querySelector('[data-service-quantity="' + toggle.dataset.serviceToggle + '"]');
+                        if (quantity) quantity.value = toggle.checked ? Math.max(1, Number(quantity.value) || 1) : 0;
+                        refreshTotal();
+                    });
+                });
+
+                serviceQuantities.forEach((quantity) => quantity.addEventListener('input', refreshTotal));
+                refreshTotal();
 
                 apply.addEventListener('click', async () => {
                     status.textContent = 'Checking coupon...';
                     apply.disabled = true;
 
                     try {
-                        const body = new FormData();
-                        body.set('checkin', form.querySelector('[name="checkin"]').value);
-                        body.set('checkout', form.querySelector('[name="checkout"]').value);
-                        body.set('coupon_code', input.value);
+                        const body = new FormData(form);
 
                         const response = await fetch('{{ route('reservations.coupon', $apartment) }}', {
                             method: 'POST',
@@ -236,11 +326,13 @@
                         discountLine.hidden = !result.coupon;
                         discountCode.textContent = result.coupon || '';
                         discountAmount.textContent = result.display_discount;
-                        total.textContent = result.display_total;
+                        currentDiscount = Number(result.discount) || 0;
+                        refreshTotal();
                         status.textContent = result.message;
                     } catch (error) {
                         discountLine.hidden = true;
-                        total.textContent = '{{ $quote['display_total'] }}';
+                        currentDiscount = 0;
+                        refreshTotal();
                         status.textContent = error.message;
                     } finally {
                         apply.disabled = false;

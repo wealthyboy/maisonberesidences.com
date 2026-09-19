@@ -52,4 +52,9 @@ class Invoice extends Model
     {
         return $this->hasMany(InvoiceItem::class);
     }
+
+    public function serviceItems()
+    {
+        return $this->hasMany(InvoiceAdditionalService::class);
+    }
 }

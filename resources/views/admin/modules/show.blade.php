@@ -10,7 +10,8 @@
     $isVouchers = $module['slug'] === 'vouchers';
     $isPeakPeriods = $module['slug'] === 'peak-periods';
     $isBanners = $module['slug'] === 'banners';
-    $isDatabaseBacked = $isProperties || $isApartments || $isInvoices || $isCustomers || $isPages || $isVouchers || $isPeakPeriods;
+    $isAdditionalServices = $module['slug'] === 'additional-services';
+    $isDatabaseBacked = $isProperties || $isApartments || $isAdditionalServices || $isInvoices || $isCustomers || $isPages || $isVouchers || $isPeakPeriods;
     $recordName = $model ? ($isInvoices ? $model->invoice : ($isCustomers ? $model->full_name : ($isPages ? $model->title : ($isVouchers ? $model->code : ($isDatabaseBacked ? $model->name : $model->title))))) : null;
 @endphp
 
@@ -77,7 +78,7 @@
                     @if ($screen === 'edit')
                         @method('put')
                     @else
-                        @unless ($isInvoices || $isPages || $isApartments || $isVouchers || $isPeakPeriods || $isBanners)
+                        @unless ($isInvoices || $isPages || $isApartments || $isAdditionalServices || $isVouchers || $isPeakPeriods || $isBanners)
                             <div class="border-b border-zinc-200 pb-2 lg:col-span-2">
                                 <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-zinc-500">{{ Illuminate\Support\Str::singular($module['label']) }} details</h3>
                             </div>
@@ -121,6 +122,8 @@
 
                     @if ($isBanners)
                         @include('admin.modules.forms.banner')
+                    @elseif ($isAdditionalServices)
+                        @include('admin.modules.forms.additional-service')
                     @elseif ($isInvoices)
                         @include('admin.modules.forms.invoice')
                     @elseif ($isApartments)
@@ -236,19 +239,33 @@
                 <dl class="mt-6 grid gap-4 md:grid-cols-3">
                     <div class="rounded-md border border-zinc-200 p-4">
                         <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Status</dt>
-                        <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $isPeakPeriods ? ($model->is_active ? 'Active' : 'Inactive') : ($isVouchers ? ($model->is_usable ? 'Active' : 'Inactive') : ($isInvoices ? ($model->sent ? 'Sent' : 'Draft') : ($isPages ? 'Published' : ucfirst($model->status ?? 'draft')))) }}</dd>
+                        <dd class="mt-2 text-sm font-semibold text-zinc-950">
+                            @if ($isPeakPeriods || $isAdditionalServices)
+                                {{ $model->is_active ? 'Active' : 'Inactive' }}
+                            @elseif ($isVouchers)
+                                {{ $model->is_usable ? 'Active' : 'Inactive' }}
+                            @elseif ($isInvoices)
+                                {{ $model->sent ? 'Sent' : 'Draft' }}
+                            @elseif ($isPages)
+                                Published
+                            @else
+                                {{ ucfirst($model->status ?? 'draft') }}
+                            @endif
+                        </dd>
                     </div>
                     <div class="rounded-md border border-zinc-200 p-4">
                         <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Module</dt>
                         <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $module['label'] }}</dd>
                     </div>
                     <div class="rounded-md border border-zinc-200 p-4">
-                        <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">{{ $isProperties ? 'Location' : ($isApartments ? 'Property' : ($isInvoices ? 'Customer' : ($isPages ? 'Slug' : ($isVouchers ? 'Code' : ($isPeakPeriods ? 'Date range' : 'Published'))))) }}</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">{{ $isProperties ? 'Location' : ($isApartments ? 'Property' : ($isAdditionalServices ? 'Availability' : ($isInvoices ? 'Customer' : ($isPages ? 'Slug' : ($isVouchers ? 'Code' : ($isPeakPeriods ? 'Date range' : 'Published')))))) }}</dt>
                         <dd class="mt-2 text-sm font-semibold text-zinc-950">
                             @if ($isProperties)
                                 {{ trim(($model->city ?? '') . ', ' . ($model->country ?? ''), ', ') ?: 'Not set' }}
                             @elseif ($isApartments)
                                 {{ $model->property->name ?? 'No property' }}
+                            @elseif ($isAdditionalServices)
+                                {{ $model->available_for_all_apartments ? 'All apartments' : $model->apartments->count().' selected apartments' }}
                             @elseif ($isInvoices)
                                 {{ $model->full_name }}
                             @elseif ($isPages)
@@ -337,6 +354,14 @@
                                         <td class="px-4 py-3">{{ $model->currency }}{{ number_format((float) $item->total, 2) }}</td>
                                     </tr>
                                 @endforeach
+                                @foreach ($model->serviceItems as $serviceItem)
+                                    <tr>
+                                        <td class="px-4 py-3">{{ $serviceItem->name }} <span class="text-xs text-zinc-400">(additional service)</span></td>
+                                        <td class="px-4 py-3">{{ $serviceItem->quantity }}</td>
+                                        <td class="px-4 py-3">{{ $model->currency }}{{ number_format((float) $serviceItem->unit_price, 2) }}</td>
+                                        <td class="px-4 py-3">{{ $model->currency }}{{ number_format((float) $serviceItem->total, 2) }}</td>
+                                    </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -366,6 +391,29 @@
                             @endforeach
                         </div>
                     @endif
+                @elseif ($isAdditionalServices && $model)
+                    <div class="mt-5 grid gap-4 md:grid-cols-3">
+                        <div class="rounded-md border border-zinc-200 p-4">
+                            <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">USD price</dt>
+                            <dd class="mt-2 text-lg font-semibold text-zinc-950">USD {{ number_format((float) $model->price_usd, 2) }}</dd>
+                        </div>
+                        <div class="rounded-md border border-zinc-200 p-4 md:col-span-2">
+                            <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Description</dt>
+                            <dd class="mt-2 text-sm leading-6 text-zinc-700">{{ $model->description ?: 'No description entered.' }}</dd>
+                        </div>
+                    </div>
+                    @unless ($model->available_for_all_apartments)
+                        <div class="mt-5 rounded-md border border-zinc-200 p-4">
+                            <h3 class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Available apartments</h3>
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                @forelse ($model->apartments as $serviceApartment)
+                                    <span class="rounded-full bg-[#d9b44a]/15 px-3 py-1 text-xs font-semibold text-[#222052]">{{ $serviceApartment->name }}</span>
+                                @empty
+                                    <span class="text-sm text-zinc-500">No apartments selected.</span>
+                                @endforelse
+                            </div>
+                        </div>
+                    @endunless
                 @elseif ($isProperties && $model)
                     <div class="mt-5 rounded-md border border-zinc-200 p-4 text-sm leading-6 text-zinc-700">
                         {{ $model->description ?: 'No description entered.' }}
@@ -525,6 +573,8 @@
                                                 {{ $recordItem->expires ? 'Expires '.$recordItem->expires->format('M j, Y') : 'No expiry' }}
                                             @elseif ($isPeakPeriods)
                                                 {{ $recordItem->is_active ? 'Active' : 'Inactive' }}{{ $recordItem->days_limit ? ' · '.$recordItem->days_limit.' day limit' : '' }}
+                                            @elseif ($isAdditionalServices)
+                                                USD {{ number_format((float) $recordItem->price_usd, 2) }} per unit · {{ $recordItem->available_for_all_apartments ? 'All apartments' : $recordItem->apartments_count.' apartments' }}
                                             @elseif ($isBanners)
                                                 {{ $recordItem->video ? 'Video: '.ucfirst($recordItem->video->status) : 'No video uploaded' }}
                                             @else
@@ -550,7 +600,7 @@
                                             @if ($isPeakPeriods)
                                                 <span class="font-semibold text-zinc-950">{{ $recordItem->start_date?->format('M j, Y') }} - {{ $recordItem->end_date?->format('M j, Y') }}</span>
                                             @else
-                                                <span class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700">{{ $isVouchers ? number_format((float) $recordItem->amount, 2).'%' : ($isInvoices ? ($recordItem->sent ? 'Sent' : 'Draft') : ($isApartments ? ($recordItem->price_mode ?: 'Apartment') : ucfirst($recordItem->status ?? 'draft'))) }}</span>
+                                                <span class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700">{{ $isVouchers ? number_format((float) $recordItem->amount, 2).'%' : ($isInvoices ? ($recordItem->sent ? 'Sent' : 'Draft') : ($isApartments ? ($recordItem->price_mode ?: 'Apartment') : ($isAdditionalServices ? ($recordItem->is_active ? 'Active' : 'Inactive') : ucfirst($recordItem->status ?? 'draft')))) }}</span>
                                             @endif
                                         @endif
                                         @if ($isInvoices && ! $isReservations)

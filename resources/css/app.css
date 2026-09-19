@@ -367,6 +367,19 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .checkout-fields input, .checkout-fields select { min-height: 48px; width: 100%; padding: .72rem .82rem; border: 1px solid #d7c9a7; border-radius: 8px; color: var(--ink); background: #fff; font: inherit; font-size: .92rem; outline: none; }
 .checkout-fields input:focus, .checkout-fields select:focus { border-color: var(--deep); box-shadow: 0 0 0 3px rgba(24,38,74,.1); }
 .checkout-field-wide { grid-column: 1 / -1; }
+.checkout-service-list { display: grid; gap: .75rem; }
+.checkout-service-option { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1rem; align-items: center; padding: 1rem; border: 1px solid #e2d8bd; border-radius: 10px; background: #fffdf8; transition: border-color .2s ease, background .2s ease; }
+.checkout-service-option.is-selected { border-color: var(--gold); background: #fbf7ec; }
+.checkout-service-option > label:first-child { display: flex; min-width: 0; gap: .85rem; align-items: flex-start; cursor: pointer; }
+.checkout-service-option input[type="checkbox"] { width: 1.1rem; height: 1.1rem; margin-top: .2rem; accent-color: var(--deep); }
+.checkout-service-option span { display: grid; min-width: 0; gap: .25rem; }
+.checkout-service-option strong { color: var(--ink); font-size: .96rem; }
+.checkout-service-option small { color: var(--soft-ink); font-size: .78rem; line-height: 1.45; }
+.checkout-service-option b { color: #2f855a; font-size: .78rem; }
+.checkout-service-quantity { display: grid; color: #687086; gap: .3rem; font-size: .65rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.checkout-service-quantity input { width: 72px; min-height: 42px; padding: .55rem; border: 1px solid #d7c9a7; border-radius: 8px; color: var(--ink); background: #fff; font: inherit; font-size: .9rem; text-align: center; }
+.checkout-service-price-line { color: #2f855a; }
+@media (max-width: 560px) { .checkout-service-option { grid-template-columns: 1fr; } .checkout-service-quantity { grid-template-columns: auto 72px; align-items: center; justify-content: end; } }
 .checkout-rules > p { margin: 1.2rem 0 0; color: var(--soft-ink); line-height: 1.65; }
 .checkout-rule-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
 .checkout-rule-grid div { padding: 1rem; border-radius: 10px; background: #f4efe4; }

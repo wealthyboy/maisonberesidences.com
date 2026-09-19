@@ -101,6 +101,18 @@
                                     </tr>
                                 </table>
 
+                                @if ($invoice->serviceItems->isNotEmpty())
+                                    <p style="margin:28px 0 10px;color:#a78135;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Additional services</p>
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-top:1px solid #d8cba9;border-bottom:1px solid #d8cba9;">
+                                        @foreach ($invoice->serviceItems as $serviceItem)
+                                            <tr>
+                                                <td style="padding:12px 0;color:#5e6678;">{{ $serviceItem->name }} × {{ $serviceItem->quantity }}</td>
+                                                <td align="right" style="padding:12px 0;font-weight:700;">{{ $money($serviceItem->total) }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </table>
+                                @endif
+
                                 <p style="margin:28px 0 10px;color:#a78135;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Receipt summary</p>
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-top:1px solid #d8cba9;border-bottom:1px solid #d8cba9;">
                                     <tr>

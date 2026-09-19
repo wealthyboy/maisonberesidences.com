@@ -78,6 +78,17 @@
                     </div>
                 @endforeach
             </section>
+            @if ($invoice->serviceItems->isNotEmpty())
+                <section class="receipt-card">
+                    <p class="receipt-section-title">Additional services</p>
+                    @foreach ($invoice->serviceItems as $serviceItem)
+                        <div>
+                            <span>{{ $serviceItem->name }} × {{ $serviceItem->quantity }}</span>
+                            <strong>{{ $money($serviceItem->total) }}</strong>
+                        </div>
+                    @endforeach
+                </section>
+            @endif
             <section class="receipt-card">
                 <p class="receipt-section-title">Receipt summary</p>
                 <div><span>Subtotal</span><strong>{{ $money($invoice->subtotal) }}</strong></div>

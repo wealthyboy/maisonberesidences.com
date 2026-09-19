@@ -80,4 +80,9 @@ class Apartment extends Model
     {
         return $this->belongsToMany(Attribute::class, 'apartment_attribute')->withTimestamps();
     }
+
+    public function additionalServices()
+    {
+        return $this->belongsToMany(AdditionalService::class, 'apartment_additional_service')->withTimestamps();
+    }
 }

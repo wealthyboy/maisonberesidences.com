@@ -26,6 +26,7 @@ return [
             'icon' => 'layers',
             'items' => [
                 ['slug' => 'attributes', 'label' => 'Attributes', 'icon' => 'sliders', 'description' => 'Manage amenities, icons, filters, import data, and sort order.'],
+                ['slug' => 'additional-services', 'label' => 'Additional Services', 'icon' => 'sparkles', 'description' => 'Manage optional checkout services, USD prices, and apartment availability.'],
                 ['slug' => 'facilities', 'label' => 'Facilities', 'icon' => 'sparkles', 'description' => 'Maintain facility records used by apartments and properties.'],
                 ['slug' => 'locations', 'label' => 'Locations', 'icon' => 'map', 'description' => 'Manage locations, hierarchy, images, and search destinations.'],
             ],
