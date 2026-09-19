@@ -65,7 +65,7 @@
             </div>
             <p class="mt-2 text-xs text-zinc-500">Uploading a new file replaces this banner's video reference and queues it for encoding.</p>
             @if ($model->video->error_message)
-                <p class="mt-2 text-xs text-red-700">{{ $model->video->error_message }}</p>
+                <p class="mt-2 whitespace-pre-wrap break-words text-xs text-red-700">{{ $model->video->error_message }}</p>
             @endif
         </div>
     @endif

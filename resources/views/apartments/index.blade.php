@@ -11,7 +11,7 @@
         @vite(['resources/css/app.css'])
     </head>
     <body class="apartments-page">
-        <header class="results-hero" style="--results-hero-image: url('{{ asset('media/maisonbe-hero-source.jpg') }}');">
+        <header class="results-hero" style="--results-hero-image: url('{{ asset('media/maisonbe-listing-exterior.jpg') }}');">
             <nav class="results-hero-nav">
                 <button class="menu-button" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-menu" id="menu-toggle">
                     <span></span><span></span><span></span>

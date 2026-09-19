@@ -88,15 +88,18 @@ class EncodeVideo implements ShouldQueue
                 'playlist' => $masterPlaylist,
             ]);
         } catch (Throwable $exception) {
+            $errorMessage = $exception->getMessage();
+            $errorTail = mb_substr($errorMessage, -6000);
+
             $video->update([
                 'encoded' => false,
                 'status' => 'failed',
-                'error_message' => mb_substr($exception->getMessage(), 0, 2000),
+                'error_message' => "FFmpeg encoding failed. Relevant error output:\n{$errorTail}",
             ]);
 
             Log::error('EncodeVideo: encoding failed.', [
                 'video_id' => $video->id,
-                'exception' => $exception->getMessage(),
+                'exception' => $errorMessage,
             ]);
 
             throw $exception;

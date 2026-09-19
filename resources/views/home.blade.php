@@ -49,7 +49,7 @@
                 </header>
 
                 <div class="hero-title-wrap">
-                    <h1 id="hero-title">A calmer<br>Lagos.</h1>
+                    <h1 id="hero-title">Live Beautifully</h1>
                 </div>
 
                 <form class="booking-bar" id="stay-search" action="{{ route('apartments.index') }}" method="get">
