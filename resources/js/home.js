@@ -23,3 +23,21 @@ if (heroVideo) {
         });
     }
 }
+
+const heroImageCarousel = document.querySelector('[data-hero-image-carousel]');
+
+if (heroImageCarousel) {
+    const slides = Array.from(heroImageCarousel.querySelectorAll('[data-hero-image-slide]'));
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (slides.length > 1 && !reduceMotion) {
+        let activeIndex = 0;
+        const interval = window.setInterval(() => {
+            slides[activeIndex].classList.remove('is-active');
+            activeIndex = (activeIndex + 1) % slides.length;
+            slides[activeIndex].classList.add('is-active');
+        }, 5500);
+
+        window.addEventListener('pagehide', () => window.clearInterval(interval), { once: true });
+    }
+}

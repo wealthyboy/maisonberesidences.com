@@ -17,24 +17,33 @@
     <body>
         <main>
             <section class="hero" aria-labelledby="hero-title">
-                <video
-                    class="hero-video"
-                    autoplay
-                    muted
-                    loop
-                    playsinline
-                    poster="{{ asset('media/maisonbe-hero-source.jpg') }}"
-                    aria-hidden="true"
-                    @if ($heroBanner?->video?->encoded && $heroBanner->video->playback_url)
+                @if ($heroBanner?->video?->playback_url)
+                    <video
+                        class="hero-video"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        poster="{{ asset('media/maisonbe-hero-source.jpg') }}"
+                        aria-hidden="true"
                         data-hls-source="{{ $heroBanner->video->playback_url }}"
-                    @endif
-                >
-                    @if ($heroBanner?->video?->source_url)
-                        <source src="{{ $heroBanner->video->source_url }}">
-                    @else
-                        <source src="{{ asset('MAISON BEAUFORT.mp4') }}" type="video/mp4">
-                    @endif
-                </video>
+                    ></video>
+                @elseif ($heroImages->isNotEmpty())
+                    <div class="hero-image-carousel" aria-hidden="true" data-hero-image-carousel>
+                        @foreach ($heroImages as $index => $heroImage)
+                            @php
+                                $heroImageUrl = str_starts_with($heroImage->image, 'http://') || str_starts_with($heroImage->image, 'https://')
+                                    ? $heroImage->image
+                                    : asset($heroImage->image);
+                            @endphp
+                            <span class="hero-image-slide {{ $index === 0 ? 'is-active' : '' }}" style="--hero-slide-image: url('{{ $heroImageUrl }}');" data-hero-image-slide></span>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="hero-image-carousel" aria-hidden="true">
+                        <span class="hero-image-slide is-active" style="--hero-slide-image: url('{{ asset('media/maisonbe-hero-source.jpg') }}');"></span>
+                    </div>
+                @endif
                 <div class="hero-overlay"></div>
 
                 <header class="hero-header">

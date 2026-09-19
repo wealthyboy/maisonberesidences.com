@@ -65,13 +65,20 @@ class EncodeVideo implements ShouldQueue
                 ->exportForHLS()
                 ->setSegmentLength(10);
 
-            foreach ([2000, 800] as $bitrate) {
-                $format = (new X264)
-                    ->setKiloBitrate($bitrate)
-                    ->setAudioCodec('aac')
-                    ->setAdditionalParameters(['-preset', 'veryfast', '-movflags', '+faststart']);
+            $renditions = [
+                ['bitrate' => 2000, 'width' => 1280, 'height' => 720],
+                ['bitrate' => 800, 'width' => 854, 'height' => 480],
+            ];
 
-                $hls->addFormat($format);
+            foreach ($renditions as $rendition) {
+                $format = (new X264)
+                    ->setKiloBitrate($rendition['bitrate'])
+                    ->setAudioCodec('aac')
+                    ->setAdditionalParameters(['-preset', 'veryfast']);
+
+                $hls->addFormat($format, function ($media) use ($rendition): void {
+                    $media->resize($rendition['width'], $rendition['height']);
+                });
             }
 
             $hls->toDisk($disk)->save($masterPlaylist);

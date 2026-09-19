@@ -35,11 +35,51 @@ class HomeController extends Controller
                 ->with('video')
                 ->where('module_slug', 'banners')
                 ->where('status', 'active')
-                ->whereHas('video')
+                ->whereHas('video', function ($query): void {
+                    $query->where('encoded', true)->where('status', 'ready');
+                })
                 ->orderByDesc('published_at')
                 ->latest('id')
                 ->first()
             : null;
+        $heroImages = collect();
+
+        if (! $heroBanner && Schema::hasTable('apartments') && Schema::hasTable('images')) {
+            $firstApartmentId = Apartment::query()
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->value('id');
+
+            if ($firstApartmentId) {
+                $heroImages = Image::query()
+                    ->where('imageable_type', Apartment::class)
+                    ->where('imageable_id', $firstApartmentId)
+                    ->whereNotNull('image')
+                    ->where('image', '!=', '')
+                    ->where(function ($query): void {
+                        $query->whereRaw('LOWER(caption) LIKE ?', ['%living room%'])
+                            ->orWhereRaw('LOWER(caption) LIKE ?', ['%livingroom%'])
+                            ->orWhereRaw('LOWER(caption) LIKE ?', ['%lounge%']);
+                    })
+                    ->inRandomOrder()
+                    ->limit(4)
+                    ->get();
+
+                if ($heroImages->count() < 4) {
+                    $fillImages = Image::query()
+                        ->where('imageable_type', Apartment::class)
+                        ->where('imageable_id', $firstApartmentId)
+                        ->whereNotNull('image')
+                        ->where('image', '!=', '')
+                        ->whereNotIn('id', $heroImages->pluck('id'))
+                        ->inRandomOrder()
+                        ->limit(4 - $heroImages->count())
+                        ->get();
+
+                    $heroImages = $heroImages->concat($fillImages)->values();
+                }
+            }
+        }
         $bedroomImages = Schema::hasTable('images')
             ? Image::query()
                 ->where('imageable_type', Apartment::class)
@@ -55,7 +95,7 @@ class HomeController extends Controller
             : collect();
 
         if (! Schema::hasTable('apartments')) {
-            return view('home', compact('information', 'settings', 'currency', 'bedroomImages', 'heroBanner') + ['apartments' => collect()]);
+            return view('home', compact('information', 'settings', 'currency', 'bedroomImages', 'heroBanner', 'heroImages') + ['apartments' => collect()]);
         }
 
         $apartments = Apartment::query()
@@ -68,6 +108,6 @@ class HomeController extends Controller
             $apartment->setAttribute('home_quote', $this->quotes->quote($apartment, null, null, $currency));
         });
 
-        return view('home', compact('apartments', 'information', 'settings', 'currency', 'bedroomImages', 'heroBanner'));
+        return view('home', compact('apartments', 'information', 'settings', 'currency', 'bedroomImages', 'heroBanner', 'heroImages'));
     }
 }
