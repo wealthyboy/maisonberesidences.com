@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Apartment;
 use App\Models\AdminModuleRecord;
+use App\Models\Apartment;
 use App\Models\Image;
 use App\Models\Information;
 use App\Models\SystemSetting;
@@ -60,8 +60,7 @@ class HomeController extends Controller
 
         $apartments = Apartment::query()
             ->with(['images', 'attributes.parent'])
-            ->orderBy('sort_order')
-            ->orderBy('id')
+            ->inRandomOrder()
             ->limit(4)
             ->get();
 
