@@ -2,6 +2,11 @@ const heroVideo = document.querySelector('.hero-video[data-hls-source]');
 
 if (heroVideo) {
     const playlist = heroVideo.dataset.hlsSource;
+    const revealVideo = () => heroVideo.classList.add('is-ready');
+    const hideVideo = () => heroVideo.classList.remove('is-ready');
+
+    heroVideo.addEventListener('playing', revealVideo);
+    heroVideo.addEventListener('error', hideVideo);
 
     if (heroVideo.canPlayType('application/vnd.apple.mpegurl')) {
         heroVideo.src = playlist;
@@ -18,6 +23,12 @@ if (heroVideo) {
 
             hls.loadSource(playlist);
             hls.attachMedia(heroVideo);
+            hls.on(Hls.Events.ERROR, (_event, data) => {
+                if (data.fatal) {
+                    hideVideo();
+                    hls.destroy();
+                }
+            });
 
             window.addEventListener('pagehide', () => hls.destroy(), { once: true });
         });

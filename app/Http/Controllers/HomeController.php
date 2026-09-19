@@ -44,7 +44,7 @@ class HomeController extends Controller
             : null;
         $heroImages = collect();
 
-        if (! $heroBanner && Schema::hasTable('apartments') && Schema::hasTable('images')) {
+        if (Schema::hasTable('apartments') && Schema::hasTable('images')) {
             $firstApartmentId = Apartment::query()
                 ->orderBy('sort_order')
                 ->orderBy('id')

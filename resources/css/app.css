@@ -51,7 +51,8 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .construction-visual-label p { margin: 0; font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(1.25rem, 2vw, 1.8rem); line-height: 1.25; text-align: right; }
 
 .hero { position: relative; z-index: 3; height: 100svh; min-height: 680px; overflow: visible; color: #fff; }
-.hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero-video { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; object-fit: cover; transition: opacity .8s ease; }
+.hero-video.is-ready { opacity: 1; }
 .hero-image-carousel, .hero-image-slide { position: absolute; inset: 0; }
 .hero-image-carousel { overflow: hidden; background: var(--deep); }
 .hero-image-slide { opacity: 0; background: var(--hero-slide-image) center / cover no-repeat; transform: scale(1.015); transition: opacity 1.35s ease, transform 7s ease; }
