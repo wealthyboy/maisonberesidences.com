@@ -50,6 +50,9 @@
         </div>
         <p data-upload-progress-bytes class="mt-2 text-xs font-medium tabular-nums text-zinc-500"></p>
         <p class="mt-1 text-xs leading-5 text-zinc-500">Keep this page open until the upload finishes. Video encoding will continue in the background afterward.</p>
+        <button type="button" data-upload-retry class="mt-4 hidden rounded-md bg-[#222052] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d9b44a] hover:text-[#222052]">
+            Retry upload
+        </button>
     </div>
 
     @if ($model?->video)

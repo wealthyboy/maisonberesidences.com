@@ -699,6 +699,7 @@
                 const progressStatus = form.querySelector('[data-upload-progress-status]');
                 const progressBytes = form.querySelector('[data-upload-progress-bytes]');
                 const errorPanel = form.querySelector('[data-upload-error]');
+                const retryButton = form.querySelector('[data-upload-retry]');
                 const originalButtonText = submitButton ? submitButton.textContent.trim() : 'Submit';
 
                 const formatBytes = function (bytes) {
@@ -712,6 +713,7 @@
                     if (!errorPanel) return;
                     errorPanel.textContent = message;
                     errorPanel.classList.remove('hidden');
+                    if (retryButton) retryButton.classList.remove('hidden');
                 };
 
                 const setUploading = function (uploading) {
@@ -734,6 +736,7 @@
                         errorPanel.textContent = '';
                         errorPanel.classList.add('hidden');
                     }
+                    if (retryButton) retryButton.classList.add('hidden');
                     if (progressPanel) progressPanel.classList.remove('hidden');
                     if (progressBar) progressBar.style.width = '0%';
                     if (progressPercent) progressPercent.textContent = '0%';
@@ -800,6 +803,12 @@
 
                     xhr.send(payload);
                 });
+
+                if (retryButton) {
+                    retryButton.addEventListener('click', function () {
+                        form.requestSubmit();
+                    });
+                }
             });
         </script>
     @endpush
