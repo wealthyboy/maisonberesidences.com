@@ -35,6 +35,7 @@
         @case('sun-lounger') <path d="M4 18h16M6 18l2-8 9 5M8 10l2-5 8 8M7 18l-2 3M18 18l2 3"></path> @break
         @case('blender') <path d="M8 3h8l-1 10H9L8 3ZM10 13h4l2 8H8l2-8ZM7 3h10"></path> @break
         @case('cleaning') <path d="m14 3 2 2-8 8-3 1 1-3 8-8ZM12 9l3 3M4 18h16M7 15l-3 6M17 15l3 6"></path> @break
+        @case('dishwasher') <rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M5 8h14M8 5.5h.01M11 5.5h4M8 12h8v6H8zM10 15h4"></path> @break
         @case('kettle') <path d="M7 8h9v10a3 3 0 0 1-3 3h-3a3 3 0 0 1-3-3V8ZM16 10h2a3 3 0 0 1 0 6h-2M9 4c1 1 1 2 0 3M13 3c1 1 1 3 0 4"></path> @break
         @case('kitchen') <path d="M4 3h16v18H4zM4 10h16M9 10v11M7 6h.01M13 6h4M12 14h5M12 17h5"></path> @break
         @case('microwave') <rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M6 8h9v8H6zM18 8h.01M18 12h.01M18 16h.01"></path> @break

@@ -37,6 +37,7 @@ class ApartmentAttributeSeeder extends Seeder
         'Blender' => 'blender',
         'Cleaning products' => 'cleaning',
         'Dining table' => 'dining',
+        'Dishwasher' => 'dishwasher',
         'Electric kettle' => 'kettle',
         'Kitchenware' => 'kitchen',
         'Microwave' => 'microwave',
@@ -98,6 +99,7 @@ class ApartmentAttributeSeeder extends Seeder
                 'Blender',
                 'Cleaning products',
                 'Dining table',
+                'Dishwasher',
                 'Electric kettle',
                 'Kitchenware',
                 'Microwave',
@@ -138,7 +140,7 @@ class ApartmentAttributeSeeder extends Seeder
 
             foreach ($items as $itemOrder => $itemName) {
                 ApartmentAttribute::updateOrCreate(
-                    ['slug' => $group->slug . '-' . Str::slug($itemName)],
+                    ['slug' => $group->slug.'-'.Str::slug($itemName)],
                     [
                         'parent_id' => $group->id,
                         'name' => $itemName,
