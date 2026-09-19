@@ -82,4 +82,28 @@ class BannerVideoUploadTest extends TestCase
         Storage::disk('spaces')->assertMissing($oldPath);
         Storage::disk('spaces')->assertExists($video->path);
     }
+
+    public function test_ajax_banner_upload_returns_a_json_redirect_for_the_progress_form(): void
+    {
+        Storage::fake('spaces');
+        Queue::fake();
+        config()->set('video.disk', 'spaces');
+
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $response = $this->actingAs($admin)
+            ->withHeader('Accept', 'application/json')
+            ->post(route('admin.modules.store', 'banners'), [
+                'title' => 'AJAX homepage video',
+                'status' => 'active',
+                'video' => UploadedFile::fake()->create('ajax-homepage.mp4', 250, 'video/mp4'),
+            ]);
+
+        $banner = AdminModuleRecord::query()->where('module_slug', 'banners')->firstOrFail();
+
+        $response->assertOk()->assertJson([
+            'message' => 'Banner created. Video encoding has been queued.',
+            'redirect' => route('admin.modules.record.show', ['banners', $banner->id]),
+        ]);
+    }
 }

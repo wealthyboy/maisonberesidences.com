@@ -17,6 +17,7 @@ use App\Services\VideoUploader\VideoUploader;
 use App\Support\AdminModules;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -42,7 +43,7 @@ class ModuleController extends Controller
         return $this->view($module, 'create');
     }
 
-    public function store(Request $request, string $module): RedirectResponse
+    public function store(Request $request, string $module): RedirectResponse|JsonResponse
     {
         $module = $this->module($module);
 
@@ -127,9 +128,17 @@ class ModuleController extends Controller
                 return $banner;
             });
 
-            return redirect()
-                ->route('admin.modules.record.show', [$module['slug'], $banner->id])
-                ->with('status', $banner->video ? 'Banner created. Video encoding has been queued.' : 'Banner created.');
+            $message = $banner->video ? 'Banner created. Video encoding has been queued.' : 'Banner created.';
+            $redirect = route('admin.modules.record.show', [$module['slug'], $banner->id]);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $message,
+                    'redirect' => $redirect,
+                ]);
+            }
+
+            return redirect($redirect)->with('status', $message);
         }
 
         AdminModuleRecord::create($this->genericRecordData($request, $module));
@@ -208,7 +217,7 @@ class ModuleController extends Controller
         return $this->view($module, 'edit', $record);
     }
 
-    public function update(Request $request, string $module, string $record): RedirectResponse
+    public function update(Request $request, string $module, string $record): RedirectResponse|JsonResponse
     {
         $module = $this->module($module);
 
@@ -296,9 +305,17 @@ class ModuleController extends Controller
 
             $banner->load('video');
 
-            return redirect()
-                ->route('admin.modules.record.show', [$module['slug'], $banner->id])
-                ->with('status', $request->hasFile('video') ? 'Banner updated. Video encoding has been queued.' : 'Banner updated.');
+            $message = $request->hasFile('video') ? 'Banner updated. Video encoding has been queued.' : 'Banner updated.';
+            $redirect = route('admin.modules.record.show', [$module['slug'], $banner->id]);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $message,
+                    'redirect' => $redirect,
+                ]);
+            }
+
+            return redirect($redirect)->with('status', $message);
         }
 
         $recordModel = AdminModuleRecord::where('module_slug', $module['slug'])->findOrFail($record);

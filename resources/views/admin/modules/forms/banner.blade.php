@@ -38,6 +38,20 @@
     </label>
     <p class="mt-2 text-xs leading-5 text-zinc-500">MP4, MOV, WebM or MKV, up to {{ number_format(config('video.max_upload_kilobytes', 1048576) / 1024) }} MB. Encoding runs in the background after upload.</p>
 
+    <div data-upload-error class="mt-4 hidden rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" role="alert"></div>
+
+    <div data-upload-progress class="mt-4 hidden rounded-md border border-[#d9b44a]/40 bg-white p-4" aria-live="polite">
+        <div class="flex items-center justify-between gap-4 text-sm">
+            <span data-upload-progress-status class="font-semibold text-[#222052]">Preparing upload…</span>
+            <span data-upload-progress-percent class="font-bold tabular-nums text-[#222052]">0%</span>
+        </div>
+        <div class="mt-3 h-3 overflow-hidden rounded-full bg-zinc-200">
+            <div data-upload-progress-bar class="h-full w-0 rounded-full bg-[#d9b44a] transition-[width] duration-150" style="width: 0%"></div>
+        </div>
+        <p data-upload-progress-bytes class="mt-2 text-xs font-medium tabular-nums text-zinc-500"></p>
+        <p class="mt-1 text-xs leading-5 text-zinc-500">Keep this page open until the upload finishes. Video encoding will continue in the background afterward.</p>
+    </div>
+
     @if ($model?->video)
         <div class="mt-4 rounded-md border border-zinc-200 bg-white p-3 text-sm">
             <div class="flex flex-wrap items-center justify-between gap-2">

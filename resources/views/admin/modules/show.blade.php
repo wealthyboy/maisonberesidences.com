@@ -72,7 +72,7 @@
                     </a>
                 </div>
 
-                <form id="{{ $isInvoices ? 'invoiceForm' : 'moduleForm' }}" method="post" action="{{ $screen === 'edit' ? route('admin.modules.record.update', [$module['slug'], $record]) : route('admin.modules.store', $module['slug']) }}" class="mt-6 grid gap-5 lg:grid-cols-2" @if($isBanners) enctype="multipart/form-data" @endif>
+                <form id="{{ $isInvoices ? 'invoiceForm' : 'moduleForm' }}" method="post" action="{{ $screen === 'edit' ? route('admin.modules.record.update', [$module['slug'], $record]) : route('admin.modules.store', $module['slug']) }}" class="mt-6 grid gap-5 lg:grid-cols-2" @if($isBanners) enctype="multipart/form-data" data-banner-upload-form @endif>
                     @csrf
 
                     @if ($screen === 'edit')
@@ -678,6 +678,127 @@
 
                 document.querySelectorAll('[data-bulk-check-row]').forEach(function (checkbox) {
                     checkbox.checked = selectAll.checked;
+                });
+            });
+        </script>
+    @endpush
+@endif
+
+@if ($isBanners && in_array($screen, ['create', 'edit'], true))
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const form = document.querySelector('[data-banner-upload-form]');
+                if (!form) return;
+
+                const fileInput = form.querySelector('input[name="video"]');
+                const submitButton = form.querySelector('button[type="submit"]');
+                const progressPanel = form.querySelector('[data-upload-progress]');
+                const progressBar = form.querySelector('[data-upload-progress-bar]');
+                const progressPercent = form.querySelector('[data-upload-progress-percent]');
+                const progressStatus = form.querySelector('[data-upload-progress-status]');
+                const progressBytes = form.querySelector('[data-upload-progress-bytes]');
+                const errorPanel = form.querySelector('[data-upload-error]');
+                const originalButtonText = submitButton ? submitButton.textContent.trim() : 'Submit';
+
+                const formatBytes = function (bytes) {
+                    if (!Number.isFinite(bytes) || bytes <= 0) return '0 MB';
+                    const units = ['B', 'KB', 'MB', 'GB'];
+                    const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+                    return `${(bytes / Math.pow(1024, index)).toFixed(index > 1 ? 1 : 0)} ${units[index]}`;
+                };
+
+                const showError = function (message) {
+                    if (!errorPanel) return;
+                    errorPanel.textContent = message;
+                    errorPanel.classList.remove('hidden');
+                };
+
+                const setUploading = function (uploading) {
+                    if (submitButton) {
+                        submitButton.disabled = uploading;
+                        submitButton.textContent = uploading ? 'Uploading…' : originalButtonText;
+                        submitButton.classList.toggle('cursor-not-allowed', uploading);
+                        submitButton.classList.toggle('opacity-60', uploading);
+                    }
+                    if (fileInput) fileInput.disabled = uploading;
+                };
+
+                form.addEventListener('submit', function (event) {
+                    event.preventDefault();
+
+                    const payload = new FormData(form);
+                    const xhr = new XMLHttpRequest();
+
+                    if (errorPanel) {
+                        errorPanel.textContent = '';
+                        errorPanel.classList.add('hidden');
+                    }
+                    if (progressPanel) progressPanel.classList.remove('hidden');
+                    if (progressBar) progressBar.style.width = '0%';
+                    if (progressPercent) progressPercent.textContent = '0%';
+                    if (progressStatus) progressStatus.textContent = 'Preparing upload…';
+                    if (progressBytes) progressBytes.textContent = '';
+                    setUploading(true);
+
+                    xhr.open('POST', form.action, true);
+                    xhr.setRequestHeader('Accept', 'application/json');
+                    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+                    xhr.upload.addEventListener('progress', function (uploadEvent) {
+                        if (!uploadEvent.lengthComputable) {
+                            if (progressStatus) progressStatus.textContent = 'Uploading video…';
+                            return;
+                        }
+
+                        const percent = Math.min(100, Math.round((uploadEvent.loaded / uploadEvent.total) * 100));
+                        if (progressBar) progressBar.style.width = `${percent}%`;
+                        if (progressPercent) progressPercent.textContent = `${percent}%`;
+                        if (progressStatus) progressStatus.textContent = percent === 100
+                            ? 'Upload received. Saving video and queuing encoding…'
+                            : 'Uploading video…';
+                        if (progressBytes) progressBytes.textContent = `${formatBytes(uploadEvent.loaded)} of ${formatBytes(uploadEvent.total)}`;
+                    });
+
+                    xhr.addEventListener('load', function () {
+                        let response = {};
+                        try {
+                            response = JSON.parse(xhr.responseText || '{}');
+                        } catch (error) {
+                            response = {};
+                        }
+
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            if (progressBar) progressBar.style.width = '100%';
+                            if (progressPercent) progressPercent.textContent = '100%';
+                            if (progressStatus) progressStatus.textContent = response.message || 'Upload complete.';
+                            if (response.redirect) {
+                                window.location.assign(response.redirect);
+                                return;
+                            }
+                        }
+
+                        const validationMessage = response.errors
+                            ? Object.values(response.errors).flat().join(' ')
+                            : response.message;
+                        showError(validationMessage || 'The upload could not be completed. Please try again.');
+                        if (progressStatus) progressStatus.textContent = 'Upload failed';
+                        setUploading(false);
+                    });
+
+                    xhr.addEventListener('error', function () {
+                        showError('The connection was interrupted while uploading. Please check your connection and try again.');
+                        if (progressStatus) progressStatus.textContent = 'Upload failed';
+                        setUploading(false);
+                    });
+
+                    xhr.addEventListener('abort', function () {
+                        showError('The upload was cancelled.');
+                        if (progressStatus) progressStatus.textContent = 'Upload cancelled';
+                        setUploading(false);
+                    });
+
+                    xhr.send(payload);
                 });
             });
         </script>
