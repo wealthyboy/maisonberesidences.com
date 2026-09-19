@@ -87,7 +87,13 @@
                             <a href="{{ route('login') }}">Login</a>
                         </div>
                     </nav>
-                    <div class="menu-image"><img src="{{ asset('media/maisonbe-hero-source.jpg') }}" alt="Maison Be residence interior"></div>
+                    @php
+                        $menuImage = $heroImages->first()?->image;
+                        $menuImageUrl = filled($menuImage)
+                            ? (str_starts_with($menuImage, 'http://') || str_starts_with($menuImage, 'https://') ? $menuImage : asset($menuImage))
+                            : asset('media/maisonbe-hero-source.jpg');
+                    @endphp
+                    <div class="menu-image"><img src="{{ $menuImageUrl }}" alt="Maison Be apartment interior"></div>
                 </div>
             </aside>
 

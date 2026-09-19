@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Apartment;
+use App\Models\Image;
 use App\Services\ApartmentQuoteService;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -65,7 +66,14 @@ class ApartmentSearchController extends Controller
             return view('apartments.partials.results', compact('apartments', 'filters', 'currency'));
         }
 
-        return view('apartments.index', compact('apartments', 'filters', 'currency'));
+        $menuImage = Image::query()
+            ->where('imageable_type', Apartment::class)
+            ->whereNotNull('image')
+            ->where('image', '!=', '')
+            ->inRandomOrder()
+            ->value('image');
+
+        return view('apartments.index', compact('apartments', 'filters', 'currency', 'menuImage'));
     }
 
     public function show(Request $request, Apartment $apartment): View
