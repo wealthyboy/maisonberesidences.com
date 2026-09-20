@@ -60,6 +60,7 @@
                 </div>
 
                 <form class="booking-bar" id="stay-search" action="{{ route('apartments.index') }}" method="get">
+                    <input type="hidden" name="search" value="1">
                     <x-date-range-picker required />
                     <x-rooms-guests-selector />
                     <button class="availability-button" type="submit" id="availability-button">

@@ -85,6 +85,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .date-field-copy { display: grid; min-width: 0; gap: .14rem; line-height: 1.08; text-align: left; }
 .date-field-copy small { color: currentColor; font-size: .52rem; font-weight: 700; letter-spacing: .1em; opacity: .68; text-transform: uppercase; }
 .date-field-copy strong { overflow: hidden; margin-top: 4px; font-size: .78rem; font-weight: 800; text-overflow: ellipsis; text-transform: capitalize; white-space: nowrap; }
+.date-value-input { position: absolute; width: 1px; height: 1px; margin: 0; padding: 0; border: 0; opacity: 0; overflow: hidden; pointer-events: none; }
 .guest-trigger { gap: .6rem; }
 .guest-trigger svg { width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
 .rooms-guests-trigger { justify-content: flex-start; text-align: left; }
@@ -748,16 +749,16 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 @media (max-width: 760px) { .apartment-card-modal-control { width: 2.1rem; height: 2.1rem; } }
 @media (max-width: 760px) { .apartment-card-modal { max-height: 94svh; margin: 3svh auto; } }
 @media (max-width: 560px) {
-    .booking-bar { display: grid; grid-template-columns: minmax(0, 1fr) 4.25rem; }
+    .booking-bar { display: grid; grid-template-columns: minmax(0, 1fr) 8.75rem; }
     .booking-bar .booking-dates { grid-column: 1 / -1; }
     .booking-bar .booking-guests { padding-right: .75rem; border-right: 1px solid var(--line); border-bottom: 0; }
     .booking-guests .rooms-guests-trigger {
         width: fit-content;
         margin-left: 0;
     }
-    .booking-bar .availability-button { display: grid; width: 100%; min-height: 100%; place-items: center; }
-    .booking-bar .availability-label { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-    .booking-bar .availability-arrow { display: block; }
+    .booking-bar .availability-button { display: grid; width: 100%; min-height: 100%; padding: .5rem; place-items: center; font-size: .62rem; letter-spacing: .1em; }
+    .booking-bar .availability-label { position: static; width: auto; height: auto; margin: 0; padding: 0; overflow: visible; clip: auto; white-space: nowrap; border: 0; }
+    .booking-bar .availability-arrow { display: none; }
     .apartment-card-modal { width: calc(100vw - 1rem); border-radius: 14px; }
     .apartment-card-modal-header { min-height: 62px; }
     .apartment-card-modal-slider { height: min(40svh, 300px); margin: 0 .75rem; border-radius: 12px; }

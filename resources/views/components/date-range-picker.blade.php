@@ -20,8 +20,8 @@
             <span class="date-field-copy"><small>Check-out</small><strong data-checkout-label>Check-out</strong></span>
         </button>
     </div>
-    <input name="checkin" type="hidden" value="{{ $checkin }}" data-checkin-input>
-    <input name="checkout" type="hidden" value="{{ $checkout }}" data-checkout-input>
+    <input class="date-value-input" name="checkin" type="date" value="{{ $checkin }}" min="{{ now()->toDateString() }}" tabindex="-1" @if($required) required @endif data-checkin-input>
+    <input class="date-value-input" name="checkout" type="date" value="{{ $checkout }}" tabindex="-1" @if($required) required @endif data-checkout-input>
 
     <div class="date-picker" id="{{ $pickerId }}" hidden data-date-picker>
         <div class="calendar-toolbar">
@@ -93,6 +93,9 @@
                 const syncDates = () => {
                     checkin.value = startDate ? isoDate(startDate) : '';
                     checkout.value = endDate ? isoDate(endDate) : '';
+                    const earliestCheckout = new Date((startDate || today).getTime());
+                    earliestCheckout.setDate(earliestCheckout.getDate() + 1);
+                    checkout.min = isoDate(earliestCheckout);
                     checkinLabel.textContent = startDate ? formatDate(startDate) : 'Check-in';
                     checkoutLabel.textContent = endDate ? formatDate(endDate) : 'Check-out';
                 };
@@ -175,6 +178,15 @@
                     event.preventDefault();
                     activeField = validStart ? 'checkout' : 'checkin';
                     openPicker(activeField);
+                });
+
+                checkin.addEventListener('invalid', (event) => {
+                    event.preventDefault();
+                    openPicker('checkin');
+                });
+                checkout.addEventListener('invalid', (event) => {
+                    event.preventDefault();
+                    openPicker(startDate ? 'checkout' : 'checkin');
                 });
 
                 document.addEventListener('click', (event) => {

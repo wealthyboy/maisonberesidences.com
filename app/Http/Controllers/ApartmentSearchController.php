@@ -20,8 +20,9 @@ class ApartmentSearchController extends Controller
         $limits = $this->inventoryLimits();
 
         $filters = $request->validate([
-            'checkin' => ['nullable', 'required_with:checkout', 'date', 'after_or_equal:today'],
-            'checkout' => ['nullable', 'required_with:checkin', 'date', 'after:checkin'],
+            'search' => ['nullable', 'boolean'],
+            'checkin' => ['nullable', 'required_if:search,1', 'required_with:checkout', 'date', 'after_or_equal:today'],
+            'checkout' => ['nullable', 'required_if:search,1', 'required_with:checkin', 'date', 'after:checkin'],
             'guests' => ['nullable', 'integer', 'min:1', 'max:'.$limits['guests']],
             'rooms' => ['nullable', 'integer', 'min:1', 'max:'.$limits['rooms']],
         ]);
