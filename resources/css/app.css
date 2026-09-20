@@ -504,8 +504,9 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .contact-methods a:hover strong, .contact-methods a:focus-visible strong { color: var(--gold); }
 .contact-methods span { color: var(--gold); font-size: .67rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .contact-methods strong { overflow-wrap: anywhere; font-size: .95rem; transition: color .2s ease; }
-.contact-methods .contact-whatsapp { grid-template-columns: 1.4rem 4rem minmax(0, 1fr); }
-.contact-whatsapp svg { width: 1.35rem; height: 1.35rem; fill: none; stroke: #218b57; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.contact-methods .contact-method-with-icon { grid-template-columns: 1.4rem 6rem minmax(0, 1fr); }
+.contact-method-with-icon svg { width: 1.35rem; height: 1.35rem; fill: none; stroke: var(--gold); stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.contact-whatsapp svg { stroke: #218b57; }
 .contact-building { position: relative; min-height: 620px; margin: 0; overflow: hidden; border-radius: 3px; background: #ddd5c8; grid-column: 1; grid-row: 1; }
 .contact-building img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .contact-building figcaption { position: absolute; right: 1rem; bottom: 1rem; padding: .55rem .75rem; border-radius: 999px; color: #fff; background: rgba(9,18,42,.78); font-size: .67rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
@@ -741,8 +742,8 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
     .contact-main { width: calc(100% - 2rem); padding: 3.5rem 0; gap: 2.5rem; }
     .contact-details h1 { font-size: clamp(3rem, 14vw, 4.2rem); }
     .contact-methods a { grid-template-columns: 1fr; gap: .3rem; }
-    .contact-methods .contact-whatsapp { grid-template-columns: 1.35rem minmax(0, 1fr); }
-    .contact-methods .contact-whatsapp strong { grid-column: 2; }
+    .contact-methods .contact-method-with-icon { grid-template-columns: 1.35rem minmax(0, 1fr); }
+    .contact-methods .contact-method-with-icon strong { grid-column: 2; }
     .contact-building { min-height: 430px; }
     .events-page { padding-bottom: 4.5rem; }
     .events-hero { min-height: 620px; }
