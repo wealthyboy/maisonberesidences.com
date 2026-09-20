@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Apartment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,6 +15,21 @@ class HomeAvailabilitySearchTest extends TestCase
         $this->get(route('home', ['live' => 1]))
             ->assertOk()
             ->assertSee('1 Person(s), 2 rooms');
+    }
+
+    public function test_home_apartments_follow_the_configured_sort_order(): void
+    {
+        Apartment::create(['name' => 'Third Residence', 'slug' => 'third-residence', 'price' => 300, 'sort_order' => 3]);
+        Apartment::create(['name' => 'First Residence', 'slug' => 'first-residence', 'price' => 500, 'sort_order' => 1]);
+        Apartment::create(['name' => 'Second Residence', 'slug' => 'second-residence', 'price' => 400, 'sort_order' => 2]);
+
+        $this->get(route('home', ['live' => 1]))
+            ->assertOk()
+            ->assertSeeInOrder([
+                'First Residence',
+                'Second Residence',
+                'Third Residence',
+            ]);
     }
 
     public function test_home_search_requires_checkin_and_checkout_dates(): void

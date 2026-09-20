@@ -115,7 +115,8 @@
         ?: $apartment->property?->toilets
         ?: 3.5;
     $bathrooms = rtrim(rtrim(number_format((float) $bathroomValue, 1), '0'), '.');
-    $refundability = 'Refundable 14 days or more before check-in';
+    $refundability = 'Partial Refund';
+    $cancellationPolicyUrl = route('information.show', ['information' => 'cancellation-refund-policy']);
     $modalId = 'apartment-card-modal-'.$apartment->id;
     $hasStayDates = filled($filters['checkin'] ?? null) && filled($filters['checkout'] ?? null);
     $bookUrl = $hasStayDates
@@ -157,7 +158,23 @@
             @if ($wifiAmenity || filled($apartment->wifi_ssid))<li><x-amenity-icon name="wifi" />Free WiFi</li>@endif
         </ul>
         <div class="residence-card-details">
-            <span>{{ $refundability }} <x-amenity-icon name="info" /></span>
+            <details class="refund-policy-preview">
+                <summary aria-label="Show cancellation and refund policy highlights" title="Cancellation and refund policy highlights">
+                    <span>{{ $refundability }}</span>
+                    <x-amenity-icon name="info" />
+                </summary>
+                <div class="refund-policy-highlights">
+                    <strong>Cancellation highlights</strong>
+                    <ul>
+                        <li><b>14+ days:</b> 50% accommodation refund</li>
+                        <li><b>7–13 days:</b> 50% accommodation refund</li>
+                        <li><b>Less than 7 days:</b> No refund</li>
+                        <li><b>No-show:</b> Full booking amount is forfeited</li>
+                    </ul>
+                    <p>Non-refundable bank, card-processing, currency-conversion, or transfer charges may be deducted.</p>
+                    <a href="{{ $cancellationPolicyUrl }}">Read full policy <span aria-hidden="true">→</span></a>
+                </div>
+            </details>
             <button type="button" data-card-modal-open aria-controls="{{ $modalId }}">More details <x-amenity-icon name="chevron-right" /></button>
         </div>
         <div class="residence-card-footer">
@@ -270,6 +287,11 @@
             };
 
             document.addEventListener('click', (event) => {
+                const clickedRefundPreview = event.target.closest('.refund-policy-preview');
+                document.querySelectorAll('.refund-policy-preview[open]').forEach((preview) => {
+                    if (preview !== clickedRefundPreview) preview.removeAttribute('open');
+                });
+
                 const modalSliderButton = event.target.closest('[data-modal-previous], [data-modal-next]');
                 if (modalSliderButton) {
                     event.preventDefault();
@@ -324,6 +346,11 @@
                     const clickedInside = event.clientX >= bounds.left && event.clientX <= bounds.right && event.clientY >= bounds.top && event.clientY <= bounds.bottom;
                     if (!clickedInside) closeModal(event.target);
                 }
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key !== 'Escape') return;
+                document.querySelectorAll('.refund-policy-preview[open]').forEach((preview) => preview.removeAttribute('open'));
             });
 
             document.addEventListener('cancel', (event) => {

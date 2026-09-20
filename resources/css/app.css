@@ -443,8 +443,18 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .residence-card-highlights .is-parking { color: #258452; }
 .residence-card-highlights .is-parking svg { color: currentColor; }
 .residence-card-details { display: grid; margin-top: .82rem; gap: .62rem; font-family: "Galaxie Polaris", "Instrument Sans", Arial, sans-serif; }
-.residence-card-details > span { display: inline-flex; color: #22283a; align-items: center; gap: .35rem; font-size: .72rem; }
-.residence-card-details > span svg { width: 1rem; height: 1rem; flex: 0 0 1rem; }
+.refund-policy-preview { color: #22283a; font-size: .72rem; }
+.refund-policy-preview summary { display: inline-flex; width: fit-content; align-items: center; gap: .35rem; cursor: pointer; list-style: none; }
+.refund-policy-preview summary::-webkit-details-marker { display: none; }
+.refund-policy-preview summary svg { width: 1rem; height: 1rem; flex: 0 0 1rem; transition: color .18s ease, transform .18s ease; }
+.refund-policy-preview summary:hover svg, .refund-policy-preview summary:focus-visible svg, .refund-policy-preview[open] summary svg { color: #1769e8; transform: scale(1.08); }
+.refund-policy-preview summary:focus-visible { border-radius: 3px; outline: 2px solid #1769e8; outline-offset: 3px; }
+.refund-policy-highlights { margin-top: .65rem; padding: .8rem .85rem; border: 1px solid rgba(24,38,74,.14); border-radius: 8px; color: var(--ink); background: #f7f5ef; box-shadow: 0 10px 24px rgba(6,17,46,.08); }
+.refund-policy-highlights > strong { display: block; margin-bottom: .5rem; color: var(--gold); font-size: .67rem; letter-spacing: .08em; text-transform: uppercase; }
+.refund-policy-highlights ul { display: grid; margin: 0; padding-left: 1rem; gap: .3rem; font-size: .67rem; line-height: 1.4; }
+.refund-policy-highlights p { margin: .6rem 0 0; color: var(--soft-ink); font-size: .62rem; letter-spacing: 0; line-height: 1.4; text-transform: none; }
+.refund-policy-highlights a { display: inline-flex; margin-top: .65rem; color: #1769e8; align-items: center; gap: .3rem; font-size: .67rem; font-weight: 700; text-decoration: none; }
+.refund-policy-highlights a:hover, .refund-policy-highlights a:focus-visible { color: #0b4fb9; text-decoration: underline; }
 .residence-card-details > button { display: inline-flex; width: fit-content; padding: 0; border: 0; color: #1769e8; background: transparent; align-items: center; gap: .32rem; font: inherit; font-size: .76rem; text-decoration: none; cursor: pointer; }
 .residence-card-details > button:hover, .residence-card-details > button:focus-visible { color: #0b4fb9; }
 .residence-card-details > button svg { width: .9rem; height: .9rem; stroke-width: 2.2; }

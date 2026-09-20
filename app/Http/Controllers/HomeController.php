@@ -100,7 +100,8 @@ class HomeController extends Controller
 
         $apartments = Apartment::query()
             ->with(['images', 'attributes.parent'])
-            ->inRandomOrder()
+            ->orderBy('sort_order')
+            ->orderBy('id')
             ->limit(4)
             ->get();
 
