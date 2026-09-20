@@ -719,6 +719,10 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
     .results-search .results-date-range .date-trigger { width: 100%; }
 }
 
+@media (max-width: 900px) {
+    .site-page-header .results-back, .results-hero .results-back { display: none; }
+}
+
 .hero-header { animation: maison-fade-up .78s ease both; }
 .hero-title-wrap { animation: maison-fade-in .95s .08s ease both; }
 .booking-bar { animation: maison-soft-reveal .82s .18s ease both; }
