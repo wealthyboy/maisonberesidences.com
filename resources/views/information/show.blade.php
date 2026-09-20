@@ -28,5 +28,6 @@
             @endphp
             <div class="information-page-content">{!! $pageContent !!}</div>
         </main>
+        <x-site-footer />
     </body>
 </html>
