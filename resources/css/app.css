@@ -715,7 +715,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
     .site-page-header .currency-selector { display: inline-flex; }
     .site-page-header .results-back, .results-hero .results-back { display: none; }
     .checkout-page .checkout-summary { display: none; }
-    .results-search .results-date-range .date-fields { grid-template-columns: 1fr; gap: .65rem; }
+    .results-search .results-date-range .date-fields { grid-template-columns: 1fr; gap: .3rem; }
     .results-search .results-date-range .date-trigger { width: 100%; }
 }
 
