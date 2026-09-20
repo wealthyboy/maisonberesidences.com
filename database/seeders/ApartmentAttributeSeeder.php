@@ -66,6 +66,7 @@ class ApartmentAttributeSeeder extends Seeder
         'Tumble dryer' => 'dryer',
         'Washing machine' => 'washer',
         '24-hour room service' => 'room-service',
+        '24-hour concierge services' => 'room-service',
         'Air purifiers' => 'air-conditioning',
         'Humidifier' => 'air-conditioning',
         'Towel and linen reuse program' => 'towel',
@@ -177,6 +178,9 @@ class ApartmentAttributeSeeder extends Seeder
             ],
             'Food and drink' => [
                 '24-hour room service',
+            ],
+            'Services' => [
+                '24-hour concierge services',
             ],
             'More' => [
                 'Complimentary bottled water',

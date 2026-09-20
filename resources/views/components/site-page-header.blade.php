@@ -10,7 +10,7 @@
     ]);
 @endphp
 
-<header class="site-page-header">
+<header class="site-page-header" style="--site-page-header-image: url('{{ asset('media/maisonbe-listing-exterior.jpg') }}');">
     <nav class="results-hero-nav" aria-label="Page navigation">
         <button class="menu-button" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-menu" data-site-menu-open>
             <span></span><span></span><span></span>
