@@ -66,8 +66,9 @@ class EncodeVideo implements ShouldQueue
                 ->setSegmentLength(10);
 
             $renditions = [
-                ['bitrate' => 2000, 'width' => 1280, 'height' => 720],
-                ['bitrate' => 800, 'width' => 854, 'height' => 480],
+                ['bitrate' => 6000, 'width' => 1920, 'height' => 1080],
+                ['bitrate' => 3200, 'width' => 1280, 'height' => 720],
+                ['bitrate' => 1200, 'width' => 854, 'height' => 480],
             ];
 
             foreach ($renditions as $rendition) {

@@ -42,6 +42,7 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     Route::post('apartments/check-availability', [ModuleController::class, 'checkApartmentAvailability'])->name('apartments.check-availability');
     Route::post('apartments/reorder', [ModuleController::class, 'reorderApartments'])->name('apartments.reorder');
     Route::post('apartments/{record}/duplicate', [ModuleController::class, 'duplicateApartment'])->name('apartments.duplicate');
+    Route::post('banners/{record}/reencode', [ModuleController::class, 'reencodeBannerVideo'])->name('banners.reencode');
 
     Route::get('currency-rates', [CurrencyRateController::class, 'index'])->name('currency-rates.index');
     Route::post('currency-rates/adjustment', [CurrencyRateController::class, 'update'])->name('currency-rates.update');

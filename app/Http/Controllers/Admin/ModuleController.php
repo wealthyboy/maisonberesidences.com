@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\EncodeVideo;
 use App\Models\AdditionalService;
 use App\Models\AdminModuleRecord;
 use App\Models\Apartment;
@@ -27,6 +28,28 @@ use Illuminate\View\View;
 
 class ModuleController extends Controller
 {
+    public function reencodeBannerVideo(int $record): RedirectResponse
+    {
+        $banner = AdminModuleRecord::query()
+            ->with('video')
+            ->where('module_slug', 'banners')
+            ->findOrFail($record);
+
+        abort_unless($banner->video && filled($banner->video->path), 422, 'This banner does not have a source video.');
+
+        $banner->video->update([
+            'encoded' => false,
+            'status' => 'uploaded',
+            'error_message' => null,
+        ]);
+
+        EncodeVideo::dispatch($banner->video->fresh());
+
+        return redirect()
+            ->route('admin.modules.record.show', ['banners', $banner->id])
+            ->with('status', 'Video re-encoding has been queued.');
+    }
+
     public function index(string $module): View
     {
         return $this->view($module, 'index');
