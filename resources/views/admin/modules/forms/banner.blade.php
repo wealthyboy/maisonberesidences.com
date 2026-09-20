@@ -11,7 +11,7 @@
     <span class="text-sm font-semibold text-zinc-700">Status</span>
     <select name="status" required class="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-[#d9b44a] focus:ring-2 focus:ring-[#d9b44a]/20">
         @foreach (['draft' => 'Draft', 'active' => 'Active', 'archived' => 'Archived'] as $value => $label)
-            <option value="{{ $value }}" @selected(old('status', $model->status ?? 'draft') === $value)>{{ $label }}</option>
+            <option value="{{ $value }}" @selected(old('status', $model->status ?? 'active') === $value)>{{ $label }}</option>
         @endforeach
     </select>
 </label>
@@ -64,6 +64,9 @@
                 </span>
             </div>
             <p class="mt-2 text-xs text-zinc-500">Uploading a new file replaces this banner's video reference and queues it for encoding.</p>
+            @if ($model->video->status === 'ready' && $model->status !== 'active')
+                <p class="mt-2 rounded-md bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">This video is encoded, but it will not appear on the homepage until the banner status is set to Active.</p>
+            @endif
             @if ($model->video->error_message)
                 <p class="mt-2 whitespace-pre-wrap break-words text-xs text-red-700">{{ $model->video->error_message }}</p>
             @endif

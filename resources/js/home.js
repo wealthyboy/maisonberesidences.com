@@ -4,12 +4,17 @@ if (heroVideo) {
     const playlist = heroVideo.dataset.hlsSource;
     const revealVideo = () => heroVideo.classList.add('is-ready');
     const hideVideo = () => heroVideo.classList.remove('is-ready');
+    const startPlayback = () => {
+        heroVideo.play().catch(() => hideVideo());
+    };
 
     heroVideo.addEventListener('playing', revealVideo);
     heroVideo.addEventListener('error', hideVideo);
 
     if (heroVideo.canPlayType('application/vnd.apple.mpegurl')) {
         heroVideo.src = playlist;
+        heroVideo.load();
+        startPlayback();
     } else {
         import('hls.js').then(({ default: Hls }) => {
             if (!Hls.isSupported()) {
@@ -23,15 +28,28 @@ if (heroVideo) {
 
             hls.loadSource(playlist);
             hls.attachMedia(heroVideo);
+            hls.on(Hls.Events.MANIFEST_PARSED, startPlayback);
             hls.on(Hls.Events.ERROR, (_event, data) => {
-                if (data.fatal) {
-                    hideVideo();
-                    hls.destroy();
+                if (!data.fatal) {
+                    return;
                 }
+
+                if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                    hls.startLoad();
+                    return;
+                }
+
+                if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+                    hls.recoverMediaError();
+                    return;
+                }
+
+                hideVideo();
+                hls.destroy();
             });
 
             window.addEventListener('pagehide', () => hls.destroy(), { once: true });
-        });
+        }).catch(hideVideo);
     }
 }
 
