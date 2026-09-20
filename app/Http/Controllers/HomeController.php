@@ -18,13 +18,6 @@ class HomeController extends Controller
 
     public function __invoke(Request $request): View
     {
-        $user = $request->user();
-        $adminCanPreview = $user && method_exists($user, 'hasAdminAccess') && $user->hasAdminAccess();
-
-        if (! $request->boolean('live') && ! $adminCanPreview) {
-            return view('welcome');
-        }
-
         $currency = $request->attributes->get('currency');
         $information = Schema::hasTable('information')
             ? Information::query()->orderBy('sort_order')->orderBy('title')->get()

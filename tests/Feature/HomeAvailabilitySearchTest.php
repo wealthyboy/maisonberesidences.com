@@ -10,6 +10,14 @@ class HomeAvailabilitySearchTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_full_homepage_is_public_without_preview_parameters(): void
+    {
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('Find your stay.')
+            ->assertSee('Check availability');
+    }
+
     public function test_home_room_selector_defaults_to_two_rooms(): void
     {
         $this->get(route('home', ['live' => 1]))
