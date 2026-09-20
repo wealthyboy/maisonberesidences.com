@@ -85,14 +85,17 @@
     $groupIcons = [
         'Bathroom' => 'bathroom',
         'Bedroom' => 'bed',
+        'Comfort & Essentials' => 'bed',
         'Outdoors' => 'pool',
         'Living Area' => 'sofa',
         'Entertainment' => 'tv',
+        'Environment & Sustainability' => 'air-conditioning',
         'Internet' => 'wifi',
         'Wellness' => 'hot-tub',
         'Kitchen & Dining' => 'kitchen',
         'Food and drink' => 'room-service',
         'More' => 'check',
+        'Safety & Security' => 'check',
         'Accessibility' => 'elevator',
     ];
     $bedSummary = collect([
