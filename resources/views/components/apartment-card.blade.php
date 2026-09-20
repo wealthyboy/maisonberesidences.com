@@ -235,18 +235,6 @@
                 </section>
             @endif
 
-            @if ($bookingEnabled)
-                <section class="apartment-modal-booking">
-                    <h3>Check availability for {{ \Illuminate\Support\Str::title(\Illuminate\Support\Str::lower($apartment->name)) }}</h3>
-                    <form class="apartment-availability-form" action="{{ route('apartments.availability', $apartment) }}" data-availability-form>
-                        <x-date-range-picker class="availability-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" required />
-                        <label>Guests<input type="number" name="guests" min="1" max="{{ $apartment->max_adults ?: 20 }}" value="{{ $filters['guests'] ?? 1 }}"></label>
-                        <button type="submit" data-availability-submit>Check availability</button>
-                    </form>
-                    <p class="apartment-availability-status" aria-live="polite" data-availability-status></p>
-                    <a class="apartment-book-now" href="#" hidden data-book-now>Book now <span aria-hidden="true">→</span></a>
-                </section>
-            @endif
         </div>
     </dialog>
 </article>
