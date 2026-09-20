@@ -37,7 +37,14 @@
                 <a href="{{ route('information.events') }}">Amenities and Events</a>
                 <a href="{{ url('information/about-us') }}">About Us</a>
                 <a href="{{ route('information.contact') }}">Contact Us</a>
-                <a href="{{ route('login') }}">Login</a>
+                @auth
+                    <form class="menu-auth-form" method="post" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit">Logout</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}">Login</a>
+                @endauth
             </div>
         </nav>
         <div class="menu-image"><img src="{{ asset('media/Exterior/StellarMedia-5.jpg') }}" alt="Maison Be Residences entrance"></div>

@@ -40,6 +40,7 @@ Route::post('webhooks/paystack', PaymentWebhookController::class);
 
 Route::get('login', [LoginController::class, 'create'])->name('login');
 Route::post('login', [LoginController::class, 'store'])->name('login.store');
+Route::post('logout', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
 Route::redirect('admin/login', '/login');
 
 Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
