@@ -1,7 +1,7 @@
 @props([
     'class' => 'booking-guests',
     'guests' => 1,
-    'rooms' => 1,
+    'rooms' => 2,
     'maxGuests' => null,
     'maxRooms' => null,
 ])
@@ -9,7 +9,7 @@
 @php
     $pickerId = 'rooms-guests-'.\Illuminate\Support\Str::random(8);
     $maxGuests = max(1, (int) ($maxGuests ?? \App\Models\Apartment::query()->max('max_adults') ?: 1));
-    $maxRooms = max(1, (int) ($maxRooms ?? \App\Models\Apartment::query()->max('no_of_rooms') ?: 1));
+    $maxRooms = max(2, (int) ($maxRooms ?? \App\Models\Apartment::query()->max('no_of_rooms') ?: 2));
     $guestValue = max(1, min((int) $guests, (int) $maxGuests));
     $roomValue = max(1, min((int) $rooms, (int) $maxRooms));
 @endphp

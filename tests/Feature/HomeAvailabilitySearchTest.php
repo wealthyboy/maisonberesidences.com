@@ -9,6 +9,13 @@ class HomeAvailabilitySearchTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_home_room_selector_defaults_to_two_rooms(): void
+    {
+        $this->get(route('home', ['live' => 1]))
+            ->assertOk()
+            ->assertSee('1 Person(s), 2 rooms');
+    }
+
     public function test_home_search_requires_checkin_and_checkout_dates(): void
     {
         $response = $this->from(route('home'))->get(route('apartments.index', ['search' => 1]));

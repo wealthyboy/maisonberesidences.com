@@ -133,7 +133,7 @@ class ApartmentSearchController extends Controller
     {
         return [
             'guests' => max(1, (int) (Apartment::query()->max('max_adults') ?: 1)),
-            'rooms' => max(1, (int) (Apartment::query()->max('no_of_rooms') ?: 1)),
+            'rooms' => max(2, (int) (Apartment::query()->max('no_of_rooms') ?: 2)),
         ];
     }
 }

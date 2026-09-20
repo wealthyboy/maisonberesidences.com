@@ -54,7 +54,7 @@
             <h1 class="u-mb-0">Select your apartment.</h1>
             <form class="results-search" method="get" action="{{ route('apartments.index') }}" data-results-search>
                 <x-date-range-picker class="results-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" required />
-                <x-rooms-guests-selector class="results-rooms-guests" :guests="$filters['guests'] ?? 1" :rooms="$filters['rooms'] ?? 1" />
+                <x-rooms-guests-selector class="results-rooms-guests" :guests="$filters['guests'] ?? 1" :rooms="$filters['rooms'] ?? 2" />
                 <button type="submit">Check availability</button>
             </form>
             <section class="results-async" data-results-async aria-live="polite" aria-busy="false">

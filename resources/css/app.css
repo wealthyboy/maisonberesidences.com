@@ -719,6 +719,14 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
     .site-page-header .currency-selector { display: inline-flex; }
     .site-page-header .results-back, .results-hero .results-back { display: none; }
     .checkout-page .checkout-summary { display: none; }
+    .checkout-main { width: calc(100% - 1.5rem); padding-top: .35rem; }
+    .checkout-heading { margin-bottom: .65rem; }
+    .checkout-heading h1 { margin-top: .1rem; }
+    .checkout-section { padding: 1rem .9rem; }
+    .checkout-section-heading { margin-bottom: 1rem; grid-template-columns: 1.85rem minmax(0, 1fr); gap: .7rem; }
+    .checkout-section-heading > span { width: 1.85rem; height: 1.85rem; }
+    .checkout-section-heading p { margin-top: .25rem; line-height: 1.4; }
+    .checkout-fields { gap: .75rem; }
     .results-main { width: auto; }
     .results-search .results-date-range .date-fields { grid-template-columns: 1fr; gap: .3rem; }
     .results-search .results-date-range .date-trigger { width: 100%; }
