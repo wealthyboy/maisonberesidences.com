@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Mail\ReservationReceiptMail;
 use App\Models\AdditionalService;
 use App\Models\Apartment;
 use App\Models\Invoice;
@@ -205,5 +206,10 @@ class AdditionalServicesTest extends TestCase
         $this->assertSame('Breakfast', $invoice->serviceItems->first()->name);
         $this->assertSame(2, $invoice->serviceItems->first()->quantity);
         $this->assertSame('60000.00', $invoice->serviceItems->first()->total);
+        Mail::assertSent(ReservationReceiptMail::class, fn (ReservationReceiptMail $mail) =>
+            $mail->hasTo('guest@example.com')
+            && $mail->hasCc('reservations@maisonberesidences.com')
+            && $mail->hasBcc('info@maisonberesidences.com')
+        );
     }
 }

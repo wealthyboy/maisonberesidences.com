@@ -183,6 +183,7 @@ class PaystackBookingService
 
         try {
             Mail::to($invoice->email)
+                ->cc('reservations@maisonberesidences.com')
                 ->bcc('info@maisonberesidences.com')
                 ->send(new ReservationReceiptMail($invoice->loadMissing('invoiceItems.apartment.property', 'invoiceItems.apartment.images', 'serviceItems')));
 

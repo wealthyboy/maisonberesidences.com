@@ -20,8 +20,8 @@ class ApartmentSearchController extends Controller
         $limits = $this->inventoryLimits();
 
         $filters = $request->validate([
-            'checkin' => ['nullable', 'date'],
-            'checkout' => ['nullable', 'date', 'after:checkin'],
+            'checkin' => ['nullable', 'required_with:checkout', 'date', 'after_or_equal:today'],
+            'checkout' => ['nullable', 'required_with:checkin', 'date', 'after:checkin'],
             'guests' => ['nullable', 'integer', 'min:1', 'max:'.$limits['guests']],
             'rooms' => ['nullable', 'integer', 'min:1', 'max:'.$limits['rooms']],
         ]);
@@ -81,8 +81,8 @@ class ApartmentSearchController extends Controller
         $limits = $this->inventoryLimits();
 
         $filters = $request->validate([
-            'checkin' => ['nullable', 'date'],
-            'checkout' => ['nullable', 'date', 'after:checkin'],
+            'checkin' => ['nullable', 'required_with:checkout', 'date', 'after_or_equal:today'],
+            'checkout' => ['nullable', 'required_with:checkin', 'date', 'after:checkin'],
             'guests' => ['nullable', 'integer', 'min:1', 'max:'.$limits['guests']],
             'rooms' => ['nullable', 'integer', 'min:1', 'max:'.$limits['rooms']],
         ]);
@@ -101,7 +101,7 @@ class ApartmentSearchController extends Controller
         $maxGuests = max(1, (int) ($apartment->max_adults ?: 1));
 
         $data = $request->validate([
-            'checkin' => ['required', 'date'],
+            'checkin' => ['required', 'date', 'after_or_equal:today'],
             'checkout' => ['required', 'date', 'after:checkin'],
             'guests' => ['nullable', 'integer', 'min:1', 'max:'.$maxGuests],
         ]);

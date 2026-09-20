@@ -236,13 +236,18 @@
                     }, 5000);
                 }
 
-                staySearch.addEventListener('submit', (event) => {
-                    if (event.defaultPrevented) return;
+                staySearch?.addEventListener('submit', () => {
+                    const checkin = staySearch.querySelector('[data-checkin-input]')?.value;
+                    const checkout = staySearch.querySelector('[data-checkout-input]')?.value;
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const selectedCheckin = checkin ? new Date(`${checkin}T00:00:00`) : null;
+
+                    if (!checkin || !checkout || checkout <= checkin || selectedCheckin < today) return;
+
                     const button = document.getElementById('availability-button');
-                    event.preventDefault();
                     button.disabled = true;
                     button.classList.add('is-loading');
-                    window.setTimeout(() => staySearch.submit(), 140);
                 });
 
                 const revealTargets = [

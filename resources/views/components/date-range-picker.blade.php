@@ -166,9 +166,15 @@
 
                 const form = root.closest('form');
                 form?.addEventListener('submit', (event) => {
-                    if (!root.hasAttribute('data-date-range-required') || (startDate && endDate)) return;
+                    if (!root.hasAttribute('data-date-range-required')) return;
+
+                    const validStart = startDate && startDate >= today;
+                    const validEnd = endDate && startDate && endDate > startDate;
+                    if (validStart && validEnd) return;
+
                     event.preventDefault();
-                    openPicker();
+                    activeField = validStart ? 'checkout' : 'checkin';
+                    openPicker(activeField);
                 });
 
                 document.addEventListener('click', (event) => {
