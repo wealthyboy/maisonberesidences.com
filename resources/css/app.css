@@ -268,7 +268,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .apartment-availability-form[aria-busy="true"] button[type="submit"] { cursor: wait; opacity: .86; }
 .apartment-book-now { display: inline-block; margin-top: .2rem; }
 .apartment-book-now[hidden] { display: none !important; }
-.results-search { display: grid; margin: 2rem 0 1.5rem; grid-template-columns: minmax(280px, 1.45fr) minmax(260px, .95fr) auto; gap: .65rem; align-items: end; }
+.results-search { display: grid; margin: 2rem 0 1.5rem; grid-template-columns: minmax(280px, 1.45fr) minmax(260px, .95fr) auto; gap: .3rem; align-items: end; }
 .results-date-range, .availability-date-range { position: relative; min-width: 0; }
 .results-rooms-guests { position: relative; min-width: 0; }
 .results-date-range .date-trigger, .availability-date-range .date-trigger { min-height: 44px; width: 100%; padding: .42rem .64rem; border: 1px solid var(--dark-line); border-radius: 8px; color: var(--ink); background: #fff; justify-content: flex-start; gap: .48rem; }
@@ -715,12 +715,17 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
     .site-page-header .currency-selector { display: inline-flex; }
     .site-page-header .results-back, .results-hero .results-back { display: none; }
     .checkout-page .checkout-summary { display: none; }
+    .results-main { width: auto; }
     .results-search .results-date-range .date-fields { grid-template-columns: 1fr; gap: .3rem; }
     .results-search .results-date-range .date-trigger { width: 100%; }
 }
 
 @media (max-width: 900px) {
     .site-page-header .results-back, .results-hero .results-back { display: none; }
+}
+
+@media (max-width: 760px) {
+    .brand-lockup-copy { display: none; }
 }
 
 .hero-header { animation: maison-fade-up .78s ease both; }
@@ -742,7 +747,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 @media (max-width: 560px) {
     .booking-guests .rooms-guests-trigger {
         width: fit-content;
-        margin-left: max(0rem, calc(25% - 1.75rem));
+        margin-left: max(0rem, calc(25% - 2.9rem));
     }
     .apartment-card-modal { width: calc(100vw - 1rem); border-radius: 14px; }
     .apartment-card-modal-header { min-height: 62px; }
