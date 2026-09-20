@@ -496,6 +496,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .information-page h1 { margin: 1rem 0 2rem; color: var(--ink); font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(3.5rem, 6vw, 6rem); font-weight: 400; line-height: .82; }
 .information-page-content { max-width: 760px; color: var(--soft-ink); font-size: 1rem; line-height: 1.8; }
 .contact-main { display: grid; width: min(100% - 4rem, 1220px); min-height: calc(100svh - 110px); margin: 0 auto; padding: clamp(3rem, 7vw, 6rem) 0; grid-template-columns: minmax(0, .9fr) minmax(420px, 1.1fr); gap: clamp(2rem, 6vw, 6rem); align-items: center; }
+.contact-details { grid-column: 2; }
 .contact-details h1 { max-width: 650px; margin: .8rem 0 1.25rem; color: var(--ink); font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(3.2rem, 5vw, 5.6rem); font-weight: 400; letter-spacing: -.035em; line-height: .88; }
 .contact-intro, .contact-note { max-width: 610px; color: var(--soft-ink); line-height: 1.7; }
 .contact-methods { display: grid; margin: 2rem 0; border-top: 1px solid var(--dark-line); }
@@ -505,7 +506,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .contact-methods strong { overflow-wrap: anywhere; font-size: .95rem; transition: color .2s ease; }
 .contact-methods .contact-whatsapp { grid-template-columns: 1.4rem 4rem minmax(0, 1fr); }
 .contact-whatsapp svg { width: 1.35rem; height: 1.35rem; fill: none; stroke: #218b57; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
-.contact-building { position: relative; min-height: 620px; margin: 0; overflow: hidden; border-radius: 3px; background: #ddd5c8; }
+.contact-building { position: relative; min-height: 620px; margin: 0; overflow: hidden; border-radius: 3px; background: #ddd5c8; grid-column: 1; grid-row: 1; }
 .contact-building img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .contact-building figcaption { position: absolute; right: 1rem; bottom: 1rem; padding: .55rem .75rem; border-radius: 999px; color: #fff; background: rgba(9,18,42,.78); font-size: .67rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .events-page { padding: 0 0 clamp(4rem, 8vw, 7rem); background: #f8f4ec; }
@@ -700,6 +701,8 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 @media (max-width: 560px) { .construction-copy { min-height: 100svh; } .construction-content { padding: 4.5rem 0; } .construction-eyebrow { align-items: flex-start; line-height: 1.5; } .construction-eyebrow::before { margin-top: .5rem; flex: 0 0 1.75rem; } .construction-content h1 { font-size: clamp(3.1rem, 15vw, 4.7rem); } .construction-footer { flex-direction: column; } .construction-visual { min-height: 52svh; } .hero { min-height: 650px; } .hero-title-wrap { transform: translate(-50%, -52%); } .hero h1 { font-size: clamp(3.8rem, 16vw, 5.5rem); } .hero-scroll { display: none; } .menu-content { display: block; padding: 2.5rem 1.5rem; } .menu-nav { max-width: none; } .menu-image { min-height: 280px; margin-top: 3rem; } .booking-bar { right: 1rem; bottom: 1rem; left: 1rem; width: calc(100% - 2rem); display: block; } .booking-location, .booking-dates, .booking-guests { padding: 1rem 1.15rem; border-right: 0; border-bottom: 1px solid var(--line); } .availability-button { width: 100%; min-height: 54px; } .date-picker, .guest-picker { width: calc(100vw - 2rem); } .calendar-months { grid-template-columns: 1fr; } .calendar-month:nth-child(2) { display: none; } .introduction, .residences { padding: 4.5rem 1rem; } .residence-grid, .results-grid { grid-template-columns: 1fr; } .residence-card:last-child { grid-column: auto; } .results-header, .results-main, .reservation-main, .receipt-main, .information-page { width: auto; padding-right: 1.5rem; padding-left: 1.5rem; } .results-actions { gap: .8rem; } .currency-switch { padding: .48rem .55rem; } .results-back { font-size: .6rem; } .gallery-modal { padding: .65rem; } .gallery-modal-dialog { --gallery-modal-padding: 1rem; max-height: 94svh; padding: var(--gallery-modal-padding); } .gallery-modal-stage img { height: min(48svh, 430px); } .gallery-modal-control.is-previous { left: .55rem; } .gallery-modal-control.is-next { right: .55rem; } .gallery-modal-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } .site-footer { padding: 2rem 1.5rem 4.7rem; } .site-footer-links { gap: 1rem; } .site-footer p { line-height: 1.55; } .site-footer-whatsapp { right: 1.5rem; bottom: 1.25rem; } }
 @media (max-width: 900px) {
     .contact-main { grid-template-columns: 1fr; }
+    .contact-details { grid-column: auto; }
+    .contact-building { grid-column: auto; grid-row: auto; }
     .contact-building { min-height: 520px; }
     .events-hero { min-height: 680px; }
     .events-intro { grid-template-columns: 1fr 1fr; }
