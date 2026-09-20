@@ -27,13 +27,7 @@
         @vite(['resources/css/app.css'])
     </head>
     <body class="apartments-page checkout-page">
-        <header class="results-header">
-            <a class="results-wordmark" href="{{ url('/') }}" aria-label="Maison Be Residences home"><x-brand-logo /></a>
-            <div class="results-actions">
-                <x-currency-selector :currency="$quote['currency']" />
-                <a href="{{ route('apartments.show', ['apartment' => $apartment, 'checkin' => $stay['checkin']->toDateString(), 'checkout' => $stay['checkout']->toDateString()]) }}" class="results-back">Back to residence</a>
-            </div>
-        </header>
+        <x-site-page-header :currency="$quote['currency']" />
 
         <main class="checkout-main">
             <section class="booking-confirmed" hidden data-booking-confirmed>

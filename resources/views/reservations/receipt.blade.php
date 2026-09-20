@@ -47,7 +47,7 @@
         @vite(['resources/css/app.css'])
     </head>
     <body class="apartments-page">
-        <header class="results-header"><a class="results-wordmark" href="{{ url('/') }}" aria-label="Maison Be Residences home"><x-brand-logo /></a></header>
+        <x-site-page-header />
         <main class="receipt-main">
             <img src="{{ asset('brand/maison-be-logo-official.png') }}" alt="Maison Be Residences" style="display:block;width:170px;max-width:42vw;height:auto;margin:0 0 1.75rem;border-radius:10px;box-shadow:0 14px 34px rgba(6,17,46,.16);">
             <p class="eyebrow">{{ $invoice->payment_status === 'paid' ? 'Payment received' : 'Payment processing' }}</p>

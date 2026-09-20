@@ -10,10 +10,7 @@
         @vite(['resources/css/app.css'])
     </head>
     <body class="apartments-page">
-        <header class="results-header">
-            <a class="results-wordmark" href="{{ route('home') }}" aria-label="Maison Be Residences home"><x-brand-logo /></a>
-            <a href="{{ route('home') }}" class="results-back">Back to home</a>
-        </header>
+        <x-site-page-header />
         <main class="information-page">
             <p class="eyebrow">Maison Be Residences</p>
             <h1>{{ $information->title }}</h1>

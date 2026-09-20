@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Apartment;
 use App\Models\Attribute as ApartmentAttribute;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -42,13 +43,14 @@ class ApartmentAttributeSeeder extends Seeder
         'Cable tv' => 'tv',
         'Cinema' => 'cinema',
         'Flat-screen TV' => 'tv',
-        'Speakers' => 'speaker',
+        'In-built smart home audio system' => 'speaker',
         'Ethernet internet connection' => 'wifi',
         'Free WiFi' => 'wifi',
         'Hot tub/Jacuzzi' => 'hot-tub',
         'Pool/beach towels' => 'towel',
         'Sun loungers or beach chairs' => 'sun-lounger',
         'Blender' => 'blender',
+        'Air fryer' => 'oven',
         'Cleaning products' => 'cleaning',
         'Dining table' => 'dining',
         'Dishwasher' => 'dishwasher',
@@ -77,12 +79,14 @@ class ApartmentAttributeSeeder extends Seeder
         'Parking included' => 'parking',
         'Workspace' => 'workspace',
         'Elevator' => 'elevator',
+        '2 exclusive elevators with direct penthouse access' => 'elevator',
         'Stairs (No Elevator)' => 'stairs',
     ];
 
     private const LEGACY_NAMES = [
         'Blackout curtains' => ['Blackout drapes/curtains'],
         'Fresh bed sheets (upon request)' => ['Fresh bed sheets (on request)'],
+        'In-built smart home audio system' => ['Speakers'],
     ];
 
     public function run(): void
@@ -130,7 +134,7 @@ class ApartmentAttributeSeeder extends Seeder
                 'Cable tv',
                 'Cinema',
                 'Flat-screen TV',
-                'Speakers',
+                'In-built smart home audio system',
             ],
             'Internet' => [
                 'Ethernet internet connection',
@@ -142,6 +146,7 @@ class ApartmentAttributeSeeder extends Seeder
                 'Sun loungers or beach chairs',
             ],
             'Kitchen & Dining' => [
+                'Air fryer',
                 'Blender',
                 'Cleaning products',
                 'Dining table',
@@ -181,6 +186,7 @@ class ApartmentAttributeSeeder extends Seeder
             ],
             'Accessibility' => [
                 'Elevator',
+                '2 exclusive elevators with direct penthouse access',
                 'Stairs (No Elevator)',
             ],
         ];
@@ -219,5 +225,23 @@ class ApartmentAttributeSeeder extends Seeder
 
             $groupOrder++;
         }
+
+        $penthouseAttributeIds = ApartmentAttribute::query()
+            ->where('type', self::TYPE)
+            ->whereIn('name', [
+                'Air fryer',
+                'In-built smart home audio system',
+                'Elevator',
+                '2 exclusive elevators with direct penthouse access',
+            ])
+            ->pluck('id');
+
+        Apartment::query()
+            ->where(function ($query): void {
+                $query->whereRaw('LOWER(name) LIKE ?', ['%penthouse%'])
+                    ->orWhereRaw('LOWER(slug) LIKE ?', ['%penthouse%'])
+                    ->orWhereRaw('LOWER(type) LIKE ?', ['%penthouse%']);
+            })
+            ->each(fn (Apartment $apartment) => $apartment->attributes()->syncWithoutDetaching($penthouseAttributeIds));
     }
 }

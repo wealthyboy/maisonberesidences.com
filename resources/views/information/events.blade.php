@@ -40,10 +40,7 @@
         @vite(['resources/css/app.css'])
     </head>
     <body class="apartments-page events-page-body">
-        <header class="results-header">
-            <a class="results-wordmark" href="{{ route('home') }}" aria-label="Maison Be Residences home"><x-brand-logo /></a>
-            <a href="{{ route('apartments.index') }}" class="results-back">View apartments</a>
-        </header>
+        <x-site-page-header />
 
         <main class="events-page">
             <section class="events-hero" aria-labelledby="events-title">

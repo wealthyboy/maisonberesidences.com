@@ -33,13 +33,7 @@
                 $highlights = collect(preg_split('/[,;\\n]+/', $highlightSource))->map(fn ($highlight) => trim($highlight))->filter()->take(6)->values();
             }
         @endphp
-        <header class="results-header">
-            <a class="results-wordmark" href="{{ url('/') }}" aria-label="Maison Be Residences home"><x-brand-logo /></a>
-            <div class="results-actions">
-                <x-currency-selector :currency="$currency" />
-                <a href="{{ route('apartments.index', $filters) }}" class="results-back">All apartments</a>
-            </div>
-        </header>
+        <x-site-page-header :currency="$currency" />
         <main class="apartment-show-main">
             <header class="apartment-show-heading">
                 <div>
