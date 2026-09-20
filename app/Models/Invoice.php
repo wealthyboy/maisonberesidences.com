@@ -21,6 +21,8 @@ class Invoice extends Model
         'exchange_rate',
         'subtotal',
         'discount',
+        'vat_rate',
+        'vat_amount',
         'discount_type',
         'coupon_code',
         'caution_fee',
@@ -39,6 +41,8 @@ class Invoice extends Model
         return [
             'subtotal' => 'decimal:2',
             'discount' => 'decimal:2',
+            'vat_rate' => 'decimal:2',
+            'vat_amount' => 'decimal:2',
             'caution_fee' => 'decimal:2',
             'total' => 'decimal:2',
             'exchange_rate' => 'decimal:6',

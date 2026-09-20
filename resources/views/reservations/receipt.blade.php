@@ -93,6 +93,7 @@
                 <p class="receipt-section-title">Receipt summary</p>
                 <div><span>Subtotal</span><strong>{{ $money($invoice->subtotal) }}</strong></div>
                 <div><span>{{ $couponLabel }}</span><strong>{{ $couponAmount }}</strong></div>
+                <div><span>VAT ({{ number_format((float) $invoice->vat_rate, 1) }}%)</span><strong>{{ $money($invoice->vat_amount) }}</strong></div>
                 <div class="receipt-total"><span>Total paid in {{ $invoice->currency_code }}</span><strong>{{ $money($invoice->total) }}</strong></div>
             </section>
             <p class="receipt-note"><strong>Note:</strong> You’re required to present a valid ID upon arrival to check-in. You can also self check-in by clicking the link below to upload your ID.</p>

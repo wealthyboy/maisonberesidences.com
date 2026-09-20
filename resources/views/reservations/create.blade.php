@@ -191,10 +191,14 @@
                             <span>Coupon discount<small data-discount-code></small></span>
                             <strong>-<span data-discount-amount>{{ $quote['currency']['symbol'] }}0</span></strong>
                         </div>
+                        <div class="checkout-price-line checkout-vat-line">
+                            <span>VAT<small>{{ number_format($vat['rate'], 1) }}% of apartment total</small></span>
+                            <strong data-vat-amount>{{ $vat['display_amount'] }}</strong>
+                        </div>
                         @if($quote['peak_nights'])
                             <p class="checkout-peak">{{ $quote['peak_nights'] }} nights include peak-period pricing.</p>
                         @endif
-                        <div class="checkout-total"><span>Total price</span><strong data-checkout-total>{{ $quote['display_total'] }}</strong></div>
+                        <div class="checkout-total"><span>Total price</span><strong data-checkout-total>{{ $displayCheckoutTotal }}</strong></div>
                     </section>
 
                     <p class="payment-marks">
@@ -240,12 +244,14 @@
                 const discountLine = document.querySelector('[data-discount-line]');
                 const discountCode = document.querySelector('[data-discount-code]');
                 const discountAmount = document.querySelector('[data-discount-amount]');
+                const vatAmount = document.querySelector('[data-vat-amount]');
                 const total = document.querySelector('[data-checkout-total]');
                 const form = document.querySelector('.checkout-form');
                 const serviceQuantities = Array.from(document.querySelectorAll('[data-service-quantity]'));
                 const accommodationTotal = Number(@json((float) $quote['total']));
                 const currencyCode = @json($quote['currency']['code']);
                 const currencySymbol = @json($quote['currency']['symbol']);
+                const vatRate = Number(@json((float) $vat['rate']));
                 let currentDiscount = 0;
 
                 if (!input || !apply || !status || !discountLine || !discountAmount || !total || !form) return;
@@ -284,7 +290,10 @@
                         servicesTotal += unitPrice * quantity;
                     });
 
-                    total.textContent = formatMoney(Math.max(0, accommodationTotal - currentDiscount + servicesTotal));
+                    const taxableAccommodation = Math.max(0, accommodationTotal - currentDiscount);
+                    const currentVat = taxableAccommodation * (vatRate / 100);
+                    if (vatAmount) vatAmount.textContent = formatMoney(currentVat);
+                    total.textContent = formatMoney(taxableAccommodation + currentVat + servicesTotal);
                 };
 
                 document.querySelectorAll('[data-service-toggle]').forEach((toggle) => {

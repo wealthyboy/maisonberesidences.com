@@ -36,7 +36,7 @@
                 <a href="{{ route('apartments.index') }}">Apartments</a>
                 <a href="{{ route('information.events') }}">Amenities and Events</a>
                 <a href="{{ url('information/about-us') }}">About Us</a>
-                <a href="{{ url('information/about-us') }}">Contact Us</a>
+                <a href="{{ route('information.contact') }}">Contact Us</a>
                 <a href="{{ route('login') }}">Login</a>
             </div>
         </nav>

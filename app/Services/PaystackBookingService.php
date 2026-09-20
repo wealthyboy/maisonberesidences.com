@@ -101,6 +101,8 @@ class PaystackBookingService
                 'exchange_rate' => (float) data_get($booking, 'exchange_rate', 1),
                 'subtotal' => (float) data_get($booking, 'subtotal'),
                 'discount' => (float) data_get($booking, 'discount'),
+                'vat_rate' => (float) data_get($booking, 'vat_rate', 0),
+                'vat_amount' => (float) data_get($booking, 'vat_amount', 0),
                 'discount_type' => data_get($booking, 'discount_type'),
                 'coupon_code' => data_get($booking, 'coupon'),
                 'total' => (float) data_get($booking, 'total'),

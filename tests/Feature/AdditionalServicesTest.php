@@ -85,7 +85,9 @@ class AdditionalServicesTest extends TestCase
             'exchange_rate' => 1,
             'subtotal' => 550,
             'discount' => 0,
-            'total' => 550,
+            'vat_rate' => 7.5,
+            'vat_amount' => 37.5,
+            'total' => 587.5,
             'payment_status' => 'paid',
         ]);
         $invoice->invoiceItems()->create([
@@ -110,7 +112,9 @@ class AdditionalServicesTest extends TestCase
             ->assertOk()
             ->assertSee('Additional services')
             ->assertSee('Breakfast')
-            ->assertSee('$50');
+            ->assertSee('$50')
+            ->assertSee('VAT (7.5%)')
+            ->assertSee('$37.50');
     }
 
     public function test_checkout_adds_selected_services_to_the_server_generated_payment_total(): void
@@ -142,7 +146,9 @@ class AdditionalServicesTest extends TestCase
 
         $response->assertOk()
             ->assertJsonPath('payment.currency', 'NGN')
-            ->assertJsonPath('payment.amount', 81000000)
+            ->assertJsonPath('payment.amount', 86625000)
+            ->assertJsonPath('payment.metadata.booking.vat_rate', 7.5)
+            ->assertJsonPath('payment.metadata.booking.vat_amount', 56250)
             ->assertJsonPath('payment.metadata.booking.services.0.name', 'Breakfast')
             ->assertJsonPath('payment.metadata.booking.services.0.quantity', 2)
             ->assertJsonPath('payment.metadata.booking.services_subtotal', 60000);
@@ -173,9 +179,11 @@ class AdditionalServicesTest extends TestCase
             'accommodation_subtotal' => 750000,
             'services_subtotal' => 60000,
             'discount' => 0,
+            'vat_rate' => 7.5,
+            'vat_amount' => 56250,
             'discount_type' => 'fixed',
             'coupon' => null,
-            'total' => 810000,
+            'total' => 866250,
             'length_of_stay' => 1,
             'from' => now()->addDays(10)->toDateString(),
             'to' => now()->addDays(11)->toDateString(),
@@ -193,7 +201,7 @@ class AdditionalServicesTest extends TestCase
         $paystack = Mockery::mock(PaystackService::class);
         $paystack->shouldReceive('verify')->once()->with('MBR-PAYMENT-001')->andReturn([
             'status' => 'success',
-            'amount' => 81000000,
+            'amount' => 86625000,
             'currency' => 'NGN',
             'metadata' => ['booking' => $booking],
         ]);
@@ -201,7 +209,9 @@ class AdditionalServicesTest extends TestCase
         $invoice = (new PaystackBookingService($paystack))->processReference('MBR-PAYMENT-001');
 
         $this->assertSame('810000.00', $invoice->subtotal);
-        $this->assertSame('810000.00', $invoice->total);
+        $this->assertSame('7.50', $invoice->vat_rate);
+        $this->assertSame('56250.00', $invoice->vat_amount);
+        $this->assertSame('866250.00', $invoice->total);
         $this->assertCount(1, $invoice->serviceItems);
         $this->assertSame('Breakfast', $invoice->serviceItems->first()->name);
         $this->assertSame(2, $invoice->serviceItems->first()->quantity);

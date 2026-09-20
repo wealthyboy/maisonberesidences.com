@@ -12,6 +12,11 @@ class InformationController extends Controller
         return view('information.events');
     }
 
+    public function contact(): View
+    {
+        return view('information.contact');
+    }
+
     public function show(Information $information): View
     {
         return view('information.show', compact('information'));

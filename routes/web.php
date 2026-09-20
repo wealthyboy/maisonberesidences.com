@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
 Route::get('information/events', [InformationController::class, 'events'])->name('information.events');
+Route::get('information/contact', [InformationController::class, 'contact'])->name('information.contact');
 Route::get('information/{information:slug}', [InformationController::class, 'show'])->name('information.show');
 
 Route::get('apartments', [ApartmentSearchController::class, 'index'])->name('apartments.index');

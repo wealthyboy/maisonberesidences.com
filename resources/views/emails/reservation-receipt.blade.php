@@ -124,6 +124,10 @@
                                         <td align="right" style="padding:14px 0;border-top:1px solid #efe6d1;color:#2f855a;font-weight:700;">{{ $couponAmount }}</td>
                                     </tr>
                                     <tr>
+                                        <td style="padding:14px 0;color:#5e6678;border-top:1px solid #efe6d1;">VAT ({{ number_format((float) $invoice->vat_rate, 1) }}%)</td>
+                                        <td align="right" style="padding:14px 0;border-top:1px solid #efe6d1;font-weight:700;">{{ $money($invoice->vat_amount) }}</td>
+                                    </tr>
+                                    <tr>
                                         <td style="padding:18px 0;color:#5e6678;border-top:1px solid #d8cba9;">Total paid in {{ $invoice->currency_code }}</td>
                                         <td align="right" style="padding:18px 0;border-top:1px solid #d8cba9;font-size:24px;font-weight:700;">{{ $money($invoice->total) }}</td>
                                     </tr>
