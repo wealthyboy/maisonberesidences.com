@@ -713,8 +713,10 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 
 @media (max-width: 760px) {
     .site-page-header .currency-selector { display: inline-flex; }
-    .checkout-page .site-page-header .results-back { display: none; }
+    .site-page-header .results-back, .results-hero .results-back { display: none; }
     .checkout-page .checkout-summary { display: none; }
+    .results-search .results-date-range .date-fields { grid-template-columns: 1fr; gap: .65rem; }
+    .results-search .results-date-range .date-trigger { width: 100%; }
 }
 
 .hero-header { animation: maison-fade-up .78s ease both; }
