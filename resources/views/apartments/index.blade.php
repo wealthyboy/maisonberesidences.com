@@ -40,9 +40,9 @@
                         <a href="{{ url('information/about-us') }}">About Us</a>
                         <a href="{{ route('information.contact') }}">Contact Us</a>
                         @auth
-                            <form class="menu-auth-form" method="post" action="{{ route('logout') }}">
+                            <form class="menu-auth-form" method="post" action="{{ route('logout') }}" style="margin:0;">
                                 @csrf
-                                <button type="submit">Logout</button>
+                                <button type="submit" style="display:block;margin-top:.55rem;padding:0;border:0;color:var(--soft-ink);background:transparent;font:inherit;font-size:1rem;line-height:inherit;text-align:left;appearance:none;cursor:pointer;">Logout</button>
                             </form>
                         @else
                             <a href="{{ route('login') }}">Login</a>
