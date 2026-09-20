@@ -17,7 +17,16 @@
         <main class="information-page">
             <p class="eyebrow">Maison Be Residences</p>
             <h1>{{ $information->title }}</h1>
-            <div class="information-page-content">{!! nl2br(e($information->description ?: $information->teaser ?: 'Information will be available shortly.')) !!}</div>
+            @php
+                $pageContent = html_entity_decode(
+                    $information->description ?: $information->teaser ?: 'Information will be available shortly.',
+                    ENT_QUOTES | ENT_HTML5,
+                    'UTF-8'
+                );
+                $pageContent = strip_tags($pageContent, '<p><br><strong><em><b><i><u><ul><ol><li><h2><h3><h4><h5><h6><blockquote><hr>');
+                $pageContent = preg_replace('/<([a-z][a-z0-9]*)\b[^>]*>/i', '<$1>', $pageContent);
+            @endphp
+            <div class="information-page-content">{!! $pageContent !!}</div>
         </main>
     </body>
 </html>
