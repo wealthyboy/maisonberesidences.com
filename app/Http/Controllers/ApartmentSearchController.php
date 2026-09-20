@@ -55,7 +55,7 @@ class ApartmentSearchController extends Controller
             )
             ->orderBy('sort_order')
             ->orderBy('id')
-            ->paginate(6)
+            ->paginate(10)
             ->withQueryString();
 
         $apartments->getCollection()->each(function (Apartment $apartment) use ($checkin, $checkout, $currency): void {
