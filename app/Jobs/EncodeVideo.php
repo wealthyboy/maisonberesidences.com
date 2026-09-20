@@ -11,6 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 use Throwable;
 
@@ -54,8 +55,10 @@ class EncodeVideo implements ShouldQueue
         }
 
         $baseName = pathinfo($video->path, PATHINFO_FILENAME);
-        $outputFolder = "videos/hls/{$baseName}";
+        $version = Str::lower((string) Str::ulid());
+        $outputFolder = "videos/hls/{$baseName}-{$version}";
         $masterPlaylist = "{$outputFolder}/master.m3u8";
+        $previousEncodedPath = $video->encoded_path;
 
         $video->update(['status' => 'processing', 'error_message' => null]);
 
@@ -90,6 +93,22 @@ class EncodeVideo implements ShouldQueue
                 'status' => 'ready',
                 'error_message' => null,
             ]);
+
+            if (filled($previousEncodedPath)) {
+                $previousOutputFolder = dirname($previousEncodedPath);
+
+                if (str_starts_with($previousOutputFolder, 'videos/hls/') && $previousOutputFolder !== $outputFolder) {
+                    try {
+                        Storage::disk($disk)->deleteDirectory($previousOutputFolder);
+                    } catch (Throwable $cleanupException) {
+                        Log::warning('EncodeVideo: old adaptive stream could not be removed.', [
+                            'video_id' => $video->id,
+                            'path' => $previousOutputFolder,
+                            'exception' => $cleanupException->getMessage(),
+                        ]);
+                    }
+                }
+            }
 
             Log::info('EncodeVideo: adaptive encoding complete.', [
                 'video_id' => $video->id,
