@@ -34,6 +34,7 @@
     $checkOutTime = $time($property?->check_out_time, '12:00 PM');
     $couponLabel = filled($invoice->coupon_code) ? 'Coupon '.$invoice->coupon_code : 'Coupon';
     $couponAmount = (float) $invoice->discount > 0 ? '-'.$money($invoice->discount) : $money(0);
+    $selfCheckInUrl = \Illuminate\Support\Facades\URL::signedRoute('reservations.self-check-in', $invoice);
 @endphp
 
 <!DOCTYPE html>
@@ -133,7 +134,8 @@
                                     </tr>
                                 </table>
 
-                                <p style="margin:24px 0 0;color:#5e6678;font-size:14px;line-height:1.6;"><strong>Note:</strong> You’re required to present a valid ID upon arrival to check-in. You can also self check-in by clicking the link below to upload your ID.</p>
+                                <p style="margin:24px 0 0;color:#5e6678;font-size:14px;line-height:1.6;"><strong>Note:</strong> You’re required to present a valid ID upon arrival to check-in. You can also self check-in using the secure link below to upload your ID.</p>
+                                <p style="margin:18px 0 0;"><a href="{{ $selfCheckInUrl }}" style="display:inline-block;padding:14px 20px;border-radius:7px;color:#fff;background:#06112e;font-size:12px;font-weight:700;letter-spacing:1px;text-decoration:none;text-transform:uppercase;">Complete self check-in</a></p>
                                 <p style="margin:24px 0 0;color:#5e6678;font-size:14px;line-height:1.6;">This receipt confirms your instant booking at Maison Be Residences.</p>
                             </td>
                         </tr>

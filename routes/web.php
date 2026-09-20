@@ -10,6 +10,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InformationController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\SelfCheckInController;
 use App\Support\AdminModules;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +29,12 @@ Route::post('reservations/payment-confirm', [ReservationController::class, 'conf
 Route::get('reservations/payment-return', [ReservationController::class, 'paymentReturn'])->name('reservations.payment-return');
 Route::get('reservations/receipt', [ReservationController::class, 'receiptByReference'])->name('reservations.receipt-reference');
 Route::get('reservations/{invoice}/receipt', [ReservationController::class, 'receipt'])->name('reservations.receipt');
+Route::get('reservations/{invoice}/self-check-in', [SelfCheckInController::class, 'show'])
+    ->middleware(['signed', 'throttle:20,1'])
+    ->name('reservations.self-check-in');
+Route::post('reservations/{invoice}/self-check-in', [SelfCheckInController::class, 'store'])
+    ->middleware(['signed', 'throttle:5,1'])
+    ->name('reservations.self-check-in.store');
 Route::post('webhook/payment', PaymentWebhookController::class)->name('webhooks.paystack');
 Route::post('webhooks/paystack', PaymentWebhookController::class);
 

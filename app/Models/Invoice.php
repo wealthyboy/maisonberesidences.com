@@ -61,4 +61,9 @@ class Invoice extends Model
     {
         return $this->hasMany(InvoiceAdditionalService::class);
     }
+
+    public function guestCheckIn()
+    {
+        return $this->hasOne(GuestCheckIn::class);
+    }
 }

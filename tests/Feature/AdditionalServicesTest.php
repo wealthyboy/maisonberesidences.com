@@ -218,7 +218,8 @@ class AdditionalServicesTest extends TestCase
         $this->assertSame('60000.00', $invoice->serviceItems->first()->total);
         Mail::assertSent(ReservationReceiptMail::class, fn (ReservationReceiptMail $mail) =>
             $mail->hasTo('guest@example.com')
-            && $mail->hasCc('reservations@maisonberesidences.com')
+            && $mail->hasBcc('reservations@maisonberesidences.com')
+            && $mail->hasBcc('md@maisonberesidences.com')
             && $mail->hasBcc('info@maisonberesidences.com')
         );
     }
