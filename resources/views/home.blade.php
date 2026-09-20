@@ -64,6 +64,9 @@
                     <x-rooms-guests-selector />
                     <button class="availability-button" type="submit" id="availability-button">
                         <span class="availability-label">Check availability</span>
+                        <span class="availability-arrow" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+                        </span>
                         <span class="availability-spinner" aria-hidden="true"></span>
                     </button>
                 </form>
