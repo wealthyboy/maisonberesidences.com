@@ -6,6 +6,7 @@ use App\Models\Apartment;
 use App\Models\Image;
 use App\Rules\MinimumStay;
 use App\Services\ApartmentQuoteService;
+use App\Support\StayRestrictions;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,11 +31,13 @@ class ApartmentSearchController extends Controller
 
         $checkin = filled($filters['checkin'] ?? null) ? Carbon::parse($filters['checkin'])->startOfDay() : null;
         $checkout = filled($filters['checkout'] ?? null) ? Carbon::parse($filters['checkout'])->startOfDay() : null;
+        $decemberUnavailable = StayRestrictions::includesDecember($checkin, $checkout);
         $currency = $request->attributes->get('currency');
 
         $apartments = Apartment::query()
             ->publiclyAvailable()
             ->with(['images', 'property', 'attributes.parent'])
+            ->when($decemberUnavailable, fn ($query) => $query->whereRaw('1 = 0'))
             ->when(
                 filled($filters['checkin'] ?? null) && filled($filters['checkout'] ?? null),
                 function ($query) use ($checkin, $checkout) {
@@ -111,6 +114,15 @@ class ApartmentSearchController extends Controller
         ]);
         $checkin = Carbon::parse($data['checkin'])->startOfDay();
         $checkout = Carbon::parse($data['checkout'])->startOfDay();
+
+        if (StayRestrictions::includesDecember($checkin, $checkout)) {
+            return response()->json([
+                'available' => false,
+                'message' => StayRestrictions::DECEMBER_MESSAGE,
+                'reserve_url' => null,
+            ]);
+        }
+
         $guestCount = (int) ($data['guests'] ?? 1);
         $hasGuestCapacity = $apartment->max_adults <= 0 || $apartment->max_adults >= $guestCount;
         $hasPaidOverlap = DB::table('invoice_items')

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Apartment;
+use App\Support\StayRestrictions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -108,5 +109,54 @@ class HomeAvailabilitySearchTest extends TestCase
         $response
             ->assertRedirect(route('home'))
             ->assertSessionHasErrors(['checkin', 'checkout']);
+    }
+
+    public function test_a_stay_touching_december_returns_no_apartments(): void
+    {
+        $apartment = Apartment::create([
+            'name' => 'December Residence',
+            'slug' => 'december-residence',
+            'price' => 500,
+            'allow' => true,
+        ]);
+        $december = now()->startOfYear()->setDate(now()->year, 12, 10);
+        if ($december->isPast()) {
+            $december->addYear();
+        }
+
+        $response = $this->get(route('apartments.index', [
+            'search' => 1,
+            'checkin' => $december->toDateString(),
+            'checkout' => $december->copy()->addDays(2)->toDateString(),
+        ]));
+
+        $response
+            ->assertOk()
+            ->assertSee('There are no residence available for these dates.')
+            ->assertDontSee($apartment->name);
+    }
+
+    public function test_apartment_availability_reports_december_as_unavailable(): void
+    {
+        $apartment = Apartment::create([
+            'name' => 'December Residence',
+            'slug' => 'december-residence',
+            'price' => 500,
+            'allow' => true,
+            'max_adults' => 4,
+        ]);
+        $december = now()->startOfYear()->setDate(now()->year, 12, 10);
+        if ($december->isPast()) {
+            $december->addYear();
+        }
+
+        $this->postJson(route('apartments.availability', $apartment), [
+            'checkin' => $december->toDateString(),
+            'checkout' => $december->copy()->addDays(2)->toDateString(),
+            'guests' => 1,
+        ])->assertOk()
+            ->assertJsonPath('available', false)
+            ->assertJsonPath('reserve_url', null)
+            ->assertJsonPath('message', StayRestrictions::DECEMBER_MESSAGE);
     }
 }
