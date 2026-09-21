@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\EncodeVideo;
+use App\Mail\SelfCheckInLinkMail;
 use App\Models\AdditionalService;
 use App\Models\AdminModuleRecord;
 use App\Models\Apartment;
@@ -23,11 +24,40 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ModuleController extends Controller
 {
+    public function resendSelfCheckInLink(int $record): RedirectResponse
+    {
+        $invoice = Invoice::query()
+            ->with('invoiceItems.apartment')
+            ->findOrFail($record);
+
+        if (! filled($invoice->email)) {
+            return back()->with('status', 'The self check-in link was not sent because this reservation has no guest email address.');
+        }
+
+        try {
+            Mail::to($invoice->email)
+                ->bcc(['reservations@maisonberesidences.com', 'md@maisonberesidences.com'])
+                ->send(new SelfCheckInLinkMail($invoice));
+
+            Log::info('Admin resent self check-in link.', [
+                'invoice_id' => $invoice->id,
+                'guest_email' => $invoice->email,
+            ]);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return back()->with('status', 'The self check-in link could not be sent. Please check the mail logs and try again.');
+        }
+
+        return back()->with('status', 'A fresh self check-in link was sent to '.$invoice->email.'.');
+    }
+
     public function reencodeBannerVideo(int $record): RedirectResponse
     {
         $banner = AdminModuleRecord::query()

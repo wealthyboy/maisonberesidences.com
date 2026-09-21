@@ -134,7 +134,7 @@ class AdditionalServicesTest extends TestCase
 
         $response = $this->postJson(route('reservations.store', $apartment), [
             'checkin' => now()->addDays(10)->toDateString(),
-            'checkout' => now()->addDays(11)->toDateString(),
+            'checkout' => now()->addDays(12)->toDateString(),
             'first_name' => 'Test',
             'last_name' => 'Guest',
             'email' => 'guest@example.com',
@@ -146,12 +146,24 @@ class AdditionalServicesTest extends TestCase
 
         $response->assertOk()
             ->assertJsonPath('payment.currency', 'NGN')
-            ->assertJsonPath('payment.amount', 86625000)
+            ->assertJsonPath('payment.amount', 167250000)
             ->assertJsonPath('payment.metadata.booking.vat_rate', 7.5)
-            ->assertJsonPath('payment.metadata.booking.vat_amount', 56250)
+            ->assertJsonPath('payment.metadata.booking.vat_amount', 112500)
             ->assertJsonPath('payment.metadata.booking.services.0.name', 'Breakfast')
             ->assertJsonPath('payment.metadata.booking.services.0.quantity', 2)
             ->assertJsonPath('payment.metadata.booking.services_subtotal', 60000);
+    }
+
+    public function test_checkout_rejects_a_stay_shorter_than_two_nights(): void
+    {
+        $apartment = Apartment::create(['name' => 'Stanmore', 'slug' => 'stanmore', 'price' => 500]);
+
+        $this->postJson(route('reservations.store', $apartment), [
+            'checkin' => now()->addDays(10)->toDateString(),
+            'checkout' => now()->addDays(11)->toDateString(),
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['checkout'])
+            ->assertJsonPath('errors.checkout.0', 'The minimum stay is 2 nights.');
     }
 
     public function test_confirmed_payment_persists_service_lines_on_the_invoice(): void

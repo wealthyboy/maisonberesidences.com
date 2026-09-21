@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Mail\SelfCheckInSubmissionMail;
+use App\Mail\SelfCheckInLinkMail;
 use App\Mail\SelfCheckInWelcomeMail;
 use App\Models\Apartment;
 use App\Models\GuestCheckIn;
 use App\Models\Invoice;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
@@ -115,6 +117,26 @@ class SelfCheckInTest extends TestCase
 
         Mail::assertSent(SelfCheckInSubmissionMail::class, 1);
         Mail::assertSent(SelfCheckInWelcomeMail::class, 1);
+    }
+
+    public function test_admin_can_resend_a_fresh_self_check_in_link_from_a_reservation(): void
+    {
+        Mail::fake();
+
+        $admin = User::factory()->create(['is_admin' => true]);
+        $invoice = $this->createInvoice();
+
+        $this->actingAs($admin)
+            ->post(route('admin.reservations.resend-self-check-in', $invoice))
+            ->assertRedirect()
+            ->assertSessionHas('status', 'A fresh self check-in link was sent to guest@example.com.');
+
+        Mail::assertSent(SelfCheckInLinkMail::class, fn (SelfCheckInLinkMail $mail) =>
+            $mail->hasTo('guest@example.com')
+            && $mail->hasBcc('reservations@maisonberesidences.com')
+            && $mail->hasBcc('md@maisonberesidences.com')
+            && str_contains($mail->selfCheckInUrl, '/self-check-in')
+        );
     }
 
     private function createInvoice(): Invoice

@@ -640,6 +640,12 @@
                                             @else
                                                 <a href="{{ route('admin.modules.record.show', [$module['slug'], $recordItem->id]) }}" class="font-semibold text-zinc-600 hover:text-zinc-950">View</a>
                                                 <a href="{{ route('admin.modules.record.edit', [$module['slug'], $recordItem->id]) }}" class="font-semibold text-[#222052] hover:text-[#d9b44a]">Edit</a>
+                                                @if ($isReservations)
+                                                    <form method="post" action="{{ route('admin.reservations.resend-self-check-in', $recordItem->id) }}" onsubmit="return confirm('Send a fresh self check-in link to {{ addslashes($recordItem->email) }}?');">
+                                                        @csrf
+                                                        <button type="submit" class="font-semibold text-emerald-700 hover:text-emerald-800">Resend check-in link</button>
+                                                    </form>
+                                                @endif
                                                 @if ($isApartments)
                                                     <form method="post" action="{{ route('admin.apartments.duplicate', $recordItem->id) }}">
                                                         @csrf

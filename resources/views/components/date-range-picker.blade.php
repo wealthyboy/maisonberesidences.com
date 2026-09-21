@@ -50,6 +50,12 @@
             const parseDate = (value) => value ? new Date(`${value}T00:00:00`) : null;
             const formatDate = (date) => new Intl.DateTimeFormat('en-NG', { day: 'numeric', month: 'short' }).format(date);
             const isSameDate = (first, second) => first && second && isoDate(first) === isoDate(second);
+            const minimumCheckout = (start) => {
+                const minimum = new Date((start || today).getTime());
+                minimum.setDate(minimum.getDate() + 2);
+                return minimum;
+            };
+            const minimumStayMessage = 'The minimum stay is 2 nights. Please choose a later check-out date.';
 
             window.initDateRangePickers = () => document.querySelectorAll('[data-date-range-picker]').forEach((root) => {
                 if (root.dataset.dateRangeReady) return;
@@ -93,8 +99,7 @@
                 const syncDates = () => {
                     checkin.value = startDate ? isoDate(startDate) : '';
                     checkout.value = endDate ? isoDate(endDate) : '';
-                    const earliestCheckout = new Date((startDate || today).getTime());
-                    earliestCheckout.setDate(earliestCheckout.getDate() + 1);
+                    const earliestCheckout = minimumCheckout(startDate);
                     checkout.min = isoDate(earliestCheckout);
                     checkinLabel.textContent = startDate ? formatDate(startDate) : 'Check-in';
                     checkoutLabel.textContent = endDate ? formatDate(endDate) : 'Check-out';
@@ -135,12 +140,15 @@
                     const date = parseDate(selected.dataset.date);
                     if (activeField === 'checkin') {
                         startDate = date;
-                        if (endDate && endDate <= startDate) endDate = null;
+                        if (endDate && endDate < minimumCheckout(startDate)) endDate = null;
                         activeField = 'checkout';
-                    } else if (!startDate || date <= startDate) {
+                    } else if (!startDate) {
                         startDate = date;
                         endDate = null;
                         activeField = 'checkout';
+                    } else if (date < minimumCheckout(startDate)) {
+                        window.alert(minimumStayMessage);
+                        return;
                     } else {
                         endDate = date;
                     }
@@ -172,10 +180,11 @@
                     if (!root.hasAttribute('data-date-range-required')) return;
 
                     const validStart = startDate && startDate >= today;
-                    const validEnd = endDate && startDate && endDate > startDate;
+                    const validEnd = endDate && startDate && endDate >= minimumCheckout(startDate);
                     if (validStart && validEnd) return;
 
                     event.preventDefault();
+                    if (validStart && endDate) window.alert(minimumStayMessage);
                     activeField = validStart ? 'checkout' : 'checkin';
                     openPicker(activeField);
                 });

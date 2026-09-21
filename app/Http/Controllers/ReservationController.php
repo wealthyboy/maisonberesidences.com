@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Apartment;
 use App\Models\Invoice;
+use App\Rules\MinimumStay;
 use App\Services\AdditionalServiceQuoteService;
 use App\Services\ApartmentQuoteService;
 use App\Services\CouponService;
@@ -216,8 +217,8 @@ class ReservationController extends Controller
     private function stay(Request $request): ?array
     {
         $validated = $request->validate([
-            'checkin' => ['nullable', 'date'],
-            'checkout' => ['nullable', 'date', 'after:checkin'],
+            'checkin' => ['nullable', 'date', 'after_or_equal:today'],
+            'checkout' => ['nullable', 'date', 'after:checkin', new MinimumStay($request->input('checkin'))],
         ]);
 
         if (! filled($validated['checkin'] ?? null) || ! filled($validated['checkout'] ?? null)) {
