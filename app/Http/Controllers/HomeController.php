@@ -39,6 +39,7 @@ class HomeController extends Controller
 
         if (Schema::hasTable('apartments') && Schema::hasTable('images')) {
             $firstApartmentId = Apartment::query()
+                ->publiclyAvailable()
                 ->orderBy('sort_order')
                 ->orderBy('id')
                 ->value('id');
@@ -76,6 +77,7 @@ class HomeController extends Controller
         $bedroomImages = Schema::hasTable('images')
             ? Image::query()
                 ->where('imageable_type', Apartment::class)
+                ->whereIn('imageable_id', Apartment::query()->publiclyAvailable()->select('id'))
                 ->whereNotNull('image')
                 ->where('image', '!=', '')
                 ->where(function ($query): void {
@@ -92,6 +94,7 @@ class HomeController extends Controller
         }
 
         $apartments = Apartment::query()
+            ->publiclyAvailable()
             ->with(['images', 'attributes.parent'])
             ->orderBy('sort_order')
             ->orderBy('id')

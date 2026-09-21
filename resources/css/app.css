@@ -445,13 +445,15 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .residence-card-highlights .is-parking { color: #258452; }
 .residence-card-highlights .is-parking svg { color: currentColor; }
 .residence-card-details { display: grid; margin-top: .82rem; gap: .62rem; font-family: "Galaxie Polaris", "Instrument Sans", Arial, sans-serif; }
-.refund-policy-preview { color: #22283a; font-size: .72rem; }
+.refund-policy-preview { position: relative; width: 100%; color: #22283a; font-size: .72rem; }
+.refund-policy-preview[open] { z-index: 12; }
 .refund-policy-preview summary { display: inline-flex; width: fit-content; align-items: center; gap: .35rem; cursor: pointer; list-style: none; }
 .refund-policy-preview summary::-webkit-details-marker { display: none; }
 .refund-policy-preview summary svg { width: 1rem; height: 1rem; flex: 0 0 1rem; transition: color .18s ease, transform .18s ease; }
 .refund-policy-preview summary:hover svg, .refund-policy-preview summary:focus-visible svg, .refund-policy-preview[open] summary svg { color: #1769e8; transform: scale(1.08); }
 .refund-policy-preview summary:focus-visible { border-radius: 3px; outline: 2px solid #1769e8; outline-offset: 3px; }
-.refund-policy-highlights { margin-top: .65rem; padding: .8rem .85rem; border: 1px solid rgba(24,38,74,.14); border-radius: 8px; color: var(--ink); background: #f7f5ef; box-shadow: 0 10px 24px rgba(6,17,46,.08); }
+.refund-policy-highlights { position: absolute; bottom: calc(100% + .7rem); left: 0; z-index: 12; width: 100%; padding: .8rem .85rem; border: 1px solid rgba(24,38,74,.14); border-radius: 8px; color: var(--ink); background: #f7f5ef; box-shadow: 0 14px 32px rgba(6,17,46,.16); }
+.refund-policy-highlights::after { position: absolute; bottom: -.36rem; left: 4.6rem; width: .7rem; height: .7rem; border-right: 1px solid rgba(24,38,74,.14); border-bottom: 1px solid rgba(24,38,74,.14); background: #f7f5ef; content: ""; transform: rotate(45deg); }
 .refund-policy-highlights > strong { display: block; margin-bottom: .5rem; color: var(--gold); font-size: .67rem; letter-spacing: .08em; text-transform: uppercase; }
 .refund-policy-highlights ul { display: grid; margin: 0; padding-left: 1rem; gap: .3rem; font-size: .67rem; line-height: 1.4; }
 .refund-policy-highlights p { margin: .6rem 0 0; color: var(--soft-ink); font-size: .62rem; letter-spacing: 0; line-height: 1.4; text-transform: none; }

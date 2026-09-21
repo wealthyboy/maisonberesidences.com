@@ -40,6 +40,28 @@ class HomeAvailabilitySearchTest extends TestCase
             ]);
     }
 
+    public function test_draft_and_archived_apartments_are_hidden_from_public_collections(): void
+    {
+        Apartment::create(['name' => 'Active Residence', 'slug' => 'active-residence', 'price' => 500, 'allow' => true]);
+        Apartment::create(['name' => 'Draft Residence', 'slug' => 'draft-residence', 'price' => 400, 'allow' => false]);
+        Apartment::create(['name' => 'Archived Residence', 'slug' => 'archived-residence', 'price' => 300, 'allow' => false]);
+
+        $this->get(route('home', ['live' => 1]))
+            ->assertOk()
+            ->assertSee('Active Residence')
+            ->assertDontSee('Draft Residence')
+            ->assertDontSee('Archived Residence');
+
+        $this->get(route('apartments.index'))
+            ->assertOk()
+            ->assertSee('Active Residence')
+            ->assertDontSee('Draft Residence')
+            ->assertDontSee('Archived Residence');
+
+        $this->get(route('apartments.show', 'draft-residence'))->assertNotFound();
+        $this->get(route('apartments.show', 'archived-residence'))->assertNotFound();
+    }
+
     public function test_home_search_requires_checkin_and_checkout_dates(): void
     {
         $response = $this->from(route('home'))->get(route('apartments.index', ['search' => 1]));

@@ -32,6 +32,7 @@ class ApartmentSearchController extends Controller
         $currency = $request->attributes->get('currency');
 
         $apartments = Apartment::query()
+            ->publiclyAvailable()
             ->with(['images', 'property', 'attributes.parent'])
             ->when(
                 filled($filters['checkin'] ?? null) && filled($filters['checkout'] ?? null),
@@ -69,6 +70,7 @@ class ApartmentSearchController extends Controller
 
         $menuImage = Image::query()
             ->where('imageable_type', Apartment::class)
+            ->whereIn('imageable_id', Apartment::query()->publiclyAvailable()->select('id'))
             ->whereNotNull('image')
             ->where('image', '!=', '')
             ->inRandomOrder()
@@ -132,8 +134,8 @@ class ApartmentSearchController extends Controller
     private function inventoryLimits(): array
     {
         return [
-            'guests' => max(1, (int) (Apartment::query()->max('max_adults') ?: 1)),
-            'rooms' => max(2, (int) (Apartment::query()->max('no_of_rooms') ?: 2)),
+            'guests' => max(1, (int) (Apartment::query()->publiclyAvailable()->max('max_adults') ?: 1)),
+            'rooms' => max(2, (int) (Apartment::query()->publiclyAvailable()->max('no_of_rooms') ?: 2)),
         ];
     }
 }

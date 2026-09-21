@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Apartment extends Model
@@ -64,6 +65,18 @@ class Apartment extends Model
     public function getRouteKeyName(): string
     {
         return 'slug';
+    }
+
+    public function scopePubliclyAvailable(Builder $query): Builder
+    {
+        return $query->where('allow', true);
+    }
+
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        return $query
+            ->where($field ?? $this->getRouteKeyName(), $value)
+            ->where('allow', true);
     }
 
     public function images()
