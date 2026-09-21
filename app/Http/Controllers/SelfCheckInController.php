@@ -11,6 +11,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -37,7 +38,7 @@ class SelfCheckInController extends Controller
         }
 
         $validated = $request->validate([
-            'identity_document' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
+            'identity_document' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:8192'],
         ]);
 
         $document = $validated['identity_document'];
@@ -47,16 +48,11 @@ class SelfCheckInController extends Controller
         $documentPath = $document->storeAs($directory, $documentName, $disk);
         $details = $this->guestDetails->fromInvoice($invoice);
         $mime = (string) $document->getMimeType();
-        $idPreview = null;
-
-        if (str_starts_with($mime, 'image/')) {
-            $idPreview = 'data:'.$mime.';base64,'.base64_encode(Storage::disk($disk)->get($documentPath));
-        }
-
         $pdfPath = $directory.'/maison-be-self-check-in-'.$invoice->invoice.'.pdf';
 
         try {
-            $pdf = Pdf::loadView('pdf.self-check-in', compact('invoice', 'details', 'idPreview'))
+            $documentOriginalName = $document->getClientOriginalName();
+            $pdf = Pdf::loadView('pdf.self-check-in', compact('invoice', 'details', 'documentOriginalName'))
                 ->setPaper('a4');
             Storage::disk($disk)->put($pdfPath, $pdf->output());
 
@@ -64,7 +60,7 @@ class SelfCheckInController extends Controller
                 'invoice_id' => $invoice->id,
                 'document_disk' => $disk,
                 'document_path' => $documentPath,
-                'document_original_name' => $document->getClientOriginalName(),
+                'document_original_name' => $documentOriginalName,
                 'document_mime' => $mime,
                 'pdf_path' => $pdfPath,
                 'submitted_at' => now(),
@@ -72,13 +68,7 @@ class SelfCheckInController extends Controller
 
             $checkIn->setRelation('invoice', $invoice->loadMissing('invoiceItems.apartment'));
 
-            Mail::to('reservations@maisonberesidences.com')
-                ->bcc('md@maisonberesidences.com')
-                ->send(new SelfCheckInSubmissionMail($checkIn));
-
-            Mail::to($invoice->email)
-                ->bcc(['reservations@maisonberesidences.com', 'md@maisonberesidences.com'])
-                ->send(new SelfCheckInWelcomeMail($checkIn));
+            $this->sendEmails($checkIn);
         } catch (\Throwable $exception) {
             GuestCheckIn::query()->where('invoice_id', $invoice->id)->delete();
             Storage::disk($disk)->delete([$documentPath, $pdfPath]);
@@ -88,5 +78,45 @@ class SelfCheckInController extends Controller
         }
 
         return back()->with('checkin_success', 'Your self check-in is complete. A welcome confirmation has been emailed to you.');
+    }
+
+    public function resend(Invoice $invoice): RedirectResponse
+    {
+        $checkIn = $invoice->guestCheckIn()->firstOrFail();
+        $checkIn->setRelation('invoice', $invoice->loadMissing('invoiceItems.apartment'));
+
+        try {
+            $this->sendEmails($checkIn);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return back()->with('mail_error', 'The email could not be sent. Please contact reservations for assistance.');
+        }
+
+        return back()->with('mail_success', 'The self check-in emails have been sent again.');
+    }
+
+    private function sendEmails(GuestCheckIn $checkIn): void
+    {
+        $invoice = $checkIn->invoice;
+
+        Log::info('Sending self check-in emails.', [
+            'invoice_id' => $invoice->id,
+            'check_in_id' => $checkIn->id,
+            'guest_email' => $invoice->email,
+        ]);
+
+        Mail::to('reservations@maisonberesidences.com')
+            ->bcc('md@maisonberesidences.com')
+            ->send(new SelfCheckInSubmissionMail($checkIn));
+
+        Mail::to($invoice->email)
+            ->bcc(['reservations@maisonberesidences.com', 'md@maisonberesidences.com'])
+            ->send(new SelfCheckInWelcomeMail($checkIn));
+
+        Log::info('Self check-in emails accepted by mail transport.', [
+            'invoice_id' => $invoice->id,
+            'check_in_id' => $checkIn->id,
+        ]);
     }
 }

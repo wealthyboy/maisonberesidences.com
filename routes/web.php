@@ -35,6 +35,9 @@ Route::get('reservations/{invoice}/self-check-in', [SelfCheckInController::class
 Route::post('reservations/{invoice}/self-check-in', [SelfCheckInController::class, 'store'])
     ->middleware(['signed', 'throttle:5,1'])
     ->name('reservations.self-check-in.store');
+Route::post('reservations/{invoice}/self-check-in/resend', [SelfCheckInController::class, 'resend'])
+    ->middleware(['signed', 'throttle:3,10'])
+    ->name('reservations.self-check-in.resend');
 Route::post('webhook/payment', PaymentWebhookController::class)->name('webhooks.paystack');
 Route::post('webhooks/paystack', PaymentWebhookController::class);
 

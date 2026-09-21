@@ -17,7 +17,6 @@
             .details td { width: 50%; padding: 12px; border: 1px solid #ddd3b8; vertical-align: top; }
             .details span { display: block; margin-bottom: 5px; color: #a78135; font-size: 9px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
             .id-title { margin: 25px 0 10px; color: #a78135; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; }
-            .id-preview { max-width: 100%; max-height: 390px; border: 1px solid #ddd3b8; }
             .notice { padding: 16px; border: 1px solid #ddd3b8; background: #faf7ef; }
             .footer { position: fixed; right: 0; bottom: 0; left: 0; color: #697086; font-size: 9px; text-align: center; }
         </style>
@@ -37,11 +36,7 @@
         </table>
 
         <p class="id-title">Identity document</p>
-        @if ($idPreview)
-            <img class="id-preview" src="{{ $idPreview }}" alt="Guest identity document">
-        @else
-            <div class="notice">The guest supplied a PDF identity document. It is attached separately to the reservations email.</div>
-        @endif
+        <div class="notice">The guest supplied <strong>{{ $documentOriginalName }}</strong>. The identity document is attached separately to the reservations email.</div>
 
         <div class="footer">Maison Be Residences · Private guest check-in record</div>
     </body>

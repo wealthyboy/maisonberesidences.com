@@ -539,6 +539,9 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .self-checkin-dropzone strong { color: var(--ink); font-size: .95rem; overflow-wrap: anywhere; }
 .self-checkin-dropzone span { max-width: 440px; font-size: .78rem; line-height: 1.5; }
 .self-checkin-error { margin: .8rem 0 0; color: #b42318; font-size: .8rem; font-weight: 700; }
+.self-checkin-mail-success { color: #2f7c4f !important; font-weight: 700; }
+.self-checkin-resend { min-height: 44px; margin-top: 1rem; padding: 0 1.1rem; border: 1px solid var(--deep); border-radius: 8px; color: var(--deep); background: transparent; font: inherit; font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+.self-checkin-resend:hover, .self-checkin-resend:focus-visible { color: #fff; background: var(--deep); }
 .self-checkin-form > button, .self-checkin-complete a { display: inline-flex; min-height: 50px; margin-top: 1.2rem; padding: 0 1.25rem; border: 0; border-radius: 8px; color: #fff; background: var(--deep); align-items: center; justify-content: center; gap: 1.5rem; font: inherit; font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-decoration: none; text-transform: uppercase; }
 .self-checkin-complete { text-align: center; }
 .self-checkin-complete > span { display: grid; width: 3.6rem; height: 3.6rem; margin: 0 auto 1rem; border-radius: 50%; color: #fff; background: #2f7c4f; place-items: center; font-size: 1.5rem; }

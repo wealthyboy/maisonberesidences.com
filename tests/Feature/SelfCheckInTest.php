@@ -89,6 +89,34 @@ class SelfCheckInTest extends TestCase
         Mail::assertSent(SelfCheckInWelcomeMail::class, 1);
     }
 
+    public function test_guest_can_resend_emails_for_an_existing_check_in(): void
+    {
+        Mail::fake();
+        Storage::fake('local');
+
+        $invoice = $this->createInvoice();
+        $checkIn = GuestCheckIn::create([
+            'invoice_id' => $invoice->id,
+            'document_disk' => 'local',
+            'document_path' => 'self-check-ins/id/passport.jpg',
+            'document_original_name' => 'passport.jpg',
+            'document_mime' => 'image/jpeg',
+            'pdf_path' => 'self-check-ins/id/check-in.pdf',
+            'submitted_at' => now(),
+        ]);
+        Storage::disk('local')->put($checkIn->document_path, 'identity-document');
+        Storage::disk('local')->put($checkIn->pdf_path, 'check-in-pdf');
+
+        $url = URL::signedRoute('reservations.self-check-in.resend', $invoice);
+
+        $this->post($url)
+            ->assertRedirect()
+            ->assertSessionHas('mail_success');
+
+        Mail::assertSent(SelfCheckInSubmissionMail::class, 1);
+        Mail::assertSent(SelfCheckInWelcomeMail::class, 1);
+    }
+
     private function createInvoice(): Invoice
     {
         $apartment = Apartment::create([

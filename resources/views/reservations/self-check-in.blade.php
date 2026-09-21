@@ -25,6 +25,12 @@
                     <span aria-hidden="true">✓</span>
                     <h2>Check-in received.</h2>
                     <p>{{ session('checkin_success', 'Your self check-in has already been submitted. We look forward to welcoming you.') }}</p>
+                    @if (session('mail_success'))<p class="self-checkin-mail-success">{{ session('mail_success') }}</p>@endif
+                    @if (session('mail_error'))<p class="self-checkin-error">{{ session('mail_error') }}</p>@endif
+                    <form method="post" action="{{ \Illuminate\Support\Facades\URL::signedRoute('reservations.self-check-in.resend', $invoice) }}">
+                        @csrf
+                        <button class="self-checkin-resend" type="submit">Resend email</button>
+                    </form>
                     <a href="{{ url('/') }}">Return home</a>
                 </section>
             @else
@@ -43,7 +49,7 @@
                         <input type="file" name="identity_document" accept="image/jpeg,image/png,application/pdf" required data-checkin-file>
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"></path><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"></path></svg>
                         <strong data-checkin-file-name>Upload your ID</strong>
-                        <span>Drag and drop or tap to select JPG, PNG, or PDF up to 10 MB.</span>
+                        <span>Drag and drop or tap to select JPG, PNG, or PDF up to 8 MB.</span>
                     </label>
 
                     @error('identity_document')
