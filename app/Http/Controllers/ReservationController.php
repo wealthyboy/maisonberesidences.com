@@ -39,11 +39,11 @@ class ReservationController extends Controller
             return redirect()->route('apartments.index')->with('booking_error', 'Choose check-in and check-out dates before reserving a residence.');
         }
 
-        if (StayRestrictions::includesDecember($stay['checkin'], $stay['checkout'])) {
+        if (StayRestrictions::overlapsSeasonalBlackout($stay['checkin'], $stay['checkout'])) {
             return redirect()->route('apartments.index', [
                 'checkin' => $stay['checkin']->toDateString(),
                 'checkout' => $stay['checkout']->toDateString(),
-            ])->with('booking_error', StayRestrictions::DECEMBER_MESSAGE);
+            ])->with('booking_error', StayRestrictions::SEASONAL_BLACKOUT_MESSAGE);
         }
 
         $quote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $request->attributes->get('currency'));
@@ -66,15 +66,15 @@ class ReservationController extends Controller
             return back()->withErrors(['stay' => 'Choose valid check-in and check-out dates.'])->withInput();
         }
 
-        if (StayRestrictions::includesDecember($stay['checkin'], $stay['checkout'])) {
+        if (StayRestrictions::overlapsSeasonalBlackout($stay['checkin'], $stay['checkout'])) {
             if ($request->expectsJson()) {
-                return response()->json(['message' => StayRestrictions::DECEMBER_MESSAGE], 422);
+                return response()->json(['message' => StayRestrictions::SEASONAL_BLACKOUT_MESSAGE], 422);
             }
 
             return redirect()->route('apartments.index', [
                 'checkin' => $stay['checkin']->toDateString(),
                 'checkout' => $stay['checkout']->toDateString(),
-            ])->with('booking_error', StayRestrictions::DECEMBER_MESSAGE);
+            ])->with('booking_error', StayRestrictions::SEASONAL_BLACKOUT_MESSAGE);
         }
 
         $data = $request->validate([
@@ -144,8 +144,8 @@ class ReservationController extends Controller
             return response()->json(['message' => 'Choose valid check-in and check-out dates first.'], 422);
         }
 
-        if (StayRestrictions::includesDecember($stay['checkin'], $stay['checkout'])) {
-            return response()->json(['message' => StayRestrictions::DECEMBER_MESSAGE], 422);
+        if (StayRestrictions::overlapsSeasonalBlackout($stay['checkin'], $stay['checkout'])) {
+            return response()->json(['message' => StayRestrictions::SEASONAL_BLACKOUT_MESSAGE], 422);
         }
 
         $data = $request->validate([

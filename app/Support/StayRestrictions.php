@@ -6,19 +6,19 @@ use Carbon\CarbonInterface;
 
 class StayRestrictions
 {
-    public const DECEMBER_MESSAGE = 'Apartments are currently unavailable for dates in December. Please choose another stay.';
+    public const SEASONAL_BLACKOUT_MESSAGE = 'Apartments are currently unavailable from November 15 through January 31. Please choose another stay.';
 
-    public static function includesDecember(?CarbonInterface $checkin, ?CarbonInterface $checkout): bool
+    public static function overlapsSeasonalBlackout(?CarbonInterface $checkin, ?CarbonInterface $checkout): bool
     {
         if (! $checkin || ! $checkout) {
             return false;
         }
 
-        for ($year = $checkin->year; $year <= $checkout->year; $year++) {
-            $decemberStart = $checkin->copy()->setDate($year, 12, 1)->startOfDay();
-            $decemberEnd = $decemberStart->copy()->endOfMonth()->endOfDay();
+        for ($year = $checkin->year - 1; $year <= $checkout->year; $year++) {
+            $blackoutStart = $checkin->copy()->setDate($year, 11, 15)->startOfDay();
+            $blackoutEnd = $checkin->copy()->setDate($year + 1, 1, 31)->endOfDay();
 
-            if ($checkin->lte($decemberEnd) && $checkout->gte($decemberStart)) {
+            if ($checkin->lte($blackoutEnd) && $checkout->gte($blackoutStart)) {
                 return true;
             }
         }

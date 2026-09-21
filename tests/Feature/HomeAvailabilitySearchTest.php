@@ -111,23 +111,23 @@ class HomeAvailabilitySearchTest extends TestCase
             ->assertSessionHasErrors(['checkin', 'checkout']);
     }
 
-    public function test_a_stay_touching_december_returns_no_apartments(): void
+    public function test_a_stay_from_mid_november_returns_no_apartments(): void
     {
         $apartment = Apartment::create([
-            'name' => 'December Residence',
-            'slug' => 'december-residence',
+            'name' => 'Seasonal Residence',
+            'slug' => 'seasonal-residence',
             'price' => 500,
             'allow' => true,
         ]);
-        $december = now()->startOfYear()->setDate(now()->year, 12, 10);
-        if ($december->isPast()) {
-            $december->addYear();
+        $blackoutStart = now()->startOfYear()->setDate(now()->year, 11, 15);
+        if ($blackoutStart->isPast()) {
+            $blackoutStart->addYear();
         }
 
         $response = $this->get(route('apartments.index', [
             'search' => 1,
-            'checkin' => $december->toDateString(),
-            'checkout' => $december->copy()->addDays(2)->toDateString(),
+            'checkin' => $blackoutStart->toDateString(),
+            'checkout' => $blackoutStart->copy()->addDays(2)->toDateString(),
         ]));
 
         $response
@@ -136,27 +136,28 @@ class HomeAvailabilitySearchTest extends TestCase
             ->assertDontSee($apartment->name);
     }
 
-    public function test_apartment_availability_reports_december_as_unavailable(): void
+    public function test_apartment_availability_reports_late_january_as_unavailable(): void
     {
         $apartment = Apartment::create([
-            'name' => 'December Residence',
-            'slug' => 'december-residence',
+            'name' => 'Seasonal Residence',
+            'slug' => 'seasonal-residence',
             'price' => 500,
             'allow' => true,
             'max_adults' => 4,
         ]);
-        $december = now()->startOfYear()->setDate(now()->year, 12, 10);
-        if ($december->isPast()) {
-            $december->addYear();
+        $blackoutStart = now()->startOfYear()->setDate(now()->year, 11, 15);
+        if ($blackoutStart->isPast()) {
+            $blackoutStart->addYear();
         }
+        $lateJanuary = $blackoutStart->copy()->setDate($blackoutStart->year + 1, 1, 29);
 
         $this->postJson(route('apartments.availability', $apartment), [
-            'checkin' => $december->toDateString(),
-            'checkout' => $december->copy()->addDays(2)->toDateString(),
+            'checkin' => $lateJanuary->toDateString(),
+            'checkout' => $lateJanuary->copy()->addDays(2)->toDateString(),
             'guests' => 1,
         ])->assertOk()
             ->assertJsonPath('available', false)
             ->assertJsonPath('reserve_url', null)
-            ->assertJsonPath('message', StayRestrictions::DECEMBER_MESSAGE);
+            ->assertJsonPath('message', StayRestrictions::SEASONAL_BLACKOUT_MESSAGE);
     }
 }

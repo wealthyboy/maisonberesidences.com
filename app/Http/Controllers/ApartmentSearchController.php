@@ -31,13 +31,13 @@ class ApartmentSearchController extends Controller
 
         $checkin = filled($filters['checkin'] ?? null) ? Carbon::parse($filters['checkin'])->startOfDay() : null;
         $checkout = filled($filters['checkout'] ?? null) ? Carbon::parse($filters['checkout'])->startOfDay() : null;
-        $decemberUnavailable = StayRestrictions::includesDecember($checkin, $checkout);
+        $seasonalBlackout = StayRestrictions::overlapsSeasonalBlackout($checkin, $checkout);
         $currency = $request->attributes->get('currency');
 
         $apartments = Apartment::query()
             ->publiclyAvailable()
             ->with(['images', 'property', 'attributes.parent'])
-            ->when($decemberUnavailable, fn ($query) => $query->whereRaw('1 = 0'))
+            ->when($seasonalBlackout, fn ($query) => $query->whereRaw('1 = 0'))
             ->when(
                 filled($filters['checkin'] ?? null) && filled($filters['checkout'] ?? null),
                 function ($query) use ($checkin, $checkout) {
@@ -115,10 +115,10 @@ class ApartmentSearchController extends Controller
         $checkin = Carbon::parse($data['checkin'])->startOfDay();
         $checkout = Carbon::parse($data['checkout'])->startOfDay();
 
-        if (StayRestrictions::includesDecember($checkin, $checkout)) {
+        if (StayRestrictions::overlapsSeasonalBlackout($checkin, $checkout)) {
             return response()->json([
                 'available' => false,
-                'message' => StayRestrictions::DECEMBER_MESSAGE,
+                'message' => StayRestrictions::SEASONAL_BLACKOUT_MESSAGE,
                 'reserve_url' => null,
             ]);
         }
