@@ -74,9 +74,7 @@ class Apartment extends Model
 
     public function resolveRouteBindingQuery($query, $value, $field = null)
     {
-        return $query
-            ->where($field ?? $this->getRouteKeyName(), $value)
-            ->where('allow', true);
+        return $query->where($field ?? $this->getRouteKeyName(), $value);
     }
 
     public function images()

@@ -80,12 +80,16 @@
                 <aside class="apartment-booking-panel">
                     <p class="eyebrow">Reserve {{ $apartment->name }}</p>
                     <strong>{{ $apartment->stay_quote['display_nightly'] }} <small>/ night</small></strong>
-                    <form action="{{ route('apartments.availability', $apartment) }}" class="apartment-availability-form" data-availability-form>
-                        <x-date-range-picker class="availability-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" required />
-                        <label>Guests<input type="number" name="guests" min="1" max="{{ $apartment->max_adults ?: 20 }}" value="{{ $filters['guests'] ?? 1 }}"></label>
-                        <button type="submit" data-availability-action>Check availability</button>
-                    </form>
-                    <p class="apartment-availability-status" aria-live="polite" data-availability-status></p>
+                    @if ($apartment->allow)
+                        <form action="{{ route('apartments.availability', $apartment) }}" class="apartment-availability-form" data-availability-form>
+                            <x-date-range-picker class="availability-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" required />
+                            <label>Guests<input type="number" name="guests" min="1" max="{{ $apartment->max_adults ?: 20 }}" value="{{ $filters['guests'] ?? 1 }}"></label>
+                            <button type="submit" data-availability-action>Check availability</button>
+                        </form>
+                        <p class="apartment-availability-status" aria-live="polite" data-availability-status></p>
+                    @else
+                        <p class="apartment-availability-status is-error">This apartment is currently unavailable for booking.</p>
+                    @endif
                 </aside>
             </section>
             @if ($amenityGroups->isNotEmpty())

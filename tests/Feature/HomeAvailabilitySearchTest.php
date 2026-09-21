@@ -41,7 +41,7 @@ class HomeAvailabilitySearchTest extends TestCase
             ]);
     }
 
-    public function test_draft_and_archived_apartments_are_hidden_from_public_collections(): void
+    public function test_draft_and_archived_apartments_are_visible_but_unbookable(): void
     {
         Apartment::create(['name' => 'Active Residence', 'slug' => 'active-residence', 'price' => 500, 'allow' => true]);
         Apartment::create(['name' => 'Draft Residence', 'slug' => 'draft-residence', 'price' => 400, 'allow' => false]);
@@ -50,17 +50,46 @@ class HomeAvailabilitySearchTest extends TestCase
         $this->get(route('home', ['live' => 1]))
             ->assertOk()
             ->assertSee('Active Residence')
-            ->assertDontSee('Draft Residence')
-            ->assertDontSee('Archived Residence');
+            ->assertSee('Draft Residence')
+            ->assertSee('Archived Residence')
+            ->assertDontSee('Unavailable');
 
         $this->get(route('apartments.index'))
             ->assertOk()
             ->assertSee('Active Residence')
-            ->assertDontSee('Draft Residence')
-            ->assertDontSee('Archived Residence');
+            ->assertSee('Draft Residence')
+            ->assertSee('Archived Residence')
+            ->assertDontSee('Unavailable');
 
-        $this->get(route('apartments.show', 'draft-residence'))->assertNotFound();
-        $this->get(route('apartments.show', 'archived-residence'))->assertNotFound();
+        $checkin = now()->copy()->setDate(now()->year + 1, 3, 1);
+        $this->get(route('apartments.index', [
+            'search' => 1,
+            'checkin' => $checkin->toDateString(),
+            'checkout' => $checkin->copy()->addDays(2)->toDateString(),
+        ]))->assertOk()
+            ->assertSee('Active Residence')
+            ->assertDontSee('Draft Residence')
+            ->assertDontSee('Archived Residence')
+            ->assertDontSee('Unavailable');
+
+        $this->get(route('apartments.show', 'draft-residence'))
+            ->assertOk()
+            ->assertSee('This apartment is currently unavailable for booking.')
+            ->assertDontSee('<form action="'.route('apartments.availability', 'draft-residence').'"', false);
+
+        $this->postJson(route('apartments.availability', 'archived-residence'), [
+            'checkin' => $checkin->toDateString(),
+            'checkout' => $checkin->copy()->addDays(2)->toDateString(),
+            'guests' => 1,
+        ])->assertOk()
+            ->assertJsonPath('available', false)
+            ->assertJsonPath('reserve_url', null);
+
+        $this->get(route('reservations.create', [
+            'apartment' => 'draft-residence',
+            'checkin' => $checkin->toDateString(),
+            'checkout' => $checkin->copy()->addDays(2)->toDateString(),
+        ]))->assertRedirect(route('apartments.show', 'draft-residence'));
     }
 
     public function test_home_search_requires_checkin_and_checkout_dates(): void

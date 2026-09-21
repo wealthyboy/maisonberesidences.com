@@ -94,7 +94,6 @@ class HomeController extends Controller
         }
 
         $apartments = Apartment::query()
-            ->publiclyAvailable()
             ->with(['images', 'attributes.parent'])
             ->orderBy('sort_order')
             ->orderBy('id')

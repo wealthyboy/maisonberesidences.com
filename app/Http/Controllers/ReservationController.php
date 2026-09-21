@@ -33,6 +33,11 @@ class ReservationController extends Controller
 
     public function create(Request $request, Apartment $apartment): View|RedirectResponse
     {
+        if (! $apartment->allow) {
+            return redirect()->route('apartments.show', $apartment)
+                ->with('booking_error', 'This apartment is currently unavailable for booking.');
+        }
+
         $stay = $this->stay($request);
 
         if (! $stay) {
@@ -56,6 +61,15 @@ class ReservationController extends Controller
 
     public function store(Request $request, Apartment $apartment): JsonResponse|RedirectResponse
     {
+        if (! $apartment->allow) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'This apartment is currently unavailable for booking.'], 422);
+            }
+
+            return redirect()->route('apartments.show', $apartment)
+                ->with('booking_error', 'This apartment is currently unavailable for booking.');
+        }
+
         $stay = $this->stay($request);
 
         if (! $stay && $request->expectsJson()) {
@@ -138,6 +152,10 @@ class ReservationController extends Controller
 
     public function coupon(Request $request, Apartment $apartment): JsonResponse
     {
+        if (! $apartment->allow) {
+            return response()->json(['message' => 'This apartment is currently unavailable for booking.'], 422);
+        }
+
         $stay = $this->stay($request);
 
         if (! $stay) {

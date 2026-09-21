@@ -184,7 +184,7 @@
                     <small>per night</small>
                 </span>
             </div>
-            @if ($bookingEnabled && $bookUrl)
+            @if ($apartment->allow && $bookingEnabled && $bookUrl)
                 <a class="residence-card-book" href="{{ $bookUrl }}">Book now</a>
             @endif
         </div>

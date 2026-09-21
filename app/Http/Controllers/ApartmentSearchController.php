@@ -31,12 +31,13 @@ class ApartmentSearchController extends Controller
 
         $checkin = filled($filters['checkin'] ?? null) ? Carbon::parse($filters['checkin'])->startOfDay() : null;
         $checkout = filled($filters['checkout'] ?? null) ? Carbon::parse($filters['checkout'])->startOfDay() : null;
+        $hasStayDates = $checkin !== null && $checkout !== null;
         $seasonalBlackout = StayRestrictions::overlapsSeasonalBlackout($checkin, $checkout);
         $currency = $request->attributes->get('currency');
 
         $apartments = Apartment::query()
-            ->publiclyAvailable()
             ->with(['images', 'property', 'attributes.parent'])
+            ->when($hasStayDates, fn ($query) => $query->publiclyAvailable())
             ->when($seasonalBlackout, fn ($query) => $query->whereRaw('1 = 0'))
             ->when(
                 filled($filters['checkin'] ?? null) && filled($filters['checkout'] ?? null),
@@ -105,6 +106,14 @@ class ApartmentSearchController extends Controller
 
     public function availability(Request $request, Apartment $apartment): JsonResponse
     {
+        if (! $apartment->allow) {
+            return response()->json([
+                'available' => false,
+                'message' => 'This apartment is currently unavailable for booking.',
+                'reserve_url' => null,
+            ]);
+        }
+
         $maxGuests = max(1, (int) ($apartment->max_adults ?: 1));
 
         $data = $request->validate([
