@@ -16,7 +16,9 @@ use App\Support\AdminModules;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+
 Route::view('book', 'booking.cloudbeds')->name('booking.cloudbeds');
+
 Route::get('information/events', [InformationController::class, 'events'])->name('information.events');
 Route::get('information/contact', [InformationController::class, 'contact'])->name('information.contact');
 Route::get('information/{information:slug}', [InformationController::class, 'show'])->name('information.show');
