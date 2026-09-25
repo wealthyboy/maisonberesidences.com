@@ -842,3 +842,35 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
     .apartment-modal-feature-grid li { font-size: .76rem; }
     .apartment-modal-amenities-grid { grid-template-columns: 1fr; }
 }
+
+/* Cloudbeds Immersive Experience */
+.cloudbeds-booking-page { background: #f7f3e9; }
+.cloudbeds-booking-main { width: min(calc(100% - 3rem), 1440px); margin: 0 auto; padding: clamp(2.5rem, 6vw, 5.5rem) 0 clamp(4rem, 8vw, 7rem); }
+.cloudbeds-booking-heading { margin-bottom: clamp(1.75rem, 4vw, 3.25rem); }
+.cloudbeds-booking-heading .eyebrow { margin: 0 0 1rem; color: #9a7529; font-size: .66rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; }
+.cloudbeds-booking-heading-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(280px, .75fr); align-items: end; gap: 2rem; }
+.cloudbeds-booking-heading h1 { max-width: 760px; margin: 0; color: var(--deep); font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(3rem, 6.5vw, 6.5rem); font-weight: 500; line-height: .9; }
+.cloudbeds-booking-heading-grid > p { max-width: 540px; margin: 0 0 .45rem; color: var(--soft-ink); font-size: clamp(.95rem, 1.2vw, 1.08rem); line-height: 1.75; }
+.cloudbeds-booking-shell { overflow: hidden; border: 1px solid rgba(6,17,46,.12); border-radius: 22px; background: #fff; box-shadow: 0 28px 80px rgba(6,17,46,.08); }
+.cloudbeds-booking-topline { display: flex; min-height: 76px; padding: 1rem 1.3rem 1rem 1.5rem; border-bottom: 1px solid rgba(6,17,46,.1); align-items: center; justify-content: space-between; gap: 1rem; }
+.cloudbeds-booking-topline > div { display: grid; gap: .2rem; }
+.cloudbeds-booking-topline span { color: #9a7529; font-size: .58rem; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+.cloudbeds-booking-topline strong { color: var(--deep); font-size: .82rem; font-weight: 700; }
+.cloudbeds-booking-topline a { display: inline-flex; min-height: 42px; padding: 0 1rem; border: 1px solid rgba(6,17,46,.18); border-radius: 999px; color: var(--deep); align-items: center; justify-content: center; font-size: .66rem; font-weight: 800; letter-spacing: .1em; text-decoration: none; text-transform: uppercase; transition: color 180ms ease, border-color 180ms ease, background 180ms ease; }
+.cloudbeds-booking-topline a:hover, .cloudbeds-booking-topline a:focus-visible { border-color: var(--deep); color: #fff; background: var(--deep); }
+.cloudbeds-booking-embed { min-height: 720px; padding: clamp(.5rem, 1.5vw, 1.25rem); background: #fff; }
+.cloudbeds-booking-embed cb-immersive-experience { display: block; width: 100%; min-height: 680px; }
+.cloudbeds-booking-noscript { display: grid; min-height: 340px; place-items: center; align-content: center; gap: 1rem; text-align: center; }
+.cloudbeds-booking-noscript p { margin: 0; color: var(--soft-ink); }
+.cloudbeds-booking-noscript a { display: inline-flex; min-height: 46px; padding: 0 1.25rem; border-radius: 999px; color: #fff; background: var(--deep); align-items: center; text-decoration: none; }
+
+@media (max-width: 800px) {
+    .cloudbeds-booking-main { width: min(calc(100% - 2rem), 1440px); padding-top: 2.2rem; }
+    .cloudbeds-booking-heading-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .cloudbeds-booking-heading h1 { font-size: clamp(2.8rem, 13vw, 4.75rem); }
+    .cloudbeds-booking-shell { border-radius: 16px; }
+    .cloudbeds-booking-topline { min-height: 68px; padding: .9rem 1rem; }
+    .cloudbeds-booking-topline a { display: none; }
+    .cloudbeds-booking-embed { min-height: 620px; padding: .25rem; }
+    .cloudbeds-booking-embed cb-immersive-experience { min-height: 600px; }
+}
