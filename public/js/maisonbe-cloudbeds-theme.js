@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260925-grid-2';
+    const VERSION = '20260925-grid-3-stable';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -42,15 +42,29 @@
     function label(el, value) {
         if (el && value) nextLabels.set(el, value);
     }
+    // Cloudbeds re-renders pieces of the results UI asynchronously. Layout classes are
+    // intentionally sticky on still-connected nodes so a transient provider render cannot
+    // flip the card between native and Maison BE layouts for a frame (visible as shaking).
+    const STICKY_LAYOUT_CLASSES = /^(?:mb-cb-(?!cart-empty)|maison-cb-primary$|maison-cb-secondary$)/;
     function commitMarks() {
         activeClasses.forEach((classes, el) => {
-            classes.forEach(cls => { if (!nextClasses.get(el)?.has(cls)) el.classList.remove(cls); });
+            if (!el?.isConnected) return;
+            classes.forEach(cls => {
+                if (nextClasses.get(el)?.has(cls)) return;
+                if (STICKY_LAYOUT_CLASSES.test(cls)) {
+                    if (!nextClasses.has(el)) nextClasses.set(el, new Set());
+                    nextClasses.get(el).add(cls);
+                } else {
+                    el.classList.remove(cls);
+                }
+            });
         });
         nextClasses.forEach((classes, el) => {
             classes.forEach(cls => { if (!el.classList.contains(cls)) el.classList.add(cls); });
         });
-        activeLabels.forEach((_, el) => {
-            if (!nextLabels.has(el)) el.removeAttribute('data-mb-amenity-label');
+        activeLabels.forEach((value, el) => {
+            if (!el?.isConnected) return;
+            if (!nextLabels.has(el)) nextLabels.set(el, value);
         });
         nextLabels.forEach((value, el) => {
             if (el.getAttribute('data-mb-amenity-label') !== value) el.setAttribute('data-mb-amenity-label', value);
@@ -368,19 +382,15 @@
             });
         });
         commitMarks();
-        // Calculate columns after removing the native desktop sidebar width constraint.
-        grids.forEach(({ grid, page }) => {
-            const width = grid.getBoundingClientRect().width || page.getBoundingClientRect().width;
-            const columns = width >= 1280 ? 4 : width >= 980 ? 3 : width >= 650 ? 2 : 1;
-            if (grid.style.getPropertyValue('--mb-cb-columns') !== String(columns)) grid.style.setProperty('--mb-cb-columns', String(columns));
-        });
+        // Column count is CSS/media-query driven. Avoid measuring and rewriting the
+        // grid during provider renders; that feedback loop can cause visible jitter.
         if (failed) setState('error');
         else if (rootPresent) { ready = true; setState('ready'); }
         lastSummary = {
             version: VERSION,
             cards: grids.reduce((sum, item) => sum + item.count, 0),
             grids: grids.length,
-            columns: grids.map(({ grid }) => Number(grid.style.getPropertyValue('--mb-cb-columns'))),
+            columns: grids.map(({ grid }) => getComputedStyle(grid).gridTemplateColumns.split(/\s+/).filter(Boolean).length),
             mode: failed ? 'provider-error' : grids.length ? 'residence-grid' : rootPresent ? 'native-flow' : 'waiting',
         };
     }
@@ -402,20 +412,14 @@
     }
     function observe(root) {
         const observer = new MutationObserver(schedule);
-        observer.observe(root, { childList: true, subtree: true, characterData: true });
+        observer.observe(root, { childList: true, subtree: true });
         observers.push(observer);
     }
     function start() {
         if (!document.body?.classList.contains('cloudbeds-booking-page')) return;
         observe(document.body);
         document.querySelector('[data-cloudbeds-retry]')?.addEventListener('click', () => window.location.reload());
-        document.addEventListener('click', schedule, true);
-        window.addEventListener('resize', schedule, { passive: true });
         window.addEventListener('on-booking-engine-ready', schedule);
-        if (window.ResizeObserver) {
-            const stage = document.querySelector('[data-cloudbeds-stage]');
-            if (stage) new ResizeObserver(schedule).observe(stage);
-        }
         window.setTimeout(() => { if (!ready) setState('error'); }, 30000);
         schedule();
     }

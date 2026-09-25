@@ -162,7 +162,7 @@
 
         <script
             data-cb-immersive-experience-root
-            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260925-grid-2"
+            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260925-grid-3-stable"
             defer
         ></script>
     </body>

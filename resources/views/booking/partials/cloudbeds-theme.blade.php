@@ -1,29 +1,18 @@
-{{-- Layout adapter v20260925-grid-2. Only presentation: Cloudbeds retains every booking control. --}}
+{{-- Layout adapter v20260925-grid-3-stable. Only presentation: Cloudbeds retains every booking control. --}}
 <style id="maison-cloudbeds-theme" data-cb-immersive-experience-root>
     .cloudbeds-booking-page {
-        --mb-page-gutter: clamp(1.25rem, 2.4vw, 2.75rem);
-        --mb-page-width: 1760px;
         background: #f1eadc;
     }
     .cloudbeds-booking-page .cloudbeds-booking-main--immersive {
-        width: 100%;
-        max-width: none;
-        margin: 0 auto;
-        padding: 0 0 clamp(2rem, 4vw, 4rem);
+        width: min(100%, 1920px);
     }
     .cloudbeds-booking-page :is(.cloudbeds-booking-intro, .cloudbeds-stay-context, .cloudbeds-trust-row) {
-        width: min(calc(100% - (var(--mb-page-gutter) * 2)), var(--mb-page-width));
+        width: calc(100% - clamp(2rem, 4.4vw, 5rem));
         max-width: none;
-        margin-inline: auto;
-    }
-    .cloudbeds-booking-page .cloudbeds-booking-intro {
-        padding-top: clamp(1.15rem, 2vw, 2rem);
-        padding-bottom: clamp(1rem, 1.7vw, 1.6rem);
     }
     .cloudbeds-booking-page .cloudbeds-immersive-stage {
-        width: min(calc(100% - (var(--mb-page-gutter) * 2)), var(--mb-page-width));
+        width: calc(100% - clamp(2rem, 4.4vw, 5rem));
         max-width: none;
-        margin: 0 auto;
         min-height: 560px;
         overflow: visible;
         isolation: auto;
@@ -38,9 +27,39 @@
         background: transparent;
     }
     .cloudbeds-booking-page .cloudbeds-booking-embed cb-immersive-experience {
-        display: block;
-        width: 100%;
         min-height: 540px;
+    }
+    .maison-cb-results-toolbar {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 1.5rem;
+        width: calc(100% - clamp(2rem, 4.4vw, 5rem));
+        margin: 2.25rem auto 1.35rem;
+    }
+    .maison-cb-results-toolbar[hidden],
+    .maison-cb-results-toolbar button[hidden] { display: none !important; }
+    .maison-cb-results-toolbar .eyebrow {
+        color: #9a7529;
+        font: 700 .65rem/1.4 "Galaxie Polaris", "Instrument Sans", Arial, sans-serif;
+        letter-spacing: .2em;
+        text-transform: uppercase;
+        margin: 0 0 .65rem;
+    }
+    .maison-cb-results-toolbar h2 {
+        font: 500 clamp(1.3rem, 2vw, 1.8rem)/1.3 "Centra No2", "Instrument Sans", Arial, sans-serif;
+        letter-spacing: -.025em;
+        margin: 0;
+        color: #06112e;
+    }
+    .maison-cb-results-toolbar button {
+        border: 1px solid #d8cba9;
+        border-radius: 999px;
+        padding: .8rem 1.25rem;
+        background: #fff;
+        color: #06112e;
+        font: 700 .8rem/1.3 "Instrument Sans", Arial, sans-serif;
+        white-space: nowrap;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) {
         --mb-ink: #06112e;
@@ -96,30 +115,28 @@
         color: #06112e !important;
     }
 
-    /* Keep Cloudbeds' search controls, but remove its duplicate property identity block. */
-    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-property-identity {
-        display: none !important;
+    /* The adapter identifies neutral structural wrappers; it never relocates React nodes. */
+
+    /* Keep the Cloudbeds search controls visually stable and legible on Maison BE navy. */
+    :is(#cb-bookingengine, .cb-bookingengine-root) :is(.mb-cb-search-header, .mb-cb-search-controls) .maison-cb-secondary {
+        background: transparent !important;
+        color: #fff !important;
+        border-color: rgba(255,255,255,.82) !important;
+        opacity: 1 !important;
+        box-shadow: none !important;
     }
-    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-header {
-        width: 100% !important;
-        max-width: none !important;
-        min-width: 0 !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        gap: clamp(.75rem, 1.5vw, 1.5rem) !important;
-        padding-inline: clamp(1rem, 1.75vw, 1.75rem) !important;
+    :is(#cb-bookingengine, .cb-bookingengine-root) :is(.mb-cb-search-header, .mb-cb-search-controls) .maison-cb-secondary :is(svg, span) {
+        color: inherit !important;
+        opacity: 1 !important;
     }
-    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-controls {
-        flex: 1 1 auto !important;
-        min-width: 0 !important;
-        margin-left: 0 !important;
+    :is(#cb-bookingengine, .cb-bookingengine-root) :is(.mb-cb-grid, .mb-cb-grid-item, .mb-cb-card, .mb-cb-card-shell, .mb-cb-card-top, .mb-cb-card-media, .mb-cb-card-copy) {
+        transition: none !important;
+        animation: none !important;
     }
-    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-currency {
-        flex: 0 0 auto !important;
-        margin-left: auto !important;
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-card-media {
+        contain: layout paint;
     }
 
-    /* The adapter identifies neutral structural wrappers; it never relocates React nodes. */
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-results-layout {
         display: flex !important;
         flex-direction: column !important;
@@ -143,7 +160,7 @@
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-grid {
         display: grid !important;
-        grid-template-columns: repeat(var(--mb-cb-columns, 1), minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
         align-items: stretch !important;
         gap: clamp(.6rem, 1.1vw, 1.1rem) !important;
         width: 100% !important;
@@ -465,12 +482,26 @@
     .cb-portal {
         font-family: "Galaxie Polaris", "Instrument Sans", Arial, sans-serif;
     }
-    @media (max-width: 640px) {
-        .cloudbeds-booking-page { --mb-page-gutter: .7rem; }
-        :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-header {
-            padding-inline: .8rem !important;
-            gap: .65rem !important;
+    @media (max-width: 1399px) {
+        :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
         }
+    }
+    @media (max-width: 1023px) {
+        :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+    }
+    @media (max-width: 639px) {
+        :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-grid {
+            grid-template-columns: minmax(0, 1fr) !important;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .maison-cb-results-toolbar { align-items: start; flex-direction: column; gap: .8rem; }
+        .maison-cb-results-toolbar h2 { font-size: 1.45rem; }
+        .cloudbeds-booking-page .cloudbeds-immersive-stage { width: calc(100% - 1.4rem); }
     }
     @media (prefers-reduced-motion: reduce) {
         .cloudbeds-booking-page .cloudbeds-booking-embed { transition: none; transform: none; }
