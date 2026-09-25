@@ -51,7 +51,7 @@
                     <a class="hero-wordmark" href="/" aria-label="Maison Be Residences home"><x-brand-logo tone="light" /></a>
                     <div class="hero-actions">
                         <x-currency-selector :currency="$currency" tone="light" />
-                        <a class="reserve-link" href="#residences">Reserve</a>
+                        <a class="reserve-link" href="{{ route('booking.cloudbeds') }}">Reserve</a>
                     </div>
                 </header>
 
@@ -59,8 +59,9 @@
                     <h1 id="hero-title">Live Beautifully</h1>
                 </div>
 
-                <form class="booking-bar" id="stay-search" action="{{ route('apartments.index') }}" method="get">
-                    <input type="hidden" name="search" value="1">
+                <form class="booking-bar" id="stay-search" action="{{ route('booking.cloudbeds') }}" method="get">
+                    <input type="hidden" name="currency" value="{{ strtoupper($currency['code'] ?? 'USD') }}">
+                    <input type="hidden" name="utm_source" value="maisonbe_website">
                     <x-date-range-picker required />
                     <x-rooms-guests-selector />
                     <button class="availability-button" type="submit" id="availability-button">
@@ -78,7 +79,7 @@
                 <header class="menu-header">
                     <button class="menu-close" type="button" aria-label="Close navigation" id="menu-close"><span></span><span></span></button>
                     <a class="menu-wordmark" href="/" aria-label="Maison Be Residences home"><x-brand-logo /></a>
-                    <a class="menu-reserve" href="#residences">Reserve</a>
+                    <a class="menu-reserve" href="{{ route('booking.cloudbeds') }}">Reserve</a>
                 </header>
                 <div class="menu-content">
                     <nav class="menu-nav" aria-label="Main navigation">

@@ -27,7 +27,7 @@
     <header class="menu-header">
         <button class="menu-close" type="button" aria-label="Close navigation" data-site-menu-close><span></span><span></span></button>
         <a class="menu-wordmark" href="{{ url('/') }}" aria-label="Maison Be Residences home"><x-brand-logo /></a>
-        <a class="menu-reserve" href="{{ route('apartments.index') }}">Reserve</a>
+        <a class="menu-reserve" href="{{ route('booking.cloudbeds') }}">Reserve</a>
     </header>
     <div class="menu-content">
         <nav class="menu-nav" aria-label="Main navigation">
