@@ -1,4 +1,4 @@
-{{-- Layout adapter v20260925-grid-3-stable. Only presentation: Cloudbeds retains every booking control. --}}
+{{-- Layout adapter v20260926-drawer-1. Presentation only: Cloudbeds retains booking, pricing, cart and checkout state. --}}
 <style id="maison-cloudbeds-theme" data-cb-immersive-experience-root>
     .cloudbeds-booking-page {
         background: #f1eadc;
@@ -117,18 +117,7 @@
 
     /* The adapter identifies neutral structural wrappers; it never relocates React nodes. */
 
-    /* Keep the Cloudbeds search controls visually stable and legible on Maison BE navy. */
-    :is(#cb-bookingengine, .cb-bookingengine-root) :is(.mb-cb-search-header, .mb-cb-search-controls) .maison-cb-secondary {
-        background: transparent !important;
-        color: #fff !important;
-        border-color: rgba(255,255,255,.82) !important;
-        opacity: 1 !important;
-        box-shadow: none !important;
-    }
-    :is(#cb-bookingengine, .cb-bookingengine-root) :is(.mb-cb-search-header, .mb-cb-search-controls) .maison-cb-secondary :is(svg, span) {
-        color: inherit !important;
-        opacity: 1 !important;
-    }
+    /* Search-control colors are finalized in the full-bleed toolbar rules below. */
     :is(#cb-bookingengine, .cb-bookingengine-root) :is(.mb-cb-grid, .mb-cb-grid-item, .mb-cb-card, .mb-cb-card-shell, .mb-cb-card-top, .mb-cb-card-media, .mb-cb-card-copy) {
         transition: none !important;
         animation: none !important;
@@ -507,4 +496,172 @@
         .cloudbeds-booking-page .cloudbeds-booking-embed { transition: none; transform: none; }
         .cloudbeds-booking-page .cloudbeds-stage-progress i { animation: none; }
     }
+
+
+    /* Maison BE results-toolbar cleanup: the Cloudbeds control strip becomes a full-bleed navy bar. */
+    .cloudbeds-booking-page .site-page-header .currency-selector {
+        display: none !important;
+    }
+    .cloudbeds-booking-page:has(.cloudbeds-stay-context) .cloudbeds-stay-context {
+        display: none !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-header {
+        display: flex !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-height: 132px !important;
+        margin-left: calc(50% - 50vw) !important;
+        margin-right: calc(50% - 50vw) !important;
+        padding: 1.25rem clamp(1.25rem, 4vw, 4.5rem) !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: #102858 !important;
+        color: #fff !important;
+        box-shadow: none !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: clamp(.75rem, 1.35vw, 1.35rem) !important;
+        box-sizing: border-box !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-property-identity {
+        display: none !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-controls {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: clamp(.65rem, 1vw, 1rem) !important;
+        min-width: 0 !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) :is(.mb-cb-search-header, .mb-cb-search-controls) .maison-cb-secondary {
+        background: #fff !important;
+        color: #111827 !important;
+        border-color: #c7cbd4 !important;
+        opacity: 1 !important;
+        box-shadow: none !important;
+        -webkit-text-fill-color: #111827 !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) :is(.mb-cb-search-header, .mb-cb-search-controls) .maison-cb-secondary :is(svg, span) {
+        color: #111827 !important;
+        fill: currentColor;
+        opacity: 1 !important;
+        -webkit-text-fill-color: #111827 !important;
+    }
+
+    /* Selected accommodation: keep Cloudbeds' live cart, present it as an off-canvas drawer. */
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-cart-column.mb-cb-cart-drawer {
+        position: fixed !important;
+        top: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        left: auto !important;
+        z-index: 2105 !important;
+        display: block !important;
+        width: min(470px, 94vw) !important;
+        max-width: min(470px, 94vw) !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        margin: 0 !important;
+        padding: 5.5rem 1.35rem 1.5rem !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        box-shadow: -24px 0 60px rgba(6,17,46,.24) !important;
+        transform: translate3d(105%,0,0) !important;
+        transition: transform .32s cubic-bezier(.22,1,.36,1) !important;
+        overscroll-behavior: contain;
+        visibility: visible !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-cart-column.mb-cb-cart-drawer.mb-cb-cart-drawer-open {
+        transform: translate3d(0,0,0) !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-cart-column.mb-cb-cart-drawer > * {
+        width: 100% !important;
+        max-width: none !important;
+    }
+    body.mb-cb-selection-open {
+        overflow: hidden !important;
+    }
+    .maison-cb-drawer-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 2095;
+        border: 0;
+        background: rgba(4,12,32,.5);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity .25s ease, visibility .25s ease;
+    }
+    body.mb-cb-selection-open .maison-cb-drawer-backdrop {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+    .maison-cb-drawer-close {
+        position: fixed;
+        top: 1.15rem;
+        right: 1.15rem;
+        z-index: 2120;
+        display: grid;
+        width: 46px;
+        height: 46px;
+        padding: 0;
+        border: 1px solid #d9dde6;
+        border-radius: 50%;
+        color: #06112e;
+        background: #fff;
+        box-shadow: 0 8px 22px rgba(6,17,46,.12);
+        font: 400 1.75rem/1 Arial, sans-serif;
+        place-items: center;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity .18s ease, transform .18s ease;
+    }
+    body.mb-cb-selection-open .maison-cb-drawer-close {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+    .maison-cb-selection-trigger {
+        position: fixed;
+        right: clamp(1rem, 2vw, 2rem);
+        bottom: clamp(1rem, 2vw, 2rem);
+        z-index: 2085;
+        display: none;
+        min-height: 48px;
+        padding: .75rem 1.1rem;
+        border: 1px solid #d9aa4c;
+        border-radius: 999px;
+        color: #fff;
+        background: #06112e;
+        box-shadow: 0 12px 30px rgba(6,17,46,.22);
+        font: 700 .76rem/1.2 "Galaxie Polaris", "Instrument Sans", Arial, sans-serif;
+        letter-spacing: .05em;
+    }
+    body.mb-cb-has-selection:not(.mb-cb-selection-open) .maison-cb-selection-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: .55rem;
+    }
+    @media (max-width: 760px) {
+        :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-header {
+            min-height: 0 !important;
+            padding: 1rem !important;
+            flex-wrap: wrap !important;
+        }
+        :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-controls {
+            width: 100% !important;
+            flex-wrap: wrap !important;
+        }
+        :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-cart-column.mb-cb-cart-drawer {
+            width: min(100vw, 470px) !important;
+            max-width: 100vw !important;
+            padding: 5rem 1rem 1.25rem !important;
+        }
+    }
+
 </style>

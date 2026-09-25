@@ -80,29 +80,7 @@
         <x-site-page-header :currency="$currency" />
 
         <main class="cloudbeds-booking-main cloudbeds-booking-main--immersive">
-            @if ($hasStaySearch)
-                <section class="cloudbeds-stay-context" aria-label="Your selected stay">
-                    <div class="cloudbeds-stay-context-copy">
-                        <span>Direct booking</span>
-                        <strong>Your Maison Be stay</strong>
-                    </div>
-                    <dl class="cloudbeds-stay-summary">
-                        <div>
-                            <dt>Check-in</dt>
-                            <dd>{{ $displayCheckin ?: 'Choose date' }}</dd>
-                        </div>
-                        <div>
-                            <dt>Check-out</dt>
-                            <dd>{{ $displayCheckout ?: 'Choose date' }}</dd>
-                        </div>
-                        <div>
-                            <dt>Guests</dt>
-                            <dd>{{ $adults }} {{ \Illuminate\Support\Str::plural('guest', $adults) }}</dd>
-                        </div>
-                    </dl>
-                    <a class="cloudbeds-stay-edit" href="{{ route('booking.cloudbeds') }}">Start a new search</a>
-                </section>
-            @else
+            @unless ($hasStaySearch)
                 <section class="cloudbeds-booking-intro" aria-labelledby="cloudbeds-booking-title">
                     <div>
                         <p class="eyebrow">Direct booking</p>
@@ -110,7 +88,7 @@
                     </div>
                     <p>Choose your dates and residence, then complete your reservation securely within Maison Be.</p>
                 </section>
-            @endif
+            @endunless
 
             <section class="cloudbeds-immersive-stage" data-cloudbeds-stage aria-label="Maison Be secure booking">
                 <div class="cloudbeds-stage-loading" data-cloudbeds-loading aria-live="polite">
@@ -162,7 +140,7 @@
 
         <script
             data-cb-immersive-experience-root
-            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260925-grid-3-stable"
+            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260926-drawer-1"
             defer
         ></script>
     </body>

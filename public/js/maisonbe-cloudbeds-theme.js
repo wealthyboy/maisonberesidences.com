@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260925-grid-3-stable';
+    const VERSION = '20260926-drawer-1';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -29,6 +29,9 @@
     let activeLabels = new Map();
     let scheduled = false;
     let cartTarget = null;
+    let pendingDrawerOpen = false;
+    let drawerOpen = false;
+    const interactionRoots = new WeakSet();
     let ready = false;
     let scanCount = 0;
     let lastSummary = { version: VERSION, cards: 0, grids: 0, columns: [], mode: 'waiting' };
@@ -284,6 +287,78 @@
         });
     }
 
+    function ensureDrawerChrome() {
+        let backdrop = document.querySelector('.maison-cb-drawer-backdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('button');
+            backdrop.type = 'button';
+            backdrop.className = 'maison-cb-drawer-backdrop';
+            backdrop.setAttribute('aria-label', 'Close your selection');
+            document.body.appendChild(backdrop);
+            backdrop.addEventListener('click', closeDrawer);
+        }
+
+        let close = document.querySelector('.maison-cb-drawer-close');
+        if (!close) {
+            close = document.createElement('button');
+            close.type = 'button';
+            close.className = 'maison-cb-drawer-close';
+            close.setAttribute('aria-label', 'Close your selection');
+            close.innerHTML = '&times;';
+            document.body.appendChild(close);
+            close.addEventListener('click', closeDrawer);
+        }
+
+        let trigger = document.querySelector('.maison-cb-selection-trigger');
+        if (!trigger) {
+            trigger = document.createElement('button');
+            trigger.type = 'button';
+            trigger.className = 'maison-cb-selection-trigger';
+            trigger.innerHTML = '<span aria-hidden="true">&#9776;</span><span>Your selection</span>';
+            document.body.appendChild(trigger);
+            trigger.addEventListener('click', openDrawer);
+        }
+    }
+    function openDrawer() {
+        if (!cartTarget || !cartTarget.isConnected) {
+            pendingDrawerOpen = true;
+            schedule();
+            return;
+        }
+        ensureDrawerChrome();
+        drawerOpen = true;
+        pendingDrawerOpen = false;
+        cartTarget.classList.add('mb-cb-cart-drawer', 'mb-cb-cart-drawer-open');
+        document.body.classList.add('mb-cb-has-selection', 'mb-cb-selection-open');
+        window.setTimeout(() => {
+            const heading = cartTarget.querySelector('h1, h2, h3, h4, button, [tabindex]');
+            if (heading && typeof heading.focus === 'function') heading.focus({ preventScroll: true });
+        }, 340);
+    }
+    function closeDrawer() {
+        drawerOpen = false;
+        pendingDrawerOpen = false;
+        cartTarget?.classList.remove('mb-cb-cart-drawer-open');
+        document.body?.classList.remove('mb-cb-selection-open');
+    }
+    function eventControl(event) {
+        const path = typeof event.composedPath === 'function' ? event.composedPath() : [];
+        return path.find(node => node?.nodeType === 1 && node.matches?.('button, [role="button"], a')) || null;
+    }
+    function bindInteractions(root) {
+        if (!root || interactionRoots.has(root)) return;
+        interactionRoots.add(root);
+        root.addEventListener('click', event => {
+            const control = eventControl(event);
+            if (!control) return;
+            const value = text(control);
+            if (/^(add|select)(?:\s|$)/i.test(value)) {
+                pendingDrawerOpen = true;
+                window.setTimeout(schedule, 80);
+            }
+        }, true);
+    }
+
     function findCart(page, scope, grid) {
         const candidates = all(scope, '.cb-shopping-cart-confirm-button, .cb-shopping-cart');
         // The empty cart often has no confirm button at all.
@@ -329,8 +404,14 @@
                 const empty = all(cartColumn, 'p, span, div').some(el => emptyCartText.test(text(el)));
                 const activeControls = all(cartColumn, 'button, [role="button"], a, input, select')
                     .some(el => visible(el) && !el.disabled && el.getAttribute('aria-disabled') !== 'true');
-                if (empty && !activeControls) mark(cartColumn, 'mb-cb-cart-empty');
-                else cartTarget = cartColumn;
+                if (empty && !activeControls) {
+                    mark(cartColumn, 'mb-cb-cart-empty');
+                } else {
+                    cartTarget = cartColumn;
+                    mark(cartColumn, 'mb-cb-cart-drawer');
+                    document.body?.classList.add('mb-cb-has-selection');
+                    if (drawerOpen) mark(cartColumn, 'mb-cb-cart-drawer-open');
+                }
             }
         }
         return { grid, count: cards.length, page, cartColumn };
@@ -349,6 +430,7 @@
         if (roots.has(root)) return;
         roots.add(root);
         observe(root);
+        bindInteractions(root);
         const css = document.querySelector('#maison-cloudbeds-theme');
         if (root instanceof ShadowRoot && css && !root.querySelector('#maison-cloudbeds-theme')) root.appendChild(css.cloneNode(true));
     }
@@ -382,6 +464,16 @@
             });
         });
         commitMarks();
+        if (cartTarget?.isConnected) {
+            ensureDrawerChrome();
+            cartTarget.classList.add('mb-cb-cart-drawer');
+            document.body?.classList.add('mb-cb-has-selection');
+            if (pendingDrawerOpen) openDrawer();
+            else if (drawerOpen) cartTarget.classList.add('mb-cb-cart-drawer-open');
+        } else {
+            document.body?.classList.remove('mb-cb-has-selection', 'mb-cb-selection-open');
+            drawerOpen = false;
+        }
         // Column count is CSS/media-query driven. Avoid measuring and rewriting the
         // grid during provider renders; that feedback loop can cause visible jitter.
         if (failed) setState('error');
@@ -417,6 +509,8 @@
     }
     function start() {
         if (!document.body?.classList.contains('cloudbeds-booking-page')) return;
+        ensureDrawerChrome();
+        bindInteractions(document);
         observe(document.body);
         document.querySelector('[data-cloudbeds-retry]')?.addEventListener('click', () => window.location.reload());
         window.addEventListener('on-booking-engine-ready', schedule);
