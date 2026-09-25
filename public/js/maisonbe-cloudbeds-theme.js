@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260925-grid-1';
+    const VERSION = '20260925-grid-2';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -231,6 +231,45 @@
             if (offersText.test(text(control))) mark(control, 'mb-cb-offers-button');
         });
     }
+    function decoratePropertyIdentity(root) {
+        const exactTitle = /^Maison\s+BE\s+Residence$/i;
+        const leaves = all(root, 'span, p, strong, b, h1, h2, h3, h4, h5, div')
+            .filter(el => visible(el) && exactTitle.test(text(el)))
+            .filter(el => !all(el, 'span, p, strong, b, h1, h2, h3, h4, h5, div').some(child => child !== el && exactTitle.test(text(child))))
+            .filter(el => !el.closest('.mb-cb-card, .cb-accommodation-card, .cb-room-type-card, ' + PORTAL));
+
+        leaves.forEach(title => {
+            let identity = null;
+            for (let el = title; el && el !== root; el = el.parentElement) {
+                if (!neutral(el)) continue;
+                const value = text(el);
+                const hasBookingControls = /check[- ]?in|check[- ]?out|promo|filters?|\b(?:NGN|USD|EUR|GBP|CAD|AUD|ZAR)\b/i.test(value);
+                const image = all(el, 'img').find(img => {
+                    if (!visible(img)) return false;
+                    const rect = img.getBoundingClientRect();
+                    return rect.width >= 40 && rect.height >= 40;
+                });
+                if (image && !hasBookingControls) { identity = el; break; }
+                if (hasBookingControls) break;
+            }
+            if (!identity) return;
+            mark(identity, 'mb-cb-property-identity');
+            const row = identity.parentElement;
+            if (!row || !neutral(row)) return;
+            mark(row, 'mb-cb-search-header');
+            const branches = Array.from(row.children).filter(el => el !== identity);
+            branches.forEach(el => {
+                const value = text(el);
+                if (/check[- ]?in|check[- ]?out|promo|filters?|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/i.test(value)) {
+                    mark(el, 'mb-cb-search-controls');
+                }
+                if (/\b(?:NGN|USD|EUR|GBP|CAD|AUD|ZAR)\b/i.test(value) && !/check[- ]?in|check[- ]?out|promo|filters?/i.test(value)) {
+                    mark(el, 'mb-cb-search-currency');
+                }
+            });
+        });
+    }
+
     function findCart(page, scope, grid) {
         const candidates = all(scope, '.cb-shopping-cart-confirm-button, .cb-shopping-cart');
         // The empty cart often has no confirm button at all.
@@ -321,6 +360,7 @@
                     if (primaryText.test(value) && value.length < 50) mark(button, 'maison-cb-primary');
                     else if (/^(promo code|add code|filters?|modify|change|back)$/i.test(value)) mark(button, 'maison-cb-secondary');
                 });
+                decoratePropertyIdentity(root);
             });
             all(scope, PAGE).filter(page => !page.closest(PORTAL)).forEach(page => {
                 const result = decoratePage(page);
@@ -334,10 +374,6 @@
             const columns = width >= 1280 ? 4 : width >= 980 ? 3 : width >= 650 ? 2 : 1;
             if (grid.style.getPropertyValue('--mb-cb-columns') !== String(columns)) grid.style.setProperty('--mb-cb-columns', String(columns));
         });
-        const toolbar = document.querySelector('[data-cloudbeds-results-toolbar]');
-        const cartLink = document.querySelector('[data-cloudbeds-cart-link]');
-        if (toolbar) toolbar.hidden = grids.length === 0;
-        if (cartLink) cartLink.hidden = !cartTarget;
         if (failed) setState('error');
         else if (rootPresent) { ready = true; setState('ready'); }
         lastSummary = {
@@ -358,7 +394,6 @@
                 activeClasses.forEach((classes, el) => classes.forEach(cls => el.classList.remove(cls)));
                 activeLabels.forEach((_, el) => el.removeAttribute('data-mb-amenity-label'));
                 activeClasses.clear(); activeLabels.clear();
-                document.querySelectorAll('[data-cloudbeds-results-toolbar]').forEach(el => { el.hidden = true; });
                 lastSummary = { version: VERSION, cards: 0, grids: 0, columns: [], mode: 'native-fallback' };
                 setState('ready');
                 console.warn('[Maison BE] Custom layout paused; native booking controls remain available.', error);
@@ -374,12 +409,6 @@
         if (!document.body?.classList.contains('cloudbeds-booking-page')) return;
         observe(document.body);
         document.querySelector('[data-cloudbeds-retry]')?.addEventListener('click', () => window.location.reload());
-        document.querySelector('[data-cloudbeds-cart-link]')?.addEventListener('click', () => {
-            if (!cartTarget) return;
-            cartTarget.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
-            const focusTarget = cartTarget.querySelector('.cb-shopping-cart-confirm-button, button, a, input');
-            focusTarget?.focus({ preventScroll: true });
-        });
         document.addEventListener('click', schedule, true);
         window.addEventListener('resize', schedule, { passive: true });
         window.addEventListener('on-booking-engine-ready', schedule);

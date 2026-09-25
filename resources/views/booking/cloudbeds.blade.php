@@ -112,14 +112,6 @@
                 </section>
             @endif
 
-            <div class="maison-cb-results-toolbar" data-cloudbeds-results-toolbar hidden>
-                <div>
-                    <p class="eyebrow">Maison Be Residences</p>
-                    <h2>Find a place that feels like yours.</h2>
-                </div>
-                <button type="button" data-cloudbeds-cart-link hidden>View your selection <span aria-hidden="true">&rarr;</span></button>
-            </div>
-
             <section class="cloudbeds-immersive-stage" data-cloudbeds-stage aria-label="Maison Be secure booking">
                 <div class="cloudbeds-stage-loading" data-cloudbeds-loading aria-live="polite">
                     <span class="cloudbeds-stage-mark"><x-brand-logo :show-name="false" /></span>
@@ -170,7 +162,7 @@
 
         <script
             data-cb-immersive-experience-root
-            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260925-grid-1"
+            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260925-grid-2"
             defer
         ></script>
     </body>
