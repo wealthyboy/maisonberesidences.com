@@ -90,6 +90,12 @@
                 </section>
             @endunless
 
+            @if ($hasStaySearch)
+                <section class="cloudbeds-results-heading" aria-labelledby="cloudbeds-results-title">
+                    <h2 id="cloudbeds-results-title">Search results for {{ $adults }} {{ $adults === 1 ? 'guest' : 'guests' }}</h2>
+                </section>
+            @endif
+
             <section class="cloudbeds-immersive-stage" data-cloudbeds-stage aria-label="Maison Be secure booking">
                 <div class="cloudbeds-stage-loading" data-cloudbeds-loading aria-live="polite">
                     <span class="cloudbeds-stage-mark"><x-brand-logo :show-name="false" /></span>
@@ -140,7 +146,7 @@
 
         <script
             data-cb-immersive-experience-root
-            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260926-drawer-1"
+            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260926-cream-toolbar-1"
             defer
         ></script>
     </body>

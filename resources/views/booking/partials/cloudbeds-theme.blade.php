@@ -1,4 +1,4 @@
-{{-- Layout adapter v20260926-drawer-1. Presentation only: Cloudbeds retains booking, pricing, cart and checkout state. --}}
+{{-- Layout adapter v20260926-cream-toolbar-1. Presentation only: Cloudbeds retains booking, pricing, cart and checkout state. --}}
 <style id="maison-cloudbeds-theme" data-cb-immersive-experience-root>
     .cloudbeds-booking-page {
         background: #f1eadc;
@@ -498,29 +498,39 @@
     }
 
 
-    /* Maison BE results-toolbar cleanup: the Cloudbeds control strip becomes a full-bleed navy bar. */
+    /* Maison BE results controls: keep Cloudbeds functionality, remove the heavy navy band. */
     .cloudbeds-booking-page .site-page-header .currency-selector {
         display: none !important;
     }
     .cloudbeds-booking-page:has(.cloudbeds-stay-context) .cloudbeds-stay-context {
         display: none !important;
     }
+    .cloudbeds-booking-page .cloudbeds-results-heading {
+        width: calc(100% - clamp(2rem, 4.4vw, 5rem));
+        max-width: none;
+        margin: clamp(1.35rem, 2.2vw, 2.2rem) auto .65rem;
+    }
+    .cloudbeds-booking-page .cloudbeds-results-heading h2 {
+        margin: 0;
+        color: #06112e;
+        font: 500 clamp(1.05rem, 1.25vw, 1.3rem)/1.35 "Galaxie Polaris", "Instrument Sans", Arial, sans-serif;
+        letter-spacing: -.015em;
+    }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-header {
         display: flex !important;
-        width: 100vw !important;
-        max-width: 100vw !important;
-        min-height: 132px !important;
-        margin-left: calc(50% - 50vw) !important;
-        margin-right: calc(50% - 50vw) !important;
-        padding: 1.25rem clamp(1.25rem, 4vw, 4.5rem) !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: .35rem 0 1.2rem !important;
         border: 0 !important;
         border-radius: 0 !important;
-        background: #102858 !important;
-        color: #fff !important;
+        background: transparent !important;
+        color: #06112e !important;
         box-shadow: none !important;
         align-items: center !important;
-        justify-content: center !important;
-        gap: clamp(.75rem, 1.35vw, 1.35rem) !important;
+        justify-content: flex-start !important;
+        gap: clamp(.75rem, 1.25vw, 1.25rem) !important;
         box-sizing: border-box !important;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-property-identity {
@@ -528,10 +538,15 @@
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-controls {
         display: flex !important;
+        flex: 1 1 auto !important;
         align-items: center !important;
-        justify-content: center !important;
+        justify-content: flex-start !important;
         gap: clamp(.65rem, 1vw, 1rem) !important;
         min-width: 0 !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-currency {
+        margin-left: auto !important;
+        color: #06112e !important;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) :is(.mb-cb-search-header, .mb-cb-search-controls) .maison-cb-secondary {
         background: #fff !important;
@@ -650,7 +665,7 @@
     @media (max-width: 760px) {
         :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-header {
             min-height: 0 !important;
-            padding: 1rem !important;
+            padding: .25rem 0 1rem !important;
             flex-wrap: wrap !important;
         }
         :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-controls {
