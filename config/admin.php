@@ -7,6 +7,7 @@ return [
             'icon' => 'home',
             'items' => [
                 ['slug' => 'apartments', 'label' => 'Apartments', 'icon' => 'building', 'description' => 'Manage apartment records, media, pricing, attributes, and availability.'],
+                ['slug' => 'date-blocks', 'route' => 'admin.date-blocks.index', 'label' => 'Date Blocks', 'icon' => 'calendar-days', 'description' => 'Block one or more apartments for selected dates without creating a reservation.'],
                 ['slug' => 'properties', 'label' => 'Properties', 'icon' => 'home', 'description' => 'Manage property-level inventory.'],
                 ['slug' => 'invoices', 'label' => 'Invoices', 'icon' => 'receipt', 'description' => 'Create invoices, receipts, reports, downloads, and email sends.'],
             ],

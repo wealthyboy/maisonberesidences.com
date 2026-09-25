@@ -10,7 +10,6 @@ use App\Support\StayRestrictions;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ApartmentSearchController extends Controller
@@ -37,21 +36,8 @@ class ApartmentSearchController extends Controller
 
         $apartments = Apartment::query()
             ->with(['images', 'property', 'attributes.parent'])
-            ->when($hasStayDates, fn ($query) => $query->publiclyAvailable())
+            ->when($hasStayDates, fn ($query) => $query->publiclyAvailable()->availableFor($checkin, $checkout))
             ->when($seasonalBlackout, fn ($query) => $query->whereRaw('1 = 0'))
-            ->when(
-                filled($filters['checkin'] ?? null) && filled($filters['checkout'] ?? null),
-                function ($query) use ($checkin, $checkout) {
-                    $query->whereDoesntHave('invoiceItems', function ($invoiceItems) use ($checkin, $checkout) {
-                        $invoiceItems
-                            ->whereHas('invoice', fn ($invoice) => $invoice->where('payment_status', 'paid'))
-                            ->whereNotNull('checkin')
-                            ->whereNotNull('checkout')
-                            ->where('checkin', '<', $checkout)
-                            ->where('checkout', '>', $checkin);
-                    });
-                }
-            )
             ->when(
                 filled($filters['guests'] ?? null),
                 fn ($query) => $query->where('max_adults', '>=', $filters['guests'])
@@ -134,17 +120,7 @@ class ApartmentSearchController extends Controller
 
         $guestCount = (int) ($data['guests'] ?? 1);
         $hasGuestCapacity = $apartment->max_adults <= 0 || $apartment->max_adults >= $guestCount;
-        $hasPaidOverlap = DB::table('invoice_items')
-            ->join('invoices', 'invoices.id', '=', 'invoice_items.invoice_id')
-            ->where('invoice_items.apartment_id', $apartment->id)
-            ->where('invoices.payment_status', 'paid')
-            ->whereNotNull('invoice_items.checkin')
-            ->whereNotNull('invoice_items.checkout')
-            ->where('invoice_items.checkin', '<', $checkout->toDateString())
-            ->where('invoice_items.checkout', '>', $checkin->toDateString())
-            ->exists();
-
-        $available = $hasGuestCapacity && ! $hasPaidOverlap;
+        $available = $hasGuestCapacity && $apartment->isAvailableFor($checkin, $checkout);
 
         return response()->json([
             'available' => $available,

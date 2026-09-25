@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Apartment extends Model
@@ -85,6 +86,38 @@ class Apartment extends Model
     public function invoiceItems()
     {
         return $this->hasMany(InvoiceItem::class);
+    }
+
+    public function dateBlocks()
+    {
+        return $this->belongsToMany(ApartmentDateBlock::class, 'apartment_date_block');
+    }
+
+    public function scopeAvailableFor(Builder $query, CarbonInterface $checkin, CarbonInterface $checkout): Builder
+    {
+        return $query
+            ->whereDoesntHave('invoiceItems', function (Builder $invoiceItems) use ($checkin, $checkout): void {
+                $invoiceItems
+                    ->whereHas('invoice', fn (Builder $invoice) => $invoice->where('payment_status', 'paid'))
+                    ->whereNotNull('checkin')
+                    ->whereNotNull('checkout')
+                    ->where('checkin', '<', $checkout)
+                    ->where('checkout', '>', $checkin);
+            })
+            ->whereDoesntHave('dateBlocks', fn (Builder $blocks) => $blocks->overlapping($checkin, $checkout));
+    }
+
+    public function isBlockedFor(CarbonInterface $checkin, CarbonInterface $checkout): bool
+    {
+        return $this->dateBlocks()->overlapping($checkin, $checkout)->exists();
+    }
+
+    public function isAvailableFor(CarbonInterface $checkin, CarbonInterface $checkout): bool
+    {
+        return static::query()
+            ->whereKey($this->getKey())
+            ->availableFor($checkin, $checkout)
+            ->exists();
     }
 
     public function attributes()

@@ -75,19 +75,15 @@ class PaystackBookingService
             $checkin = Carbon::parse((string) data_get($booking, 'from'))->startOfDay();
             $checkout = Carbon::parse((string) data_get($booking, 'to'))->startOfDay();
 
-            $isUnavailable = $apartment->invoiceItems()
-                ->whereHas('invoice', fn ($invoice) => $invoice->where('payment_status', 'paid'))
-                ->where('checkin', '<', $checkout)
-                ->where('checkout', '>', $checkin)
-                ->exists();
+            $isUnavailable = ! $apartment->isAvailableFor($checkin, $checkout);
 
             if ($isUnavailable) {
-                Log::warning('Paid Paystack booking overlaps an existing reservation.', [
+                Log::warning('Paid Paystack booking overlaps an existing reservation or date block.', [
                     'reference' => $reference,
                     'apartment_id' => $apartment->id,
                 ]);
 
-                throw new \RuntimeException('Paid booking overlaps an existing reservation.');
+                throw new \RuntimeException('Paid booking overlaps an existing reservation or date block.');
             }
 
             $invoice = Invoice::create([

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ApartmentDateBlockController;
 use App\Http\Controllers\Admin\CurrencyRateController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ModuleController;
@@ -54,6 +55,9 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     Route::post('apartments/check-availability', [ModuleController::class, 'checkApartmentAvailability'])->name('apartments.check-availability');
     Route::post('apartments/reorder', [ModuleController::class, 'reorderApartments'])->name('apartments.reorder');
     Route::post('apartments/{record}/duplicate', [ModuleController::class, 'duplicateApartment'])->name('apartments.duplicate');
+    Route::get('date-blocks', [ApartmentDateBlockController::class, 'index'])->name('date-blocks.index');
+    Route::post('date-blocks', [ApartmentDateBlockController::class, 'store'])->name('date-blocks.store');
+    Route::delete('date-blocks/{dateBlock}', [ApartmentDateBlockController::class, 'destroy'])->name('date-blocks.destroy');
     Route::post('banners/{record}/reencode', [ModuleController::class, 'reencodeBannerVideo'])->name('banners.reencode');
     Route::post('reservations/{record}/resend-self-check-in', [ModuleController::class, 'resendSelfCheckInLink'])->name('reservations.resend-self-check-in');
 

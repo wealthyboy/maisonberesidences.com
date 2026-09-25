@@ -51,6 +51,13 @@ class ReservationController extends Controller
             ])->with('booking_error', StayRestrictions::SEASONAL_BLACKOUT_MESSAGE);
         }
 
+        if (! $apartment->isAvailableFor($stay['checkin'], $stay['checkout'])) {
+            return redirect()->route('apartments.index', [
+                'checkin' => $stay['checkin']->toDateString(),
+                'checkout' => $stay['checkout']->toDateString(),
+            ])->with('booking_error', 'This apartment is not available for the selected stay.');
+        }
+
         $quote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $request->attributes->get('currency'));
         $additionalServices = $this->serviceQuotes->availableFor($apartment, $quote['currency']);
         $vat = $this->vat->quote($quote['total'], $quote['currency']);
@@ -105,11 +112,7 @@ class ReservationController extends Controller
 
         $data['phone'] = trim($data['country_code'].' '.ltrim($data['phone'], '0 '));
 
-        $isUnavailable = $apartment->invoiceItems()
-            ->whereHas('invoice', fn ($invoice) => $invoice->where('payment_status', 'paid'))
-            ->where('checkin', '<', $stay['checkout'])
-            ->where('checkout', '>', $stay['checkin'])
-            ->exists();
+        $isUnavailable = ! $apartment->isAvailableFor($stay['checkin'], $stay['checkout']);
 
         if ($isUnavailable) {
             if ($request->expectsJson()) {
@@ -164,6 +167,10 @@ class ReservationController extends Controller
 
         if (StayRestrictions::overlapsSeasonalBlackout($stay['checkin'], $stay['checkout'])) {
             return response()->json(['message' => StayRestrictions::SEASONAL_BLACKOUT_MESSAGE], 422);
+        }
+
+        if (! $apartment->isAvailableFor($stay['checkin'], $stay['checkout'])) {
+            return response()->json(['message' => 'This apartment is not available for the selected stay.'], 422);
         }
 
         $data = $request->validate([

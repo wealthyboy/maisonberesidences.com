@@ -66,7 +66,7 @@
                             <div class="space-y-1 border-t border-zinc-800 p-1.5">
                                 @foreach ($section['items'] as $item)
                                     @php
-                                        $href = route('admin.modules.show', $item['slug']);
+                                        $href = isset($item['route']) ? route($item['route']) : route('admin.modules.show', $item['slug']);
                                         $active = request()->is('admin/' . $item['slug'] . '*');
                                     @endphp
 

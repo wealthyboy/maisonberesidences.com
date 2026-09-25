@@ -8,6 +8,7 @@ use App\Mail\SelfCheckInLinkMail;
 use App\Models\AdditionalService;
 use App\Models\AdminModuleRecord;
 use App\Models\Apartment;
+use App\Models\ApartmentDateBlock;
 use App\Models\Attribute as ApartmentAttribute;
 use App\Models\Information;
 use App\Models\Invoice;
@@ -652,9 +653,14 @@ class ModuleController extends Controller
             ->where('checkout', '>', $startDate)
             ->exists();
 
+        $blocked = ApartmentDateBlock::query()
+            ->whereHas('apartments', fn ($query) => $query->whereKey($data['apartment_id']))
+            ->overlapping($startDate, $endDate)
+            ->exists();
+
         return response()->json([
-            'available' => ! $booked,
-            'message' => $booked ? 'Apartment is not available for the selected dates.' : 'Apartment is available.',
+            'available' => ! $booked && ! $blocked,
+            'message' => $booked || $blocked ? 'Apartment is not available for the selected dates.' : 'Apartment is available.',
         ]);
     }
 
