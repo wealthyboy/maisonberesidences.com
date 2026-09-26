@@ -76,8 +76,11 @@
 
         @include('booking.partials.cloudbeds-theme')
     </head>
-    <body class="cloudbeds-booking-page" data-cloudbeds-state="loading">
-        <x-site-page-header :currency="$currency" />
+    <body
+        class="cloudbeds-booking-page"
+        data-cloudbeds-state="loading"
+        data-has-stay-search="{{ $hasStaySearch ? 'true' : 'false' }}"
+    >
 
         <main class="cloudbeds-booking-main cloudbeds-booking-main--immersive">
             @unless ($hasStaySearch)
@@ -149,7 +152,7 @@
 
         <script
             data-cb-immersive-experience-root
-            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260926-brand-controls-11"
+            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260926-brand-controls-12"
             defer
         ></script>
     </body>

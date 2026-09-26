@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260926-brand-controls-11';
+    const VERSION = '20260926-brand-controls-12';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -46,6 +46,9 @@
     let drawerDismissed = false;
     let guestCheckoutActive = false;
     let providerDialogActive = false;
+    let presentationReady = false;
+    let stableLayoutKey = '';
+    let stableLayoutSince = 0;
     const interactionRoots = new WeakSet();
     let ready = false;
     let scanCount = 0;
@@ -60,16 +63,16 @@
     function label(el, value) {
         if (el && value) nextLabels.set(el, value);
     }
-    // Cloudbeds hydrates and replaces structural wrappers asynchronously. Only retain
-    // presentation marks; every mb-cb-* layout mark must be rediscovered on each pass so
-    // a temporary provider wrapper can never remain styled as the final grid.
-    const STICKY_LAYOUT_CLASSES = /^maison-cb-(?:primary|secondary|search-form|search-hidden|hidden-control-wrap|promo-wrap|language|language-wrap|currency-wrap|date-control)$/;
+    // Do not retain structural marks during initial Cloudbeds hydration. Once the
+    // residence grid is stable, retaining them prevents late provider mutations from
+    // making the visible layout jump between native and branded states.
+    const STICKY_LAYOUT_CLASSES = /^(?:mb-cb-(?!(?:grid-extra|cart-empty)$)|maison-cb-(?:primary|secondary|search-form|search-hidden|hidden-control-wrap|promo-wrap|language|language-wrap|currency-wrap|date-control)$)/;
     function commitMarks() {
         activeClasses.forEach((classes, el) => {
             if (!el?.isConnected) return;
             classes.forEach(cls => {
                 if (nextClasses.get(el)?.has(cls)) return;
-                if (!guestCheckoutActive && STICKY_LAYOUT_CLASSES.test(cls)) {
+                if (!guestCheckoutActive && presentationReady && STICKY_LAYOUT_CLASSES.test(cls)) {
                     if (!nextClasses.has(el)) nextClasses.set(el, new Set());
                     nextClasses.get(el).add(cls);
                 } else {
@@ -756,6 +759,7 @@
         let summaryDrawer = null;
         let rootPresent = false;
         let failed = false;
+        let nativeEmptyState = false;
         // Accommodate an open shadow root without rewriting the component implementation.
         all(document, 'cb-immersive-experience').forEach(host => { if (host.shadowRoot) addRoot(host.shadowRoot); });
 
@@ -785,6 +789,7 @@
                 rootPresent = true;
                 const content = text(root).toLowerCase();
                 if (content.includes('oops! something went wrong') && /property failed to load|page is currently not loading/.test(content)) failed = true;
+                if (/no (?:rooms?|accommodations?|properties) (?:are )?available|no availability|nothing available/.test(content)) nativeEmptyState = true;
                 all(root, 'button, [role="button"]').forEach(button => {
                     const value = text(button);
                     if (primaryText.test(value) && value.length < 50) mark(button, 'maison-cb-primary');
@@ -831,10 +836,33 @@
             if (!providerDialogActive) pendingDrawerOpen = false;
             cartTarget = null;
         }
-        // Column count is CSS/media-query driven. Avoid measuring and rewriting the
-        // grid during provider renders; that feedback loop can cause visible jitter.
+        // Keep the provider's partial hydration behind the loader. A stable fingerprint
+        // for a short interval prevents half-built wrappers from flashing or collapsing.
+        const hasStaySearch = document.body?.dataset.hasStaySearch === 'true';
+        const layoutKey = grids.map(({ grid, count }) => {
+            const rect = grid.getBoundingClientRect();
+            return `${count}:${grid.children.length}:${Math.round(rect.width / 20)}`;
+        }).join('|');
+        const nativeFlowReady = guestCheckoutActive || !hasStaySearch || nativeEmptyState;
+
+        if (!presentationReady && layoutKey) {
+            if (layoutKey !== stableLayoutKey) {
+                stableLayoutKey = layoutKey;
+                stableLayoutSince = performance.now();
+            } else if (performance.now() - stableLayoutSince >= 180) {
+                presentationReady = true;
+            }
+        }
+
         if (failed) setState('error');
-        else if (rootPresent) { ready = true; setState('ready'); }
+        else if (rootPresent && (presentationReady || nativeFlowReady)) {
+            ready = true;
+            presentationReady = true;
+            setState('ready');
+        } else if (rootPresent) {
+            setState('loading');
+            window.setTimeout(schedule, 120);
+        }
         lastSummary = {
             version: VERSION,
             cards: grids.reduce((sum, item) => sum + item.count, 0),

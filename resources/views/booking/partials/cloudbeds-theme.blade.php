@@ -25,6 +25,8 @@
         padding: 0;
         min-height: 540px;
         background: transparent;
+        transition: none !important;
+        transform: none !important;
     }
     .cloudbeds-booking-page .cloudbeds-booking-embed cb-immersive-experience {
         min-height: 540px;
