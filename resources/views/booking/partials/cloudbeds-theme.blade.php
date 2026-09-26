@@ -944,6 +944,15 @@
     body.mb-cb-selection-open {
         overflow: hidden !important;
     }
+    /* The selection drawer belongs only to the residence listing. Once Cloudbeds moves
+       to Add Guests, restore its native two-column checkout so the form never sits
+       underneath the reservation summary. */
+    body.mb-cb-guest-checkout {
+        overflow: auto !important;
+    }
+    body.mb-cb-guest-checkout :is(.maison-cb-drawer-backdrop, .maison-cb-drawer-close, .maison-cb-selection-trigger) {
+        display: none !important;
+    }
     .maison-cb-drawer-backdrop {
         position: fixed;
         inset: 0;

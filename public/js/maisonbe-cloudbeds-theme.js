@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260926-brand-controls-7';
+    const VERSION = '20260926-brand-controls-8';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -43,6 +43,7 @@
     let cartTarget = null;
     let pendingDrawerOpen = false;
     let drawerOpen = false;
+    let guestCheckoutActive = false;
     const interactionRoots = new WeakSet();
     let ready = false;
     let scanCount = 0;
@@ -66,7 +67,7 @@
             if (!el?.isConnected) return;
             classes.forEach(cls => {
                 if (nextClasses.get(el)?.has(cls)) return;
-                if (STICKY_LAYOUT_CLASSES.test(cls)) {
+                if (!guestCheckoutActive && STICKY_LAYOUT_CLASSES.test(cls)) {
                     if (!nextClasses.has(el)) nextClasses.set(el, new Set());
                     nextClasses.get(el).add(cls);
                 } else {
@@ -741,6 +742,17 @@
         let failed = false;
         // Accommodate an open shadow root without rewriting the component implementation.
         all(document, 'cb-immersive-experience').forEach(host => { if (host.shadowRoot) addRoot(host.shadowRoot); });
+
+        guestCheckoutActive = [...roots].some(scope =>
+            all(scope, 'h1, h2, h3, h4').some(heading => visible(heading) && /^add guests$/i.test(text(heading)))
+        );
+        document.body?.classList.toggle('mb-cb-guest-checkout', guestCheckoutActive);
+        if (guestCheckoutActive) {
+            drawerOpen = false;
+            pendingDrawerOpen = false;
+            document.body?.classList.remove('mb-cb-has-selection', 'mb-cb-selection-open');
+        }
+
         roots.forEach(scope => {
             all(scope, ROOT).filter(root => !root.parentElement?.closest(ROOT)).forEach(root => {
                 rootPresent = true;
@@ -756,11 +768,13 @@
                 decorateCalendar(root);
                 decorateLanguage(root);
             });
-            all(scope, PAGE).filter(page => !page.closest(PORTAL)).forEach(page => {
-                const result = decoratePage(page);
-                if (result) grids.push(result);
-            });
-            summaryDrawer ||= findReservationSummaryDrawer(scope);
+            if (!guestCheckoutActive) {
+                all(scope, PAGE).filter(page => !page.closest(PORTAL)).forEach(page => {
+                    const result = decoratePage(page);
+                    if (result) grids.push(result);
+                });
+                summaryDrawer ||= findReservationSummaryDrawer(scope);
+            }
         });
         if (summaryDrawer) {
             const rect = summaryDrawer.getBoundingClientRect();
@@ -775,7 +789,7 @@
             }
         }
         commitMarks();
-        if (cartTarget?.isConnected) {
+        if (!guestCheckoutActive && cartTarget?.isConnected) {
             ensureDrawerChrome();
             cartTarget.classList.add('mb-cb-cart-drawer');
             document.body?.classList.add('mb-cb-has-selection');
@@ -787,6 +801,8 @@
         } else {
             document.body?.classList.remove('mb-cb-has-selection', 'mb-cb-selection-open');
             drawerOpen = false;
+            pendingDrawerOpen = false;
+            cartTarget = null;
         }
         // Column count is CSS/media-query driven. Avoid measuring and rewriting the
         // grid during provider renders; that feedback loop can cause visible jitter.
