@@ -1,4 +1,4 @@
-{{-- Layout adapter v20260926-brand-controls-1. Presentation only: Cloudbeds retains booking, pricing, cart and checkout state. --}}
+{{-- Layout adapter v20260926-brand-controls-2. Presentation only: Cloudbeds retains booking, pricing, cart and checkout state. --}}
 <style id="maison-cloudbeds-theme" data-cb-immersive-experience-root>
     .cloudbeds-booking-page {
         background: #f1eadc;
@@ -281,11 +281,21 @@
         border-radius: 50%;
         background: rgba(255,255,255,.92);
         color: #06112e;
-        font: 500 1.65rem/1 Arial, sans-serif;
         place-items: center;
         transform: translateY(-50%);
         box-shadow: 0 8px 24px rgba(6,17,46,.18);
         cursor: pointer;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-gallery-control svg {
+        display: block;
+        width: 1.15rem;
+        height: 1.15rem;
+        overflow: visible;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.25;
+        stroke-linecap: round;
+        stroke-linejoin: round;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-gallery-control.is-previous { left: .75rem; }
     :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-gallery-control.is-next { right: .75rem; }
@@ -662,7 +672,7 @@
         margin: 0 !important;
         flex: 0 0 auto !important;
     }
-    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-search-form :is(.maison-cb-secondary, .maison-cb-hidden-control-wrap),
+    :is(#cb-bookingengine, .cb-bookingengine-root) :is(.maison-cb-search-hidden, .maison-cb-hidden-control-wrap),
     :is(#cb-bookingengine, .cb-bookingengine-root) :is(.maison-cb-language, .maison-cb-language-wrap) {
         display: none !important;
     }

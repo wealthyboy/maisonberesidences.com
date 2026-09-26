@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260926-brand-controls-1';
+    const VERSION = '20260926-brand-controls-2';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -56,7 +56,7 @@
     // Cloudbeds re-renders pieces of the results UI asynchronously. Layout classes are
     // intentionally sticky on still-connected nodes so a transient provider render cannot
     // flip the card between native and Maison BE layouts for a frame (visible as shaking).
-    const STICKY_LAYOUT_CLASSES = /^(?:mb-cb-(?!(?:grid-extra|cart-empty)$)|maison-cb-(?:primary|secondary|hidden-control-wrap|promo-wrap|language|language-wrap)$)/;
+    const STICKY_LAYOUT_CLASSES = /^(?:mb-cb-(?!(?:grid-extra|cart-empty)$)|maison-cb-(?:primary|secondary|search-form|search-hidden|hidden-control-wrap|promo-wrap|language|language-wrap|currency-wrap|date-control|calendar-icon)$)/;
     function commitMarks() {
         activeClasses.forEach((classes, el) => {
             if (!el?.isConnected) return;
@@ -148,8 +148,8 @@
         wrapper.dataset.slide = '0';
         wrapper.innerHTML = `
             <img alt="" loading="lazy" decoding="async">
-            <button type="button" class="maison-cb-gallery-control is-previous" aria-label="Previous photo">&#8249;</button>
-            <button type="button" class="maison-cb-gallery-control is-next" aria-label="Next photo">&#8250;</button>
+            <button type="button" class="maison-cb-gallery-control is-previous" aria-label="Previous photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
+            <button type="button" class="maison-cb-gallery-control is-next" aria-label="Next photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
             <span class="maison-cb-gallery-count">1/${slides.length}</span>
         `;
 
@@ -353,8 +353,14 @@
         const filters = controls.find(el => /^filters?$/i.test(text(el)));
         if (!promo && !filters) return;
 
-        if (promo) mark(promo, 'maison-cb-secondary');
-        if (filters) mark(filters, 'maison-cb-secondary');
+        if (promo) {
+            mark(promo, 'maison-cb-secondary');
+            mark(promo, 'maison-cb-search-hidden');
+        }
+        if (filters) {
+            mark(filters, 'maison-cb-secondary');
+            mark(filters, 'maison-cb-search-hidden');
+        }
 
         const anchors = [promo, filters].filter(Boolean);
         let row = lca(anchors);
