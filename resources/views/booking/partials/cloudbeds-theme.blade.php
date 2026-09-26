@@ -1,4 +1,4 @@
-{{-- Layout adapter v20260926-brand-controls-2. Presentation only: Cloudbeds retains booking, pricing, cart and checkout state. --}}
+{{-- Layout adapter v20260926-brand-controls-3. Presentation only: Cloudbeds retains booking, pricing, cart and checkout state. --}}
 <style id="maison-cloudbeds-theme" data-cb-immersive-experience-root>
     .cloudbeds-booking-page {
         background: #f1eadc;
@@ -262,17 +262,28 @@
         overflow: hidden;
         background: #e6dfd2;
     }
-    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-apartment-gallery > img {
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-gallery-layers {
+        position: absolute;
+        inset: 0;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-gallery-image {
+        position: absolute;
+        inset: 0;
         display: block;
         width: 100%;
         height: 100%;
         object-fit: cover;
         object-position: center;
+        opacity: 0;
+        transition: opacity .48s ease;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-gallery-image.is-active {
+        opacity: 1;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-gallery-control {
         position: absolute;
         top: 50%;
-        z-index: 2;
+        z-index: 5;
         display: grid;
         width: 2.35rem;
         height: 2.35rem;
@@ -302,12 +313,53 @@
     :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-gallery-count {
         position: absolute;
         right: .75rem;
-        bottom: .75rem;
+        bottom: 1.35rem;
+        z-index: 4;
         padding: .35rem .65rem;
         border-radius: 999px;
         background: rgba(6,17,46,.82);
         color: #fff;
         font: 700 .75rem/1 "Instrument Sans", Arial, sans-serif;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-gallery-caption {
+        position: absolute;
+        left: .75rem;
+        bottom: 1.35rem;
+        z-index: 4;
+        max-width: calc(100% - 6rem);
+        overflow: hidden;
+        padding: .38rem .7rem;
+        border-radius: 999px;
+        background: rgba(6,17,46,.82);
+        color: #fff;
+        font: 700 .72rem/1 "Instrument Sans", Arial, sans-serif;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-gallery-pagination {
+        position: absolute;
+        right: .75rem;
+        bottom: .55rem;
+        left: .75rem;
+        z-index: 4;
+        display: flex;
+        gap: .22rem;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-gallery-pagination button {
+        display: block;
+        min-width: 0;
+        height: 3px;
+        padding: 0;
+        border: 0;
+        border-radius: 999px;
+        background: rgba(255,255,255,.58);
+        flex: 1 1 0;
+        cursor: pointer;
+        transition: background-color .25s ease, transform .25s ease;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-gallery-pagination button.is-active {
+        background: #fff;
+        transform: scaleY(1.45);
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-card-copy {
         display: flex !important;

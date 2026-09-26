@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260926-brand-controls-2';
+    const VERSION = '20260926-brand-controls-3';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -147,22 +147,74 @@
         wrapper.className = 'maison-cb-apartment-gallery';
         wrapper.dataset.slide = '0';
         wrapper.innerHTML = `
-            <img alt="" loading="lazy" decoding="async">
+            <div class="maison-cb-gallery-layers" aria-live="polite">
+                <img class="maison-cb-gallery-image is-active" alt="" loading="lazy" decoding="async">
+                <img class="maison-cb-gallery-image" alt="" loading="lazy" decoding="async">
+            </div>
             <button type="button" class="maison-cb-gallery-control is-previous" aria-label="Previous photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
             <button type="button" class="maison-cb-gallery-control is-next" aria-label="Next photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
+            <span class="maison-cb-gallery-caption" hidden></span>
             <span class="maison-cb-gallery-count">1/${slides.length}</span>
+            <div class="maison-cb-gallery-pagination" aria-label="Photo pagination"></div>
         `;
 
-        const show = index => {
-            const next = (index + slides.length) % slides.length;
-            wrapper.dataset.slide = String(next);
-            const image = wrapper.querySelector('img');
-            image.src = slides[next].url;
-            image.alt = slides[next].caption || gallery.name;
-            wrapper.querySelector('.maison-cb-gallery-count').textContent = `${next + 1}/${slides.length}`;
+        const layers = Array.from(wrapper.querySelectorAll('.maison-cb-gallery-image'));
+        const pagination = wrapper.querySelector('.maison-cb-gallery-pagination');
+        const caption = wrapper.querySelector('.maison-cb-gallery-caption');
+        let activeLayer = 0;
+        let transitionToken = 0;
+
+        slides.forEach((slide, index) => {
+            const dot = document.createElement('button');
+            dot.type = 'button';
+            dot.setAttribute('aria-label', `Show photo ${index + 1}`);
+            dot.dataset.gallerySlide = String(index);
+            pagination.appendChild(dot);
+        });
+
+        const updateMeta = index => {
+            wrapper.dataset.slide = String(index);
+            wrapper.querySelector('.maison-cb-gallery-count').textContent = `${index + 1}/${slides.length}`;
+            caption.textContent = slides[index].caption || '';
+            caption.hidden = !slides[index].caption;
+            Array.from(pagination.children).forEach((dot, dotIndex) => {
+                dot.classList.toggle('is-active', dotIndex === index);
+                dot.setAttribute('aria-current', dotIndex === index ? 'true' : 'false');
+            });
         };
 
-        show(0);
+        const show = (index, animate = true) => {
+            const next = (index + slides.length) % slides.length;
+            const token = ++transitionToken;
+            const incomingIndex = animate ? (activeLayer === 0 ? 1 : 0) : activeLayer;
+            const incoming = layers[incomingIndex];
+            const outgoing = layers[activeLayer];
+
+            const reveal = () => {
+                if (token !== transitionToken) return;
+                incoming.onload = null;
+                incoming.style.zIndex = '2';
+                outgoing.style.zIndex = '1';
+                void incoming.offsetWidth;
+                incoming.classList.add('is-active');
+                if (incoming !== outgoing) outgoing.classList.remove('is-active');
+                activeLayer = incomingIndex;
+                updateMeta(next);
+                window.setTimeout(() => {
+                    if (token === transitionToken) {
+                        layers.forEach((layer, layerIndex) => { layer.style.zIndex = layerIndex === activeLayer ? '1' : '0'; });
+                    }
+                }, 520);
+            };
+
+            incoming.classList.remove('is-active');
+            incoming.src = slides[next].url;
+            incoming.alt = slides[next].caption || gallery.name;
+            incoming.onload = reveal;
+            if (incoming.complete) reveal();
+        };
+
+        show(0, false);
         wrapper.querySelectorAll('.maison-cb-gallery-control').forEach(control => {
             if (slides.length === 1) control.hidden = true;
             control.addEventListener('click', event => {
@@ -171,6 +223,13 @@
                 const current = Number(wrapper.dataset.slide || 0);
                 show(current + (control.classList.contains('is-next') ? 1 : -1));
             });
+        });
+        pagination.addEventListener('click', event => {
+            const dot = event.target.closest('[data-gallery-slide]');
+            if (!dot) return;
+            event.preventDefault();
+            event.stopPropagation();
+            show(Number(dot.dataset.gallerySlide));
         });
 
         d.media.appendChild(wrapper);
