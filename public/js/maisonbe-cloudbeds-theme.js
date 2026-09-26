@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260926-stable-results-2';
+    const VERSION = '20260926-centered-search-form-1';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -314,6 +314,7 @@
         }
 
         mark(best, 'mb-cb-search-header');
+        mark(best, 'maison-cb-search-form');
         const shell = best.parentElement;
         if (shell && shell !== root && neutral(shell) && !shell.matches(PAGE) && !shell.querySelector(PAGE)) {
             mark(shell, 'mb-cb-search-shell');
@@ -324,6 +325,19 @@
                 if (neutral(el)) mark(el, 'mb-cb-search-controls');
             }
         });
+
+        // Cloudbeds gives the promo branch flex-grow, leaving a large empty gap
+        // between the button and Filters. Mark only that branch so presentation
+        // can compact it without changing the accommodation results layout.
+        if (promo) {
+            let promoWrap = promo.parentElement;
+            for (let el = promo.parentElement; el && el !== best; el = el.parentElement) {
+                const branchControls = all(el, 'button, [role="button"], a').filter(item => visible(item));
+                if (branchControls.length !== 1 || branchControls[0] !== promo) break;
+                promoWrap = el;
+            }
+            mark(promoWrap, 'maison-cb-promo-wrap');
+        }
 
         // Mark only the actual stay-date control.  Do not change widths or
         // alignment on the surrounding results/search containers; Cloudbeds
