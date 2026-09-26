@@ -838,8 +838,19 @@
         stroke: currentColor !important;
     }
     body.cloudbeds-booking-page :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-kam258 {
-        background: #d8aa42 !important;
-        border-color: rgba(6,17,46,.14) !important;
+        background: #f1f5fc !important;
+        border-color: #d8aa42 !important;
+    }
+    body.cloudbeds-booking-page :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-x0j3ad .cb-calendar-days .cb-calendar-day--range {
+        border-radius: 0 !important;
+        background-color: #ead39b !important;
+        color: #06112e !important;
+        -webkit-text-fill-color: #06112e !important;
+    }
+    body.cloudbeds-booking-page :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-x0j3ad .cb-calendar-days .cb-calendar-day--range > * {
+        background-color: transparent !important;
+        color: #06112e !important;
+        -webkit-text-fill-color: #06112e !important;
     }
     body.cloudbeds-booking-page :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-x0j3ad .cb-calendar-days :is(.cb-calendar-day--checkin, .cb-calendar-day--checkout) {
         background-color: #06112e !important;
@@ -850,6 +861,11 @@
         background-color: transparent !important;
         color: #fff !important;
         -webkit-text-fill-color: #fff !important;
+    }
+    body.cloudbeds-booking-page :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-1kw3mzq button,
+    body.cloudbeds-booking-page :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-1kw3mzq button p {
+        font-size: var(--booking-engine-fontSizes-md) !important;
+        font-weight: 700 !important;
     }
 
     /* Selected accommodation: keep Cloudbeds' live cart, present it as an off-canvas drawer. */
