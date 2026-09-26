@@ -1,4 +1,4 @@
-{{-- Layout adapter v20260926-centered-search-form-2. Presentation only: Cloudbeds retains booking, pricing, cart and checkout state. --}}
+{{-- Layout adapter v20260926-brand-controls-1. Presentation only: Cloudbeds retains booking, pricing, cart and checkout state. --}}
 <style id="maison-cloudbeds-theme" data-cb-immersive-experience-root>
     .cloudbeds-booking-page {
         background: #f1eadc;
@@ -254,6 +254,50 @@
         object-fit: cover !important;
         object-position: center !important;
         border-radius: 0 !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-apartment-gallery {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        overflow: hidden;
+        background: #e6dfd2;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-apartment-gallery > img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-gallery-control {
+        position: absolute;
+        top: 50%;
+        z-index: 2;
+        display: grid;
+        width: 2.35rem;
+        height: 2.35rem;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(255,255,255,.92);
+        color: #06112e;
+        font: 500 1.65rem/1 Arial, sans-serif;
+        place-items: center;
+        transform: translateY(-50%);
+        box-shadow: 0 8px 24px rgba(6,17,46,.18);
+        cursor: pointer;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-gallery-control.is-previous { left: .75rem; }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-gallery-control.is-next { right: .75rem; }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-gallery-count {
+        position: absolute;
+        right: .75rem;
+        bottom: .75rem;
+        padding: .35rem .65rem;
+        border-radius: 999px;
+        background: rgba(6,17,46,.82);
+        color: #fff;
+        font: 700 .75rem/1 "Instrument Sans", Arial, sans-serif;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-card-copy {
         display: flex !important;
@@ -520,6 +564,12 @@
         font: 500 clamp(1.05rem, 1.25vw, 1.3rem)/1.35 "Galaxie Polaris", "Instrument Sans", Arial, sans-serif;
         letter-spacing: -.015em;
     }
+    .cloudbeds-booking-page .cloudbeds-results-heading p {
+        max-width: 46rem;
+        margin: .3rem 0 0;
+        color: #667085;
+        font: 500 clamp(.82rem, 1vw, .95rem)/1.55 "Instrument Sans", Arial, sans-serif;
+    }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-shell {
         position: relative !important;
         width: 100% !important;
@@ -560,9 +610,10 @@
         min-width: 0 !important;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-currency {
-        color: #fff !important;
+        color: #596277 !important;
+        font-weight: 800 !important;
         opacity: 1 !important;
-        -webkit-text-fill-color: #fff !important;
+        -webkit-text-fill-color: #596277 !important;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-currency-wrap {
         position: absolute !important;
@@ -570,15 +621,17 @@
         right: clamp(1.5rem, 4vw, 4.5rem) !important;
         width: auto !important;
         margin: 0 !important;
-        color: #fff !important;
+        color: #596277 !important;
+        font-weight: 800 !important;
         flex: 0 0 auto !important;
         transform: translateY(-50%) !important;
         z-index: 2 !important;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-currency-wrap :is(button, span, div, svg, path) {
-        color: #fff !important;
+        color: #596277 !important;
+        font-weight: 800 !important;
         opacity: 1 !important;
-        -webkit-text-fill-color: #fff !important;
+        -webkit-text-fill-color: #596277 !important;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-currency-wrap :is(svg, path) {
         stroke: currentColor !important;
@@ -609,6 +662,10 @@
         margin: 0 !important;
         flex: 0 0 auto !important;
     }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-search-form :is(.maison-cb-secondary, .maison-cb-hidden-control-wrap),
+    :is(#cb-bookingengine, .cb-bookingengine-root) :is(.maison-cb-language, .maison-cb-language-wrap) {
+        display: none !important;
+    }
 
     /* Center only the check-in / check-out date pill.
        Do not center or resize the surrounding Cloudbeds containers. */
@@ -623,6 +680,14 @@
     :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-search-form .maison-cb-date-control {
         left: auto !important;
         transform: none !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-calendar-icon {
+        background: #d8aa42 !important;
+        color: #06112e !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-calendar-icon :is(svg, path) {
+        color: #06112e !important;
+        stroke: currentColor !important;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) :is(.mb-cb-search-header, .mb-cb-search-controls) .maison-cb-secondary {
         background: #fff !important;
@@ -644,6 +709,35 @@
         background-color: transparent !important;
         background-image: none !important;
         box-shadow: none !important;
+    }
+
+    /* Cloudbeds date picker, recoloured without changing its date-selection behaviour. */
+    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar {
+        border-color: rgba(6,17,46,.14) !important;
+        background: #fffaf1 !important;
+        color: #06112e !important;
+        box-shadow: 0 24px 70px rgba(6,17,46,.2) !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar :is(h1, h2, h3, h4, p, span, button, [role="button"]) {
+        color: #06112e !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar :is([data-in-range="true"], [data-highlighted="true"]) {
+        background: #f1e2bc !important;
+        color: #06112e !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar :is([aria-selected="true"], [data-selected="true"]) {
+        border-color: #06112e !important;
+        background: #06112e !important;
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar button:not(:disabled):hover {
+        background: #ead19a !important;
+        color: #06112e !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar :is([aria-selected="true"], [data-selected="true"]):hover {
+        background: #06112e !important;
+        color: #fff !important;
     }
 
     /* Selected accommodation: keep Cloudbeds' live cart, present it as an off-canvas drawer. */

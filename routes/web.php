@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ModuleController;
 use App\Http\Controllers\Admin\UploadController;
 use App\Http\Controllers\ApartmentSearchController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\CloudbedsBookingController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InformationController;
 use App\Http\Controllers\PaymentWebhookController;
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
 
-Route::view('book', 'booking.cloudbeds')->name('booking.cloudbeds');
+Route::get('book', CloudbedsBookingController::class)->name('booking.cloudbeds');
 
 Route::get('information/events', [InformationController::class, 'events'])->name('information.events');
 Route::get('information/contact', [InformationController::class, 'contact'])->name('information.contact');

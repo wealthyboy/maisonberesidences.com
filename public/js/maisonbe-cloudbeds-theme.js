@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260926-centered-search-form-2';
+    const VERSION = '20260926-brand-controls-1';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -19,6 +19,14 @@
     const emptyCartText = /^no accommodations added[.!]?$/i;
     const text = el => (el?.textContent || '').replace(/\s+/g, ' ').trim();
     const all = (scope, selector) => Array.from(scope.querySelectorAll(selector));
+    const normalizeName = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    const galleryData = (() => {
+        try {
+            return JSON.parse(document.querySelector('#maison-apartment-galleries')?.textContent || '[]');
+        } catch (_) {
+            return [];
+        }
+    })();
     const neutral = el => el && STRUCTURAL.test(el.tagName);
     let discoveredRates = new Set();
     const insideRate = el => Boolean(el.closest(RATE + ', .cb-rate-plan-title-text')) || [...discoveredRates].some(rate => rate.contains(el));
@@ -48,7 +56,7 @@
     // Cloudbeds re-renders pieces of the results UI asynchronously. Layout classes are
     // intentionally sticky on still-connected nodes so a transient provider render cannot
     // flip the card between native and Maison BE layouts for a frame (visible as shaking).
-    const STICKY_LAYOUT_CLASSES = /^(?:mb-cb-(?!(?:grid-extra|cart-empty)$)|maison-cb-primary$|maison-cb-secondary$)/;
+    const STICKY_LAYOUT_CLASSES = /^(?:mb-cb-(?!(?:grid-extra|cart-empty)$)|maison-cb-(?:primary|secondary|hidden-control-wrap|promo-wrap|language|language-wrap)$)/;
     function commitMarks() {
         activeClasses.forEach((classes, el) => {
             if (!el?.isConnected) return;
@@ -104,6 +112,7 @@
         return all(el, 'img, [role="img"], [style*="background-image"]')
             .filter(img => outsideRate(img))
             .find(img => {
+                if (img.closest('.maison-cb-apartment-gallery')) return false;
                 const rect = img.getBoundingClientRect();
                 const width = Math.max(rect.width, Number(img.getAttribute('width')) || 0, img.naturalWidth || 0);
                 const height = Math.max(rect.height, Number(img.getAttribute('height')) || 0, img.naturalHeight || 0);
@@ -114,6 +123,57 @@
         const candidates = all(el, TITLE).filter(title => outsideRate(title) && !title.querySelector('.cb-rate-plan-title-text') && text(title).length > 1 && text(title).length < 150);
         // Prefer an actual heading over a wrapping cb-title-text when both represent the same title.
         return candidates.find(title => /^H[1-6]$/.test(title.tagName)) || candidates[0] || null;
+    }
+    function galleryFor(title) {
+        const roomName = normalizeName(title);
+        if (!roomName) return null;
+
+        return galleryData.find(apartment => {
+            const apartmentName = normalizeName(apartment.name);
+            return apartmentName === roomName ||
+                (apartmentName.length >= 5 && roomName.includes(apartmentName)) ||
+                (roomName.length >= 5 && apartmentName.includes(roomName));
+        }) || null;
+    }
+    function installApartmentGallery(d) {
+        const gallery = galleryFor(text(d.title));
+        if (!gallery || !Array.isArray(gallery.images) || gallery.images.length === 0) return;
+        if (d.media.querySelector(':scope > .maison-cb-apartment-gallery')) return;
+
+        const slides = gallery.images.filter(image => image?.url);
+        if (!slides.length) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'maison-cb-apartment-gallery';
+        wrapper.dataset.slide = '0';
+        wrapper.innerHTML = `
+            <img alt="" loading="lazy" decoding="async">
+            <button type="button" class="maison-cb-gallery-control is-previous" aria-label="Previous photo">&#8249;</button>
+            <button type="button" class="maison-cb-gallery-control is-next" aria-label="Next photo">&#8250;</button>
+            <span class="maison-cb-gallery-count">1/${slides.length}</span>
+        `;
+
+        const show = index => {
+            const next = (index + slides.length) % slides.length;
+            wrapper.dataset.slide = String(next);
+            const image = wrapper.querySelector('img');
+            image.src = slides[next].url;
+            image.alt = slides[next].caption || gallery.name;
+            wrapper.querySelector('.maison-cb-gallery-count').textContent = `${next + 1}/${slides.length}`;
+        };
+
+        show(0);
+        wrapper.querySelectorAll('.maison-cb-gallery-control').forEach(control => {
+            if (slides.length === 1) control.hidden = true;
+            control.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                const current = Number(wrapper.dataset.slide || 0);
+                show(current + (control.classList.contains('is-next') ? 1 : -1));
+            });
+        });
+
+        d.media.appendChild(wrapper);
     }
     function descriptor(card, page) {
         if (!card || card === page || !neutral(card) || card.closest(PORTAL)) return null;
@@ -329,15 +389,16 @@
         // Cloudbeds gives the promo branch flex-grow, leaving a large empty gap
         // between the button and Filters. Mark only that branch so presentation
         // can compact it without changing the accommodation results layout.
-        if (promo) {
-            let promoWrap = promo.parentElement;
-            for (let el = promo.parentElement; el && el !== best; el = el.parentElement) {
+        anchors.forEach(control => {
+            let controlWrap = control.parentElement;
+            for (let el = control.parentElement; el && el !== best; el = el.parentElement) {
                 const branchControls = all(el, 'button, [role="button"], a').filter(item => visible(item));
-                if (branchControls.length !== 1 || branchControls[0] !== promo) break;
-                promoWrap = el;
+                if (branchControls.length !== 1 || branchControls[0] !== control) break;
+                controlWrap = el;
             }
-            mark(promoWrap, 'maison-cb-promo-wrap');
-        }
+            mark(controlWrap, 'maison-cb-hidden-control-wrap');
+            if (control === promo) mark(controlWrap, 'maison-cb-promo-wrap');
+        });
 
         // Mark only the actual stay-date control.  Do not change widths or
         // alignment on the surrounding results/search containers; Cloudbeds
@@ -353,7 +414,11 @@
             const rect = el.getBoundingClientRect();
             return rect.width >= 220 && rect.width <= 760 && rect.height <= 130;
         });
-        if (dateControl) mark(dateControl, 'maison-cb-date-control');
+        if (dateControl) {
+            mark(dateControl, 'maison-cb-date-control');
+            const calendarIcon = all(dateControl, 'svg').find(svg => visible(svg));
+            if (calendarIcon?.parentElement) mark(calendarIcon.parentElement, 'maison-cb-calendar-icon');
+        }
 
         all(best, '*').forEach(el => {
             const value = text(el);
@@ -370,6 +435,33 @@
                 }
                 mark(currencyWrap, 'maison-cb-currency-wrap');
             }
+        });
+    }
+
+    function decorateLanguage(root) {
+        all(root, 'button, [role="button"], a, select').filter(visible).forEach(control => {
+            const value = text(control);
+            const label = `${control.getAttribute('aria-label') || ''} ${control.getAttribute('title') || ''}`;
+            if (!/^(?:English|EN)$/i.test(value) && !/\b(?:language|locale)\b/i.test(label)) return;
+
+            mark(control, 'maison-cb-language');
+            let wrap = control;
+            for (let parent = control.parentElement; parent && parent !== root; parent = parent.parentElement) {
+                const parentText = text(parent);
+                if (/check[- ]?in|check[- ]?out|promo|filters?|\b(?:NGN|USD|EUR|GBP|CAD|AUD|ZAR)\b/i.test(parentText)) break;
+                wrap = parent;
+            }
+            mark(wrap, 'maison-cb-language-wrap');
+        });
+    }
+
+    function decorateCalendar(root) {
+        all(root, '[role="dialog"], dialog, .cb-portal').forEach(calendar => {
+            if (!visible(calendar)) return;
+            const value = text(calendar);
+            const dayButtons = all(calendar, 'button, [role="button"]').filter(control => /^\d{1,2}$/.test(text(control)));
+            const hasMonth = /\b(?:January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/i.test(value);
+            if (hasMonth && dayButtons.length >= 20) mark(calendar, 'maison-cb-calendar');
         });
     }
 
@@ -467,6 +559,7 @@
             mark(items[i], 'mb-cb-grid-item');
             if (items[i] !== d.card) path(d.card.parentElement, items[i], 'mb-cb-card-shell');
             decorateCard(d);
+            installApartmentGallery(d);
         });
         // Do not force temporarily-undiscovered Cloudbeds children to span the grid.
         // During async hydration a residence can exist before its rate/title anchors are ready;
@@ -545,6 +638,8 @@
                 });
                 decoratePropertyIdentity(root);
                 decorateSearchArea(root);
+                decorateCalendar(root);
+                decorateLanguage(root);
             });
             all(scope, PAGE).filter(page => !page.closest(PORTAL)).forEach(page => {
                 const result = decoratePage(page);

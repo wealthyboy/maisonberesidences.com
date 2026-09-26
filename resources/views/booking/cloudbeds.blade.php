@@ -92,7 +92,8 @@
 
             @if ($hasStaySearch)
                 <section class="cloudbeds-results-heading" aria-labelledby="cloudbeds-results-title">
-                    <h2 id="cloudbeds-results-title">Search results for {{ $adults }} {{ $adults === 1 ? 'guest' : 'guests' }}</h2>
+                    <h2 id="cloudbeds-results-title">Select your apartment</h2>
+                    <p>Choose the residence that feels right for your stay. Availability and rates reflect your selected dates.</p>
                 </section>
             @endif
 
@@ -144,9 +145,11 @@
 
         <x-site-footer />
 
+        <script id="maison-apartment-galleries" type="application/json">@json($apartmentGalleries ?? [])</script>
+
         <script
             data-cb-immersive-experience-root
-            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260926-centered-search-form-2"
+            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260926-brand-controls-1"
             defer
         ></script>
     </body>
