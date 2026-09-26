@@ -948,8 +948,12 @@
         position: fixed;
         inset: 0;
         z-index: 2095;
+        width: 100vw;
+        height: 100dvh;
+        padding: 0;
         border: 0;
         background: rgba(4,12,32,.5);
+        cursor: pointer;
         opacity: 0;
         visibility: hidden;
         pointer-events: none;

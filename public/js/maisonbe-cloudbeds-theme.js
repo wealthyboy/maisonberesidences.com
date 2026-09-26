@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260926-brand-controls-6';
+    const VERSION = '20260926-brand-controls-7';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -624,11 +624,31 @@
             const control = eventControl(event);
             if (!control) return;
             const value = text(control);
-            if (/^(add|select)(?:\s|$)/i.test(value)) {
+            const confirmsGuestSelection = /^confirm$/i.test(value) && Boolean(control.closest('[role="dialog"], dialog'));
+            if (/^(add|select)(?:\s|$)/i.test(value) || confirmsGuestSelection) {
                 pendingDrawerOpen = true;
                 window.setTimeout(schedule, 80);
             }
         }, true);
+    }
+
+    function findReservationSummaryDrawer(scope) {
+        const heading = all(scope, 'h1, h2, h3, h4, p, span, div')
+            .find(el => visible(el) && /^reservation summary$/i.test(text(el)));
+        if (!heading) return null;
+
+        let drawer = null;
+        for (let parent = heading.parentElement; parent && parent !== document.body; parent = parent.parentElement) {
+            const rect = parent.getBoundingClientRect();
+            const hasBookingAction = all(parent, 'button, [role="button"], a')
+                .some(control => /^(?:book now|continue|checkout)$/i.test(text(control)));
+            const panelSized = rect.width >= 280 && rect.width <= 820 && rect.height >= 300;
+            const rightAligned = rect.right >= window.innerWidth - 100;
+
+            if (hasBookingAction && panelSized && rightAligned) drawer = parent;
+            if (drawer && (rect.width > 900 || parent.matches(ROOT))) break;
+        }
+        return drawer;
     }
 
     function findCart(page, scope, grid) {
@@ -716,6 +736,7 @@
         discoveredRates = new Set();
         cartTarget = null;
         const grids = [];
+        let summaryDrawer = null;
         let rootPresent = false;
         let failed = false;
         // Accommodate an open shadow root without rewriting the component implementation.
@@ -739,14 +760,30 @@
                 const result = decoratePage(page);
                 if (result) grids.push(result);
             });
+            summaryDrawer ||= findReservationSummaryDrawer(scope);
         });
+        if (summaryDrawer) {
+            const rect = summaryDrawer.getBoundingClientRect();
+            const openedByCloudbeds = rect.left < window.innerWidth - 24 && rect.right > 0;
+            cartTarget = summaryDrawer;
+            mark(summaryDrawer, 'mb-cb-cart-column');
+            mark(summaryDrawer, 'mb-cb-cart-drawer');
+            document.body?.classList.add('mb-cb-has-selection');
+            if (pendingDrawerOpen || drawerOpen || openedByCloudbeds) {
+                drawerOpen = true;
+                mark(summaryDrawer, 'mb-cb-cart-drawer-open');
+            }
+        }
         commitMarks();
         if (cartTarget?.isConnected) {
             ensureDrawerChrome();
             cartTarget.classList.add('mb-cb-cart-drawer');
             document.body?.classList.add('mb-cb-has-selection');
             if (pendingDrawerOpen) openDrawer();
-            else if (drawerOpen) cartTarget.classList.add('mb-cb-cart-drawer-open');
+            else if (drawerOpen) {
+                cartTarget.classList.add('mb-cb-cart-drawer-open');
+                document.body?.classList.add('mb-cb-selection-open');
+            }
         } else {
             document.body?.classList.remove('mb-cb-has-selection', 'mb-cb-selection-open');
             drawerOpen = false;
