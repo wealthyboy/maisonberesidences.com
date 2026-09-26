@@ -826,6 +826,32 @@
         color: #06112e !important;
     }
 
+    /* Cloudbeds generated calendar classes. Keep these explicit overrides at
+       the end of the calendar theme so a widget re-render cannot restore its
+       default green and white colours. */
+    body.cloudbeds-booking-page :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-9w7r1m {
+        background: #06112e !important;
+        color: #fff !important;
+    }
+    body.cloudbeds-booking-page :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-9w7r1m :is(svg, path) {
+        color: #fff !important;
+        stroke: currentColor !important;
+    }
+    body.cloudbeds-booking-page :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-kam258 {
+        background: #d8aa42 !important;
+        border-color: rgba(6,17,46,.14) !important;
+    }
+    body.cloudbeds-booking-page :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-x0j3ad .cb-calendar-days :is(.cb-calendar-day--checkin, .cb-calendar-day--checkout) {
+        background-color: #06112e !important;
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
+    }
+    body.cloudbeds-booking-page :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-x0j3ad .cb-calendar-days :is(.cb-calendar-day--checkin, .cb-calendar-day--checkout) > * {
+        background-color: transparent !important;
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
+    }
+
     /* Selected accommodation: keep Cloudbeds' live cart, present it as an off-canvas drawer. */
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-cart-column.mb-cb-cart-drawer {
         position: fixed !important;
