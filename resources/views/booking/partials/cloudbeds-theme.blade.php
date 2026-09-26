@@ -1,4 +1,4 @@
-{{-- Layout adapter v20260926-centered-search-1. Presentation only: Cloudbeds retains booking, pricing, cart and checkout state. --}}
+{{-- Layout adapter v20260926-stable-results-2. Presentation only: Cloudbeds retains booking, pricing, cart and checkout state. --}}
 <style id="maison-cloudbeds-theme" data-cb-immersive-experience-root>
     .cloudbeds-booking-page {
         background: #f1eadc;
@@ -521,7 +521,6 @@
         letter-spacing: -.015em;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-shell {
-        display: flex !important;
         width: 100% !important;
         max-width: none !important;
         margin: 0 !important;
@@ -530,14 +529,13 @@
         border-radius: 0 !important;
         background: transparent !important;
         box-shadow: none !important;
-        justify-content: center !important;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-header {
         display: flex !important;
-        width: fit-content !important;
-        max-width: 100% !important;
+        width: 100% !important;
+        max-width: none !important;
         min-height: 0 !important;
-        margin: 0 auto !important;
+        margin: 0 !important;
         padding: .35rem 0 1.2rem !important;
         border: 0 !important;
         border-radius: 0 !important;
@@ -545,8 +543,8 @@
         color: #06112e !important;
         box-shadow: none !important;
         align-items: center !important;
-        justify-content: center !important;
-        gap: clamp(.8rem, 1.35vw, 1.5rem) !important;
+        justify-content: flex-start !important;
+        gap: clamp(.75rem, 1.25vw, 1.25rem) !important;
         box-sizing: border-box !important;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-property-identity {
@@ -554,13 +552,10 @@
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-controls {
         display: flex !important;
-        width: fit-content !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        flex: 0 1 auto !important;
+        flex: 1 1 auto !important;
         align-items: center !important;
-        justify-content: center !important;
-        gap: clamp(.8rem, 1.35vw, 1.5rem) !important;
+        justify-content: flex-start !important;
+        gap: clamp(.65rem, 1vw, 1rem) !important;
         min-width: 0 !important;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-currency {
@@ -568,27 +563,15 @@
         color: #06112e !important;
     }
 
-    /* Keep the live Cloudbeds controls intact while presenting them as one
-       compact, centered search group. */
+    /* Center only the check-in / check-out date pill.
+       Do not center or resize the surrounding Cloudbeds containers. */
     :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-date-control {
         position: relative !important;
-        left: auto !important;
-        width: clamp(32rem, 42vw, 41rem) !important;
-        max-width: 100% !important;
-        min-height: 4.75rem !important;
-        margin: 0 !important;
-        transform: none !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
         z-index: 1 !important;
-    }
-    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-promo-control {
-        width: clamp(12.5rem, 17vw, 16rem) !important;
-        min-height: 3.4rem !important;
-        margin: 0 !important;
-    }
-    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-filter-control {
-        width: clamp(11.5rem, 15vw, 14.25rem) !important;
-        min-height: 3.4rem !important;
-        margin: 0 !important;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) :is(.mb-cb-search-header, .mb-cb-search-controls) .maison-cb-secondary {
         background: #fff !important;
@@ -723,7 +706,6 @@
             box-shadow: none !important;
         }
         :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-header {
-            width: 100% !important;
             min-height: 0 !important;
             padding: .25rem 0 1rem !important;
             flex-wrap: wrap !important;
@@ -734,15 +716,9 @@
         }
         :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-date-control {
             left: auto !important;
-            width: 100% !important;
             transform: none !important;
             margin-inline: auto !important;
             max-width: 100% !important;
-        }
-        :is(#cb-bookingengine, .cb-bookingengine-root) :is(.maison-cb-promo-control, .maison-cb-filter-control) {
-            width: auto !important;
-            min-width: min(10rem, 47%) !important;
-            flex: 1 1 10rem !important;
         }
         :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-cart-column.mb-cb-cart-drawer {
             width: min(100vw, 470px) !important;

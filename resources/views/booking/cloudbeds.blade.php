@@ -146,7 +146,7 @@
 
         <script
             data-cb-immersive-experience-root
-            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260926-centered-search-1"
+            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260926-stable-results-2"
             defer
         ></script>
     </body>
