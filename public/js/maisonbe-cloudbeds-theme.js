@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260926-stable-results-2';
+    const VERSION = '20260926-centered-search-1';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -290,11 +290,17 @@
     function decorateSearchArea(root) {
         const controls = all(root, 'button, [role="button"], a').filter(el => visible(el) && !el.closest(PORTAL));
         const promo = controls.find(el => /^(promo code|add code)$/i.test(text(el)));
-        const filters = controls.find(el => /^filters?$/i.test(text(el)));
+        const filters = controls.find(el => /^filters?(?:\s+\d+)?$/i.test(text(el)));
         if (!promo && !filters) return;
 
-        if (promo) mark(promo, 'maison-cb-secondary');
-        if (filters) mark(filters, 'maison-cb-secondary');
+        if (promo) {
+            mark(promo, 'maison-cb-secondary');
+            mark(promo, 'maison-cb-promo-control');
+        }
+        if (filters) {
+            mark(filters, 'maison-cb-secondary');
+            mark(filters, 'maison-cb-filter-control');
+        }
 
         const anchors = [promo, filters].filter(Boolean);
         let row = lca(anchors);
