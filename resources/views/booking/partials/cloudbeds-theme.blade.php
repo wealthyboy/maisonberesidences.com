@@ -743,11 +743,13 @@
         left: auto !important;
         transform: none !important;
     }
-    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-calendar-icon {
-        background: #d8aa42 !important;
+    body.cloudbeds-booking-page .maison-cb-calendar-icon,
+    body.cloudbeds-booking-page .maison-cb-calendar-icon > * {
+        background-color: #d8aa42 !important;
+        background-image: none !important;
         color: #06112e !important;
     }
-    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-calendar-icon :is(svg, path) {
+    body.cloudbeds-booking-page .maison-cb-calendar-icon :is(svg, path) {
         color: #06112e !important;
         stroke: currentColor !important;
     }
@@ -774,48 +776,54 @@
     }
 
     /* Cloudbeds date picker, recoloured without changing its date-selection behaviour. */
-    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar {
+    body.cloudbeds-booking-page .maison-cb-calendar {
         border-color: rgba(6,17,46,.14) !important;
         background: #fffaf1 !important;
         color: #06112e !important;
         box-shadow: 0 24px 70px rgba(6,17,46,.2) !important;
     }
-    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar :is(h1, h2, h3, h4, p, span, button, [role="button"]) {
+    body.cloudbeds-booking-page .maison-cb-calendar :is(h1, h2, h3, h4, p, span, button, [role="button"]) {
         color: #06112e !important;
     }
-    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar :is([data-in-range="true"], [data-highlighted="true"]) {
-        background: #f1e2bc !important;
+    body.cloudbeds-booking-page .maison-cb-calendar :is([data-in-range="true"], [data-highlighted="true"]),
+    body.cloudbeds-booking-page .maison-cb-calendar :is([data-in-range="true"], [data-highlighted="true"]) > * {
+        background-color: #e5c56f !important;
+        background-image: none !important;
         color: #06112e !important;
     }
-    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar :is(.maison-cb-calendar-range, .maison-cb-calendar-range > *) {
-        border-color: #dfbf77 !important;
-        background: #f1e2bc !important;
+    body.cloudbeds-booking-page .maison-cb-calendar :is(.maison-cb-calendar-range, .maison-cb-calendar-range > *, .maison-cb-calendar-range > * > *) {
+        border-color: #d8aa42 !important;
+        background-color: #e5c56f !important;
+        background-image: none !important;
         color: #06112e !important;
         -webkit-text-fill-color: #06112e !important;
     }
-    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar :is(.maison-cb-calendar-endpoint, .maison-cb-calendar-endpoint > *) {
-        border-color: #06112e !important;
-        background: #06112e !important;
-        color: #fff !important;
-        -webkit-text-fill-color: #fff !important;
+    body.cloudbeds-booking-page .maison-cb-calendar :is(.maison-cb-calendar-endpoint, .maison-cb-calendar-endpoint > *, .maison-cb-calendar-endpoint > * > *) {
+        border-color: #b88925 !important;
+        background-color: #d8aa42 !important;
+        background-image: none !important;
+        color: #06112e !important;
+        -webkit-text-fill-color: #06112e !important;
     }
-    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar :is([aria-selected="true"], [data-selected="true"]) {
-        border-color: #06112e !important;
-        background: #06112e !important;
-        color: #fff !important;
-        -webkit-text-fill-color: #fff !important;
+    body.cloudbeds-booking-page .maison-cb-calendar :is([aria-selected="true"], [data-selected="true"]),
+    body.cloudbeds-booking-page .maison-cb-calendar :is([aria-selected="true"], [data-selected="true"]) > * {
+        border-color: #b88925 !important;
+        background-color: #d8aa42 !important;
+        background-image: none !important;
+        color: #06112e !important;
+        -webkit-text-fill-color: #06112e !important;
     }
-    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar button:not(:disabled):hover {
-        background: #ead19a !important;
+    body.cloudbeds-booking-page .maison-cb-calendar button:not(:disabled):hover {
+        background-color: #efd99f !important;
         color: #06112e !important;
     }
-    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar :is([aria-selected="true"], [data-selected="true"]):hover {
-        background: #06112e !important;
-        color: #fff !important;
+    body.cloudbeds-booking-page .maison-cb-calendar :is([aria-selected="true"], [data-selected="true"]):hover {
+        background-color: #d8aa42 !important;
+        color: #06112e !important;
     }
-    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar :is(.maison-cb-calendar-endpoint, .maison-cb-calendar-endpoint > *):hover {
-        background: #06112e !important;
-        color: #fff !important;
+    body.cloudbeds-booking-page .maison-cb-calendar :is(.maison-cb-calendar-endpoint, .maison-cb-calendar-endpoint > *):hover {
+        background-color: #d8aa42 !important;
+        color: #06112e !important;
     }
 
     /* Selected accommodation: keep Cloudbeds' live cart, present it as an off-canvas drawer. */
