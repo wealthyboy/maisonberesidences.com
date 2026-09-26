@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260926-brand-controls-9';
+    const VERSION = '20260926-brand-controls-11';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -43,7 +43,9 @@
     let cartTarget = null;
     let pendingDrawerOpen = false;
     let drawerOpen = false;
+    let drawerDismissed = false;
     let guestCheckoutActive = false;
+    let providerDialogActive = false;
     const interactionRoots = new WeakSet();
     let ready = false;
     let scanCount = 0;
@@ -58,10 +60,10 @@
     function label(el, value) {
         if (el && value) nextLabels.set(el, value);
     }
-    // Cloudbeds re-renders pieces of the results UI asynchronously. Layout classes are
-    // intentionally sticky on still-connected nodes so a transient provider render cannot
-    // flip the card between native and Maison BE layouts for a frame (visible as shaking).
-    const STICKY_LAYOUT_CLASSES = /^(?:mb-cb-(?!(?:grid-extra|cart-empty)$)|maison-cb-(?:primary|secondary|search-form|search-hidden|hidden-control-wrap|promo-wrap|language|language-wrap|currency-wrap|date-control)$)/;
+    // Cloudbeds hydrates and replaces structural wrappers asynchronously. Only retain
+    // presentation marks; every mb-cb-* layout mark must be rediscovered on each pass so
+    // a temporary provider wrapper can never remain styled as the final grid.
+    const STICKY_LAYOUT_CLASSES = /^maison-cb-(?:primary|secondary|search-form|search-hidden|hidden-control-wrap|promo-wrap|language|language-wrap|currency-wrap|date-control)$/;
     function commitMarks() {
         activeClasses.forEach((classes, el) => {
             if (!el?.isConnected) return;
@@ -600,6 +602,7 @@
         }
         ensureDrawerChrome();
         drawerOpen = true;
+        drawerDismissed = false;
         pendingDrawerOpen = false;
         cartTarget.classList.add('mb-cb-cart-drawer', 'mb-cb-cart-drawer-open');
         document.body.classList.add('mb-cb-has-selection', 'mb-cb-selection-open');
@@ -610,6 +613,7 @@
     }
     function closeDrawer() {
         drawerOpen = false;
+        drawerDismissed = true;
         pendingDrawerOpen = false;
         cartTarget?.classList.remove('mb-cb-cart-drawer-open');
         document.body?.classList.remove('mb-cb-selection-open');
@@ -626,10 +630,19 @@
             if (!control) return;
             const value = text(control);
             const confirmsGuestSelection = /^confirm$/i.test(value) && Boolean(control.closest('[role="dialog"], dialog'));
+            if (/^(?:add|select)(?:\s|$)/i.test(value)) {
+                providerDialogActive = true;
+                document.body?.classList.add('mb-cb-provider-dialog-open');
+                pendingDrawerOpen = false;
+                closeDrawer();
+                window.setTimeout(schedule, 0);
+                return;
+            }
             // "Add" only opens Cloudbeds' quantity/guest dialog. Opening our
             // reservation drawer at that point puts its backdrop above the dialog and
             // blocks the Confirm button. Wait until Cloudbeds confirms the selection.
             if (confirmsGuestSelection) {
+                drawerDismissed = false;
                 pendingDrawerOpen = true;
                 window.setTimeout(schedule, 80);
             }
@@ -749,11 +762,22 @@
         guestCheckoutActive = [...roots].some(scope =>
             all(scope, 'h1, h2, h3, h4').some(heading => visible(heading) && /^add guests$/i.test(text(heading)))
         );
+        providerDialogActive = [...roots].some(scope =>
+            all(scope, '[role="dialog"], dialog').some(dialog => {
+                if (!visible(dialog)) return false;
+                const value = text(dialog);
+                return /\bquantity\b/i.test(value) && /\bconfirm\b/i.test(value);
+            })
+        );
         document.body?.classList.toggle('mb-cb-guest-checkout', guestCheckoutActive);
+        document.body?.classList.toggle('mb-cb-provider-dialog-open', providerDialogActive);
         if (guestCheckoutActive) {
             drawerOpen = false;
             pendingDrawerOpen = false;
             document.body?.classList.remove('mb-cb-has-selection', 'mb-cb-selection-open');
+        } else if (providerDialogActive) {
+            drawerOpen = false;
+            document.body?.classList.remove('mb-cb-selection-open');
         }
 
         roots.forEach(scope => {
@@ -776,7 +800,7 @@
                     const result = decoratePage(page);
                     if (result) grids.push(result);
                 });
-                summaryDrawer ||= findReservationSummaryDrawer(scope);
+                if (!providerDialogActive) summaryDrawer ||= findReservationSummaryDrawer(scope);
             }
         });
         if (summaryDrawer) {
@@ -786,13 +810,13 @@
             mark(summaryDrawer, 'mb-cb-cart-column');
             mark(summaryDrawer, 'mb-cb-cart-drawer');
             document.body?.classList.add('mb-cb-has-selection');
-            if (pendingDrawerOpen || drawerOpen || openedByCloudbeds) {
+            if (pendingDrawerOpen || drawerOpen || (openedByCloudbeds && !drawerDismissed)) {
                 drawerOpen = true;
                 mark(summaryDrawer, 'mb-cb-cart-drawer-open');
             }
         }
         commitMarks();
-        if (!guestCheckoutActive && cartTarget?.isConnected) {
+        if (!guestCheckoutActive && !providerDialogActive && cartTarget?.isConnected) {
             ensureDrawerChrome();
             cartTarget.classList.add('mb-cb-cart-drawer');
             document.body?.classList.add('mb-cb-has-selection');
@@ -804,7 +828,7 @@
         } else {
             document.body?.classList.remove('mb-cb-has-selection', 'mb-cb-selection-open');
             drawerOpen = false;
-            pendingDrawerOpen = false;
+            if (!providerDialogActive) pendingDrawerOpen = false;
             cartTarget = null;
         }
         // Column count is CSS/media-query driven. Avoid measuring and rewriting the
@@ -823,16 +847,19 @@
         if (scheduled) return;
         scheduled = true;
         requestAnimationFrame(() => {
-            try { refresh(); }
-            catch (error) {
-                // A provider markup change must never prevent booking. Restore native layout.
-                activeClasses.forEach((classes, el) => classes.forEach(cls => el.classList.remove(cls)));
-                activeLabels.forEach((_, el) => el.removeAttribute('data-mb-amenity-label'));
-                activeClasses.clear(); activeLabels.clear();
-                lastSummary = { version: VERSION, cards: 0, grids: 0, columns: [], mode: 'native-fallback' };
-                setState('ready');
-                console.warn('[Maison BE] Custom layout paused; native booking controls remain available.', error);
-            }
+            window.setTimeout(() => {
+                try { refresh(); }
+                catch (error) {
+                    scheduled = false;
+                    // A provider markup change must never prevent booking. Restore native layout.
+                    activeClasses.forEach((classes, el) => classes.forEach(cls => el.classList.remove(cls)));
+                    activeLabels.forEach((_, el) => el.removeAttribute('data-mb-amenity-label'));
+                    activeClasses.clear(); activeLabels.clear();
+                    lastSummary = { version: VERSION, cards: 0, grids: 0, columns: [], mode: 'native-fallback' };
+                    setState('ready');
+                    console.warn('[Maison BE] Custom layout paused; native booking controls remain available.', error);
+                }
+            }, 40);
         });
     }
     function observe(root) {

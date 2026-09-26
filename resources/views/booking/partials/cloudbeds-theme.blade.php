@@ -950,7 +950,7 @@
     body.mb-cb-guest-checkout {
         overflow: auto !important;
     }
-    body.mb-cb-guest-checkout :is(.maison-cb-drawer-backdrop, .maison-cb-drawer-close, .maison-cb-selection-trigger) {
+    body:is(.mb-cb-guest-checkout, .mb-cb-provider-dialog-open) :is(.maison-cb-drawer-backdrop, .maison-cb-drawer-close, .maison-cb-selection-trigger) {
         display: none !important;
     }
     .maison-cb-drawer-backdrop {
