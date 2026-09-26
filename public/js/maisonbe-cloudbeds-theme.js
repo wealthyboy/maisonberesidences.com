@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260926-brand-controls-8';
+    const VERSION = '20260926-brand-controls-9';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -626,7 +626,10 @@
             if (!control) return;
             const value = text(control);
             const confirmsGuestSelection = /^confirm$/i.test(value) && Boolean(control.closest('[role="dialog"], dialog'));
-            if (/^(add|select)(?:\s|$)/i.test(value) || confirmsGuestSelection) {
+            // "Add" only opens Cloudbeds' quantity/guest dialog. Opening our
+            // reservation drawer at that point puts its backdrop above the dialog and
+            // blocks the Confirm button. Wait until Cloudbeds confirms the selection.
+            if (confirmsGuestSelection) {
                 pendingDrawerOpen = true;
                 window.setTimeout(schedule, 80);
             }
