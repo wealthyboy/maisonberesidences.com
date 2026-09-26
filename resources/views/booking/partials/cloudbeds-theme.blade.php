@@ -1,4 +1,4 @@
-{{-- Layout adapter v20260926-centered-search-form-1. Presentation only: Cloudbeds retains booking, pricing, cart and checkout state. --}}
+{{-- Layout adapter v20260926-centered-search-form-2. Presentation only: Cloudbeds retains booking, pricing, cart and checkout state. --}}
 <style id="maison-cloudbeds-theme" data-cb-immersive-experience-root>
     .cloudbeds-booking-page {
         background: #f1eadc;
@@ -521,6 +521,7 @@
         letter-spacing: -.015em;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-shell {
+        position: relative !important;
         width: 100% !important;
         max-width: none !important;
         margin: 0 !important;
@@ -559,21 +560,41 @@
         min-width: 0 !important;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-currency {
-        margin-left: auto !important;
-        color: #06112e !important;
+        color: #fff !important;
+        opacity: 1 !important;
+        -webkit-text-fill-color: #fff !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-currency-wrap {
+        position: absolute !important;
+        top: 50% !important;
+        right: clamp(1.5rem, 4vw, 4.5rem) !important;
+        width: auto !important;
+        margin: 0 !important;
+        color: #fff !important;
+        flex: 0 0 auto !important;
+        transform: translateY(-50%) !important;
+        z-index: 2 !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-currency-wrap :is(button, span, div, svg, path) {
+        color: #fff !important;
+        opacity: 1 !important;
+        -webkit-text-fill-color: #fff !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-currency-wrap :is(svg, path) {
+        stroke: currentColor !important;
     }
 
     /* Compact and center only Cloudbeds' booking-search form. These dedicated
        hooks deliberately avoid changing reusable result/card flex containers. */
     :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-search-form {
-        position: relative !important;
-        left: 50% !important;
+        position: static !important;
+        left: auto !important;
         width: fit-content !important;
         max-width: calc(100% - 2rem) !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
         flex: 0 1 auto !important;
         justify-content: center !important;
-        transform: translateX(-50%) !important;
+        transform: none !important;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-search-form .maison-cb-promo-wrap {
         width: auto !important;
@@ -745,6 +766,11 @@
             width: 100% !important;
             max-width: 100% !important;
             margin-inline: 0 !important;
+            transform: none !important;
+        }
+        :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-currency-wrap {
+            position: static !important;
+            margin-left: auto !important;
             transform: none !important;
         }
         :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-controls {

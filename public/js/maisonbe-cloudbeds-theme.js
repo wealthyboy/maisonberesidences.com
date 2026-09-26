@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260926-centered-search-form-1';
+    const VERSION = '20260926-centered-search-form-2';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -359,6 +359,16 @@
             const value = text(el);
             if (/^\s*(?:NGN|USD|EUR|GBP|CAD|AUD|ZAR)\s*$/i.test(value) && !el.querySelector('button, [role="button"]')) {
                 mark(el, 'mb-cb-search-currency');
+
+                // Keep the complete currency control (icon + code) outside the
+                // centered booking controls without touching the results grid.
+                let currencyWrap = el;
+                for (let parent = el.parentElement; parent && parent !== best; parent = parent.parentElement) {
+                    const parentText = text(parent);
+                    if (/check[- ]?in|check[- ]?out|promo|filters?|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/i.test(parentText)) break;
+                    currencyWrap = parent;
+                }
+                mark(currencyWrap, 'maison-cb-currency-wrap');
             }
         });
     }
