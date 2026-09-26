@@ -625,6 +625,7 @@
         color: #06112e;
         font: 500 clamp(1.05rem, 1.25vw, 1.3rem)/1.35 "Galaxie Polaris", "Instrument Sans", Arial, sans-serif;
         letter-spacing: -.015em;
+        font-family: var(--mb-title-font) !important;
     }
     .cloudbeds-booking-page .cloudbeds-results-heading p {
         max-width: 46rem;
@@ -852,6 +853,16 @@
         color: #06112e !important;
         -webkit-text-fill-color: #06112e !important;
     }
+    body.cloudbeds-booking-page :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-x0j3ad .cb-calendar-days .cb-calendar-day:not(.cb-calendar-day--checkin):not(.cb-calendar-day--checkout):is(:hover, :focus, :focus-visible, .cb-calendar-day--hover, [data-highlighted="true"]) {
+        background-color: #f2dfae !important;
+        color: #06112e !important;
+        -webkit-text-fill-color: #06112e !important;
+    }
+    body.cloudbeds-booking-page :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-x0j3ad .cb-calendar-days .cb-calendar-day:not(.cb-calendar-day--checkin):not(.cb-calendar-day--checkout):is(:hover, :focus, :focus-visible, .cb-calendar-day--hover, [data-highlighted="true"]) > * {
+        background-color: transparent !important;
+        color: #06112e !important;
+        -webkit-text-fill-color: #06112e !important;
+    }
     body.cloudbeds-booking-page :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-x0j3ad .cb-calendar-days :is(.cb-calendar-day--checkin, .cb-calendar-day--checkout) {
         background-color: #06112e !important;
         color: #fff !important;
@@ -865,6 +876,35 @@
     body.cloudbeds-booking-page :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-1kw3mzq button,
     body.cloudbeds-booking-page :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-1kw3mzq button p {
         font-size: var(--booking-engine-fontSizes-md) !important;
+        font-weight: 700 !important;
+    }
+    body.cloudbeds-booking-page :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-at86xl {
+        display: inline-flex !important;
+        appearance: none !important;
+        -webkit-box-align: center !important;
+        align-items: center !important;
+        -webkit-box-pack: center !important;
+        justify-content: center !important;
+        user-select: none !important;
+        position: relative !important;
+        white-space: nowrap !important;
+        vertical-align: middle !important;
+        outline: transparent solid 2px !important;
+        outline-offset: 2px !important;
+        line-height: 1.2 !important;
+        border-radius: var(--booking-engine-radii-md) !important;
+        transition-property: var(--booking-engine-transition-property-common) !important;
+        transition-duration: var(--booking-engine-transition-duration-normal) !important;
+        cursor: pointer !important;
+        font-family: var(--cb-title-text--font-family) !important;
+        height: var(--booking-engine-sizes-12) !important;
+        min-width: var(--booking-engine-sizes-12) !important;
+        font-size: var(--booking-engine-fontSizes-lg) !important;
+        padding-inline-start: var(--booking-engine-space-4) !important;
+        padding-inline-end: var(--booking-engine-space-4) !important;
+        background: var(--booking-engine-colors-transparent) !important;
+        border: var(--booking-engine-borders-none) !important;
+        color: #000 !important;
         font-weight: 700 !important;
     }
 
