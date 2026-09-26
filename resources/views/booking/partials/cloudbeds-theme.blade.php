@@ -710,4 +710,56 @@
         }
     }
 
+
+    /* Final search alignment: center the booking controls while keeping currency readable. */
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-header {
+        position: relative !important;
+        justify-content: center !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-controls {
+        flex: 0 1 auto !important;
+        width: auto !important;
+        max-width: calc(100% - 12rem) !important;
+        margin-inline: auto !important;
+        justify-content: center !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-controls > * {
+        flex: 0 0 auto !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-currency {
+        position: absolute !important;
+        right: 0 !important;
+        margin: 0 !important;
+        color: #06112e !important;
+        -webkit-text-fill-color: #06112e !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-currency,
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-currency * {
+        color: #06112e !important;
+        -webkit-text-fill-color: #06112e !important;
+        opacity: 1 !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-currency svg,
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-currency svg * {
+        color: #06112e !important;
+        fill: currentColor !important;
+        stroke: currentColor !important;
+    }
+
+    @media (max-width: 760px) {
+        :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-header {
+            justify-content: center !important;
+        }
+        :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-controls {
+            width: 100% !important;
+            max-width: none !important;
+            margin-inline: 0 !important;
+            justify-content: center !important;
+        }
+        :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-currency {
+            position: static !important;
+            margin-left: auto !important;
+        }
+    }
+
 </style>
