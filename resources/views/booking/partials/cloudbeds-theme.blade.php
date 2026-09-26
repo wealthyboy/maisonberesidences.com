@@ -1,4 +1,4 @@
-{{-- Layout adapter v20260926-cream-toolbar-1. Presentation only: Cloudbeds retains booking, pricing, cart and checkout state. --}}
+{{-- Layout adapter v20260926-stable-results-2. Presentation only: Cloudbeds retains booking, pricing, cart and checkout state. --}}
 <style id="maison-cloudbeds-theme" data-cb-immersive-experience-root>
     .cloudbeds-booking-page {
         background: #f1eadc;
@@ -158,6 +158,10 @@
         padding: 0 !important;
         margin: 0 !important;
         background: transparent !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-grid > * {
+        min-width: 0 !important;
+        max-width: 100% !important;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-grid-extra {
         grid-column: 1 / -1 !important;
@@ -516,6 +520,16 @@
         font: 500 clamp(1.05rem, 1.25vw, 1.3rem)/1.35 "Galaxie Polaris", "Instrument Sans", Arial, sans-serif;
         letter-spacing: -.015em;
     }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-shell {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-header {
         display: flex !important;
         width: 100% !important;
@@ -561,6 +575,13 @@
         fill: currentColor;
         opacity: 1 !important;
         -webkit-text-fill-color: #111827 !important;
+    }
+
+    /* Search area is intentionally unbanded: Maison BE cream remains visible behind controls. */
+    :is(#cb-bookingengine, .cb-bookingengine-root) :is(.mb-cb-search-shell, .mb-cb-search-header) {
+        background-color: transparent !important;
+        background-image: none !important;
+        box-shadow: none !important;
     }
 
     /* Selected accommodation: keep Cloudbeds' live cart, present it as an off-canvas drawer. */
@@ -663,7 +684,17 @@
         gap: .55rem;
     }
     @media (max-width: 760px) {
-        :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-header {
+        :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-shell {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-header {
             min-height: 0 !important;
             padding: .25rem 0 1rem !important;
             flex-wrap: wrap !important;

@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260926-drawer-1';
+    const VERSION = '20260926-stable-results-2';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -48,7 +48,7 @@
     // Cloudbeds re-renders pieces of the results UI asynchronously. Layout classes are
     // intentionally sticky on still-connected nodes so a transient provider render cannot
     // flip the card between native and Maison BE layouts for a frame (visible as shaking).
-    const STICKY_LAYOUT_CLASSES = /^(?:mb-cb-(?!cart-empty)|maison-cb-primary$|maison-cb-secondary$)/;
+    const STICKY_LAYOUT_CLASSES = /^(?:mb-cb-(?!(?:grid-extra|cart-empty)$)|maison-cb-primary$|maison-cb-secondary$)/;
     function commitMarks() {
         activeClasses.forEach((classes, el) => {
             if (!el?.isConnected) return;
@@ -287,6 +287,52 @@
         });
     }
 
+    function decorateSearchArea(root) {
+        const controls = all(root, 'button, [role="button"], a').filter(el => visible(el) && !el.closest(PORTAL));
+        const promo = controls.find(el => /^(promo code|add code)$/i.test(text(el)));
+        const filters = controls.find(el => /^filters?$/i.test(text(el)));
+        if (!promo && !filters) return;
+
+        if (promo) mark(promo, 'maison-cb-secondary');
+        if (filters) mark(filters, 'maison-cb-secondary');
+
+        const anchors = [promo, filters].filter(Boolean);
+        let row = lca(anchors);
+        if (!row) return;
+
+        // Walk up only through the small search-control region. Stop before the
+        // accommodations page so we never strip backgrounds from residence cards.
+        let best = row;
+        for (let el = row; el && el !== root; el = el.parentElement) {
+            if (!neutral(el)) continue;
+            if (el.matches(PAGE) || el.querySelector(PAGE)) break;
+            const value = text(el);
+            if (/promo|filters?/.test(value.toLowerCase()) &&
+                /(?:\b(?:NGN|USD|EUR|GBP|CAD|AUD|ZAR)\b|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b|check[- ]?in|check[- ]?out)/i.test(value)) {
+                best = el;
+            }
+        }
+
+        mark(best, 'mb-cb-search-header');
+        const shell = best.parentElement;
+        if (shell && shell !== root && neutral(shell) && !shell.matches(PAGE) && !shell.querySelector(PAGE)) {
+            mark(shell, 'mb-cb-search-shell');
+        }
+
+        anchors.forEach(control => {
+            for (let el = control.parentElement; el && el !== best; el = el.parentElement) {
+                if (neutral(el)) mark(el, 'mb-cb-search-controls');
+            }
+        });
+
+        all(best, '*').forEach(el => {
+            const value = text(el);
+            if (/^\s*(?:NGN|USD|EUR|GBP|CAD|AUD|ZAR)\s*$/i.test(value) && !el.querySelector('button, [role="button"]')) {
+                mark(el, 'mb-cb-search-currency');
+            }
+        });
+    }
+
     function ensureDrawerChrome() {
         let backdrop = document.querySelector('.maison-cb-drawer-backdrop');
         if (!backdrop) {
@@ -382,8 +428,9 @@
             if (items[i] !== d.card) path(d.card.parentElement, items[i], 'mb-cb-card-shell');
             decorateCard(d);
         });
-        Array.from(grid.children).filter(el => !items.includes(el) && !/^(SCRIPT|STYLE|TEMPLATE)$/.test(el.tagName))
-            .forEach(el => mark(el, 'mb-cb-grid-extra'));
+        // Do not force temporarily-undiscovered Cloudbeds children to span the grid.
+        // During async hydration a residence can exist before its rate/title anchors are ready;
+        // treating that node as a full-width "extra" caused the occasional giant card until refresh.
 
         // Full-width residence grid, not a three-quarter column beside a huge empty cart.
         const scope = page.closest(ROOT) || page.parentElement;
@@ -457,6 +504,7 @@
                     else if (/^(promo code|add code|filters?|modify|change|back)$/i.test(value)) mark(button, 'maison-cb-secondary');
                 });
                 decoratePropertyIdentity(root);
+                decorateSearchArea(root);
             });
             all(scope, PAGE).filter(page => !page.closest(PORTAL)).forEach(page => {
                 const result = decoratePage(page);
@@ -504,16 +552,41 @@
     }
     function observe(root) {
         const observer = new MutationObserver(schedule);
-        observer.observe(root, { childList: true, subtree: true });
+        observer.observe(root, { childList: true, subtree: true, characterData: true });
         observers.push(observer);
     }
+    function discoverOpenRoots() {
+        let found = false;
+        all(document, 'cb-immersive-experience').forEach(host => {
+            if (!host.shadowRoot) return;
+            const before = roots.size;
+            addRoot(host.shadowRoot);
+            if (roots.size !== before) found = true;
+        });
+        return found;
+    }
+
+    function startHydrationWatchdog() {
+        // Cloudbeds can attach its open shadow root after DOMContentLoaded without
+        // mutating the host element. A short back-off watchdog removes that race.
+        const delays = [0, 50, 120, 250, 450, 750, 1200, 1800, 2600, 3800, 5500, 8000, 12000, 18000, 26000];
+        delays.forEach(delay => window.setTimeout(() => {
+            discoverOpenRoots();
+            schedule();
+        }, delay));
+    }
+
     function start() {
         if (!document.body?.classList.contains('cloudbeds-booking-page')) return;
         ensureDrawerChrome();
         bindInteractions(document);
         observe(document.body);
+        startHydrationWatchdog();
         document.querySelector('[data-cloudbeds-retry]')?.addEventListener('click', () => window.location.reload());
-        window.addEventListener('on-booking-engine-ready', schedule);
+        window.addEventListener('on-booking-engine-ready', () => { discoverOpenRoots(); schedule(); });
+        window.addEventListener('load', () => { discoverOpenRoots(); schedule(); }, { once: true });
+        window.addEventListener('pageshow', () => { discoverOpenRoots(); schedule(); });
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) { discoverOpenRoots(); schedule(); } });
         window.setTimeout(() => { if (!ready) setState('error'); }, 30000);
         schedule();
     }
