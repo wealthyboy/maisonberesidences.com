@@ -13,6 +13,7 @@ use App\Services\PaystackService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 use Mockery;
 use Tests\TestCase;
 
@@ -154,16 +155,17 @@ class AdditionalServicesTest extends TestCase
             ->assertJsonPath('payment.metadata.booking.services_subtotal', 60000);
     }
 
-    public function test_checkout_rejects_a_stay_shorter_than_two_nights(): void
+    public function test_checkout_accepts_a_one_night_stay(): void
     {
-        $apartment = Apartment::create(['name' => 'Stanmore', 'slug' => 'stanmore', 'price' => 500]);
+        $checkin = now()->addDays(10)->startOfDay();
 
-        $this->postJson(route('reservations.store', $apartment), [
-            'checkin' => now()->addDays(10)->toDateString(),
-            'checkout' => now()->addDays(11)->toDateString(),
-        ])->assertUnprocessable()
-            ->assertJsonValidationErrors(['checkout'])
-            ->assertJsonPath('errors.checkout.0', 'The minimum stay is 2 nights.');
+        $validator = Validator::make([
+            'checkout' => $checkin->copy()->addDay()->toDateString(),
+        ], [
+            'checkout' => [new \App\Rules\MinimumStay($checkin->toDateString())],
+        ]);
+
+        $this->assertFalse($validator->fails());
     }
 
     public function test_confirmed_payment_persists_service_lines_on_the_invoice(): void

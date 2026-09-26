@@ -52,10 +52,10 @@
             const isSameDate = (first, second) => first && second && isoDate(first) === isoDate(second);
             const minimumCheckout = (start) => {
                 const minimum = new Date((start || today).getTime());
-                minimum.setDate(minimum.getDate() + 2);
+                minimum.setDate(minimum.getDate() + 1);
                 return minimum;
             };
-            const minimumStayMessage = 'The minimum stay is 2 nights. Please choose a later check-out date.';
+            const minimumStayMessage = 'Check-out must be after check-in.';
 
             window.initDateRangePickers = () => document.querySelectorAll('[data-date-range-picker]').forEach((root) => {
                 if (root.dataset.dateRangeReady) return;

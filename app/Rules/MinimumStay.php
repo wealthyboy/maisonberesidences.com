@@ -10,7 +10,7 @@ class MinimumStay implements ValidationRule
 {
     public function __construct(
         private readonly mixed $checkin,
-        private readonly int $nights = 2,
+        private readonly int $nights = 1,
     ) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void

@@ -81,6 +81,7 @@
         data-cloudbeds-state="loading"
         data-has-stay-search="{{ $hasStaySearch ? 'true' : 'false' }}"
     >
+        <x-site-page-header :currency="$currency" />
 
         <main class="cloudbeds-booking-main cloudbeds-booking-main--immersive">
             @unless ($hasStaySearch)
@@ -152,7 +153,7 @@
 
         <script
             data-cb-immersive-experience-root
-            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260926-brand-controls-12"
+            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260926-brand-controls-13"
             defer
         ></script>
     </body>

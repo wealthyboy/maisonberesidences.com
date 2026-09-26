@@ -114,17 +114,15 @@ class HomeAvailabilitySearchTest extends TestCase
         $response->assertOk();
     }
 
-    public function test_home_search_rejects_a_stay_shorter_than_two_nights(): void
+    public function test_home_search_accepts_a_one_night_stay(): void
     {
-        $response = $this->from(route('home'))->get(route('apartments.index', [
+        $response = $this->get(route('apartments.index', [
             'search' => 1,
             'checkin' => now()->addDay()->toDateString(),
             'checkout' => now()->addDays(2)->toDateString(),
         ]));
 
-        $response
-            ->assertRedirect(route('home'))
-            ->assertSessionHasErrors(['checkout']);
+        $response->assertOk();
     }
 
     public function test_home_search_rejects_past_or_reversed_dates(): void

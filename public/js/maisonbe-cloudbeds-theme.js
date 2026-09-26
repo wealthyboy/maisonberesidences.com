@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260926-brand-controls-12';
+    const VERSION = '20260926-brand-controls-13';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -45,6 +45,7 @@
     let drawerOpen = false;
     let drawerDismissed = false;
     let guestCheckoutActive = false;
+    let guestCheckoutLastSeen = 0;
     let providerDialogActive = false;
     let presentationReady = false;
     let stableLayoutKey = '';
@@ -763,8 +764,12 @@
         // Accommodate an open shadow root without rewriting the component implementation.
         all(document, 'cb-immersive-experience').forEach(host => { if (host.shadowRoot) addRoot(host.shadowRoot); });
 
-        guestCheckoutActive = [...roots].some(scope =>
+        const guestCheckoutDetected = [...roots].some(scope =>
             all(scope, 'h1, h2, h3, h4').some(heading => visible(heading) && /^add guests$/i.test(text(heading)))
+        );
+        if (guestCheckoutDetected) guestCheckoutLastSeen = performance.now();
+        guestCheckoutActive = guestCheckoutDetected || (
+            guestCheckoutActive && performance.now() - guestCheckoutLastSeen < 1200
         );
         providerDialogActive = [...roots].some(scope =>
             all(scope, '[role="dialog"], dialog').some(dialog => {
