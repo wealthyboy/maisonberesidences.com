@@ -1,4 +1,4 @@
-{{-- Layout adapter v20260926-brand-controls-3. Presentation only: Cloudbeds retains booking, pricing, cart and checkout state. --}}
+{{-- Layout adapter v20260926-brand-controls-5. Presentation only: Cloudbeds retains booking, pricing, cart and checkout state. --}}
 <style id="maison-cloudbeds-theme" data-cb-immersive-experience-root>
     .cloudbeds-booking-page {
         background: #f1eadc;
@@ -787,6 +787,18 @@
         background: #f1e2bc !important;
         color: #06112e !important;
     }
+    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar :is(.maison-cb-calendar-range, .maison-cb-calendar-range > *) {
+        border-color: #dfbf77 !important;
+        background: #f1e2bc !important;
+        color: #06112e !important;
+        -webkit-text-fill-color: #06112e !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar :is(.maison-cb-calendar-endpoint, .maison-cb-calendar-endpoint > *) {
+        border-color: #06112e !important;
+        background: #06112e !important;
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
+    }
     :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar :is([aria-selected="true"], [data-selected="true"]) {
         border-color: #06112e !important;
         background: #06112e !important;
@@ -798,6 +810,10 @@
         color: #06112e !important;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar :is([aria-selected="true"], [data-selected="true"]):hover {
+        background: #06112e !important;
+        color: #fff !important;
+    }
+    :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-calendar :is(.maison-cb-calendar-endpoint, .maison-cb-calendar-endpoint > *):hover {
         background: #06112e !important;
         color: #fff !important;
     }

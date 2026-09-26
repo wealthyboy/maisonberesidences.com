@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260926-brand-controls-3';
+    const VERSION = '20260926-brand-controls-5';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -19,7 +19,11 @@
     const emptyCartText = /^no accommodations added[.!]?$/i;
     const text = el => (el?.textContent || '').replace(/\s+/g, ' ').trim();
     const all = (scope, selector) => Array.from(scope.querySelectorAll(selector));
-    const normalizeName = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    const normalizeName = value => String(value || '')
+        .toLowerCase()
+        .replace(/\bpent\s+house\b/g, 'penthouse')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
     const galleryData = (() => {
         try {
             return JSON.parse(document.querySelector('#maison-apartment-galleries')?.textContent || '[]');
@@ -56,7 +60,7 @@
     // Cloudbeds re-renders pieces of the results UI asynchronously. Layout classes are
     // intentionally sticky on still-connected nodes so a transient provider render cannot
     // flip the card between native and Maison BE layouts for a frame (visible as shaking).
-    const STICKY_LAYOUT_CLASSES = /^(?:mb-cb-(?!(?:grid-extra|cart-empty)$)|maison-cb-(?:primary|secondary|search-form|search-hidden|hidden-control-wrap|promo-wrap|language|language-wrap|currency-wrap|date-control|calendar-icon)$)/;
+    const STICKY_LAYOUT_CLASSES = /^(?:mb-cb-(?!(?:grid-extra|cart-empty)$)|maison-cb-(?:primary|secondary|search-form|search-hidden|hidden-control-wrap|promo-wrap|language|language-wrap|currency-wrap|date-control)$)/;
     function commitMarks() {
         activeClasses.forEach((classes, el) => {
             if (!el?.isConnected) return;
@@ -107,6 +111,12 @@
         }
         const style = getComputedStyle(el);
         return style.display !== 'none' && style.visibility !== 'hidden' && el.getClientRects().length > 0;
+    }
+    function greenishBackground(el) {
+        const match = getComputedStyle(el).backgroundColor.match(/[\d.]+/g);
+        if (!match || match.length < 3) return false;
+        const [red, green, blue, alpha = 1] = match.map(Number);
+        return alpha > .1 && green > red + 18 && green > blue + 8;
     }
     function photoWithin(el) {
         return all(el, 'img, [role="img"], [style*="background-image"]')
@@ -481,8 +491,14 @@
         });
         if (dateControl) {
             mark(dateControl, 'maison-cb-date-control');
+            const colouredIcon = all(dateControl, '*').find(el => {
+                if (!visible(el) || !greenishBackground(el)) return false;
+                const rect = el.getBoundingClientRect();
+                return rect.width >= 30 && rect.width <= 100 && rect.height >= 30 && rect.height <= 100;
+            });
             const calendarIcon = all(dateControl, 'svg').find(svg => visible(svg));
-            if (calendarIcon?.parentElement) mark(calendarIcon.parentElement, 'maison-cb-calendar-icon');
+            if (colouredIcon) mark(colouredIcon, 'maison-cb-calendar-icon');
+            else if (calendarIcon?.parentElement) mark(calendarIcon.parentElement, 'maison-cb-calendar-icon');
         }
 
         all(best, '*').forEach(el => {
@@ -526,7 +542,20 @@
             const value = text(calendar);
             const dayButtons = all(calendar, 'button, [role="button"]').filter(control => /^\d{1,2}$/.test(text(control)));
             const hasMonth = /\b(?:January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/i.test(value);
-            if (hasMonth && dayButtons.length >= 20) mark(calendar, 'maison-cb-calendar');
+            if (!hasMonth || dayButtons.length < 20) return;
+
+            mark(calendar, 'maison-cb-calendar');
+            const selectedDays = dayButtons.filter(day =>
+                day.getAttribute('aria-selected') === 'true' ||
+                day.getAttribute('data-selected') === 'true' ||
+                greenishBackground(day) ||
+                all(day, '*').some(greenishBackground)
+            );
+            selectedDays.forEach(day => mark(day, 'maison-cb-calendar-range'));
+            if (selectedDays.length) {
+                mark(selectedDays[0], 'maison-cb-calendar-endpoint');
+                mark(selectedDays[selectedDays.length - 1], 'maison-cb-calendar-endpoint');
+            }
         });
     }
 
