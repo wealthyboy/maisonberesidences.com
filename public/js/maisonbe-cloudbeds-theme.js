@@ -325,6 +325,22 @@
             }
         });
 
+        // Mark only the actual stay-date control.  Do not change widths or
+        // alignment on the surrounding results/search containers; Cloudbeds
+        // reuses similar wrappers elsewhere and broad flex rules can collapse
+        // the accommodation grid while it is hydrating.
+        const dateControl = all(best, 'button, [role="button"], a, div').find(el => {
+            if (!visible(el) || el.closest(PORTAL)) return false;
+            const value = text(el);
+            const monthHits = value.match(/\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/gi) || [];
+            const hasTwoDates = monthHits.length >= 2 ||
+                (/check[- ]?in/i.test(value) && /check[- ]?out/i.test(value));
+            if (!hasTwoDates) return false;
+            const rect = el.getBoundingClientRect();
+            return rect.width >= 220 && rect.width <= 760 && rect.height <= 130;
+        });
+        if (dateControl) mark(dateControl, 'maison-cb-date-control');
+
         all(best, '*').forEach(el => {
             const value = text(el);
             if (/^\s*(?:NGN|USD|EUR|GBP|CAD|AUD|ZAR)\s*$/i.test(value) && !el.querySelector('button, [role="button"]')) {
