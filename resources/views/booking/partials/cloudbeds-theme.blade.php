@@ -713,6 +713,9 @@
         flex: 0 1 auto !important;
         justify-content: center !important;
         transform: none !important;
+        border-color: transparent !important;
+        background: transparent !important;
+        box-shadow: none !important;
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-search-form .maison-cb-promo-wrap {
         width: auto !important;
@@ -1037,12 +1040,18 @@
             min-height: 0 !important;
             padding: .25rem 0 1rem !important;
             flex-wrap: wrap !important;
+            background: transparent !important;
         }
         :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-search-form {
             left: auto !important;
             width: 100% !important;
             max-width: 100% !important;
             margin-inline: 0 !important;
+            padding: 0 !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
             transform: none !important;
         }
         :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-currency-wrap {
@@ -1053,6 +1062,10 @@
         :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-controls {
             width: 100% !important;
             flex-wrap: wrap !important;
+            padding: 0 !important;
+            border: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
         }
         :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-date-control {
             left: auto !important;
