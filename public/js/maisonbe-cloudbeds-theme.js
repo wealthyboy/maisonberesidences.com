@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260926-brand-controls-13';
+    const VERSION = '20260927-guest-stability-14';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -764,9 +764,21 @@
         // Accommodate an open shadow root without rewriting the component implementation.
         all(document, 'cb-immersive-experience').forEach(host => { if (host.shadowRoot) addRoot(host.shadowRoot); });
 
-        const guestCheckoutDetected = [...roots].some(scope =>
-            all(scope, 'h1, h2, h3, h4').some(heading => visible(heading) && /^add guests$/i.test(text(heading)))
-        );
+        // Cloudbeds briefly hides and rebuilds the guest heading while hydrating the
+        // checkout form. Do not use geometry/visibility for step detection: doing so
+        // made our layout switch off and back on and caused the form to flash.
+        const guestCheckoutDetected = [...roots].some(scope => {
+            const hasGuestHeading = all(scope, 'h1, h2, h3, h4')
+                .some(heading => /^add guests$/i.test(text(heading)));
+            if (hasGuestHeading) return true;
+
+            const guestFields = all(scope, 'input, select, textarea, label')
+                .map(field => `${text(field)} ${field.getAttribute?.('placeholder') || ''} ${field.getAttribute?.('aria-label') || ''}`)
+                .join(' ');
+            return /first name/i.test(guestFields)
+                && /last name/i.test(guestFields)
+                && /(?:email|phone)/i.test(guestFields);
+        });
         if (guestCheckoutDetected) guestCheckoutLastSeen = performance.now();
         guestCheckoutActive = guestCheckoutDetected || (
             guestCheckoutActive && performance.now() - guestCheckoutLastSeen < 1200

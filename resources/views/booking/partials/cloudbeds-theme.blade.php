@@ -955,6 +955,15 @@
     body.mb-cb-guest-checkout {
         overflow: auto !important;
     }
+    /* The provider repeats its property/search header above Add Guests. It is useful
+       on results, but redundant here and was the navy strip seen above the form. */
+    body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root) :is(
+        .mb-cb-search-shell,
+        .mb-cb-search-header,
+        .maison-cb-search-form
+    ) {
+        display: none !important;
+    }
     body:is(.mb-cb-guest-checkout, .mb-cb-provider-dialog-open) :is(.maison-cb-drawer-backdrop, .maison-cb-drawer-close, .maison-cb-selection-trigger) {
         display: none !important;
     }
