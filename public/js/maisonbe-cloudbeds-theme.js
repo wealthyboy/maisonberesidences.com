@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260927-guest-stability-17';
+    const VERSION = '20260927-guest-stability-19';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -777,32 +777,54 @@
         });
     }
     function guestProviderHeaders(scope) {
-        const candidates = new Set(all(scope, 'header[data-testid="header"], header[role="banner"]'));
-        const exactTitle = /^Maison\s+BE\s+Residence$/i;
+        const candidates = new Set(all(
+            scope,
+            'header[data-testid="header"], header[role="banner"], .mb-cb-search-shell, .mb-cb-search-header, .maison-cb-search-form'
+        ));
+        const safeCandidate = element => {
+            if (!element || element === document.body || element === document.documentElement) return false;
+            if (element.matches?.('body, html, main, cb-immersive-experience')) return false;
+            if (element.matches?.(ROOT) || element.matches?.(PAGE)) return false;
+            return true;
+        };
 
+        // On a direct refresh of the Add Guests step Cloudbeds creates a fresh,
+        // unclassified property/search band. Locate only its compact visual row;
+        // never walk as far as the page, booking root, main element or body.
         all(scope, 'span, p, strong, b, h1, h2, h3, h4, h5, div')
-            .filter(element => exactTitle.test(text(element)))
+            .filter(element => /^Maison\s+BE\s+Residence$/i.test(text(element)))
             .forEach(title => {
-                for (let element = title; element && element !== scope; element = element.parentElement) {
-                    if (element.matches?.(PAGE) || element.querySelector?.(PAGE)) break;
+                let element = title.parentElement;
+                for (let depth = 0; element && depth < 7; depth += 1, element = element.parentElement) {
+                    if (!safeCandidate(element)) break;
                     const value = text(element);
-                    const containsSearchControls = /promo\s*code/i.test(value)
-                        && /filters?/i.test(value)
-                        && /\b(?:NGN|USD|EUR|GBP|CAD|AUD|ZAR)\b/i.test(value);
-                    if (!containsSearchControls) continue;
-                    candidates.add(element);
-                    break;
+                    const rect = element.getBoundingClientRect();
+                    const isCompactBand = rect.height >= 56
+                        && rect.height <= 220
+                        && rect.width >= Math.min(560, window.innerWidth * .55);
+                    if (isCompactBand && /\b(?:NGN|USD|EUR|GBP|CAD|AUD|ZAR)\b/i.test(value)) {
+                        candidates.add(element);
+                    }
                 }
             });
 
-        return [...candidates];
+        return [...candidates].filter(safeCandidate);
     }
     function setGuestProviderHeaderHidden(active) {
+        if (document.body?.dataset.mbGuestHeaderHidden === 'true') {
+            document.body.style.removeProperty('display');
+            document.body.removeAttribute('aria-hidden');
+            delete document.body.dataset.mbGuestHeaderHidden;
+        }
+
         roots.forEach(scope => {
             const headers = active
                 ? guestProviderHeaders(scope)
                 : all(scope, '[data-mb-guest-header-hidden="true"]');
             headers.forEach(header => {
+                if (!header || header === document.body || header === document.documentElement) return;
+                if (header.matches?.('body, html, main, cb-immersive-experience')) return;
+                if (header.matches?.(ROOT) || header.matches?.(PAGE)) return;
                 if (active) {
                     header.dataset.mbGuestHeaderHidden = 'true';
                     header.style.setProperty('display', 'none', 'important');

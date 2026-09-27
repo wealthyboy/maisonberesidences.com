@@ -81,6 +81,13 @@
         data-cloudbeds-state="loading"
         data-has-stay-search="{{ $hasStaySearch ? 'true' : 'false' }}"
     >
+        <script>
+            // Safety recovery for a previously cached theme build that could mark and
+            // hide the document body while trying to remove Cloudbeds' guest header.
+            document.body.style.removeProperty('display');
+            document.body.removeAttribute('aria-hidden');
+            delete document.body.dataset.mbGuestHeaderHidden;
+        </script>
         <x-site-page-header :currency="$currency" />
 
         <main class="cloudbeds-booking-main cloudbeds-booking-main--immersive">
@@ -153,7 +160,7 @@
 
         <script
             data-cb-immersive-experience-root
-            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260927-guest-stability-17"
+            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260927-guest-stability-19"
             defer
         ></script>
     </body>
