@@ -955,6 +955,25 @@
     body.mb-cb-guest-checkout {
         overflow: auto !important;
     }
+    /* The results introduction belongs to the apartment-selection step only. */
+    body:is(.mb-cb-guest-checkout, .mb-cb-guest-transition) .cloudbeds-results-heading {
+        display: none !important;
+    }
+    /* Keep guest fields clean and stable when focused. Cloudbeds adds its own
+       generated focus ring, so neutralise both that ring and our global one. */
+    body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal)
+    :is(input, select, textarea):is(:focus, :focus-visible) {
+        outline: none !important;
+        outline-offset: 0 !important;
+        border-color: #98a2b3 !important;
+        box-shadow: none !important;
+    }
+    :host(.mb-cb-guest-checkout-host) :is(input, select, textarea):is(:focus, :focus-visible) {
+        outline: none !important;
+        outline-offset: 0 !important;
+        border-color: #98a2b3 !important;
+        box-shadow: none !important;
+    }
     /* The provider repeats its property/search header above Add Guests. It is useful
        on results, but redundant here and was the navy strip seen above the form. */
     body:is(.mb-cb-guest-checkout, .mb-cb-guest-transition) :is(#cb-bookingengine, .cb-bookingengine-root) :is(

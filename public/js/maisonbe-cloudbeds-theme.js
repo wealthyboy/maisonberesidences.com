@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260927-guest-stability-19';
+    const VERSION = '20260927-guest-cleanup-20';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
