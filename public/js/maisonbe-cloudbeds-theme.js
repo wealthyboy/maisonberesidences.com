@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260927-guest-stability-14';
+    const VERSION = '20260927-guest-stability-16';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -45,7 +45,7 @@
     let drawerOpen = false;
     let drawerDismissed = false;
     let guestCheckoutActive = false;
-    let guestCheckoutLastSeen = 0;
+    let guestTransitionActive = false;
     let providerDialogActive = false;
     let presentationReady = false;
     let stableLayoutKey = '';
@@ -634,6 +634,28 @@
             if (!control) return;
             const value = text(control);
             const confirmsGuestSelection = /^confirm$/i.test(value) && Boolean(control.closest('[role="dialog"], dialog'));
+            const startsGuestCheckout = /^(?:book now|continue)$/i.test(value)
+                && !control.closest('[role="dialog"], dialog');
+
+            // Cloudbeds replaces most of its DOM after Book Now. Set this state before
+            // that replacement starts so its repeated navy property/search header can
+            // never flash above the guest form while React hydrates the next step.
+            if (startsGuestCheckout) {
+                guestTransitionActive = true;
+                document.body?.classList.add('mb-cb-guest-transition');
+                setGuestHostState(true);
+                pendingDrawerOpen = false;
+                closeDrawer();
+                window.setTimeout(schedule, 0);
+            }
+
+            if (/^back$/i.test(value) && guestCheckoutActive) {
+                guestCheckoutActive = false;
+                guestTransitionActive = false;
+                document.body?.classList.remove('mb-cb-guest-checkout', 'mb-cb-guest-transition');
+                setGuestHostState(false);
+                window.setTimeout(schedule, 80);
+            }
             if (/^(?:add|select)(?:\s|$)/i.test(value)) {
                 providerDialogActive = true;
                 document.body?.classList.add('mb-cb-provider-dialog-open');
@@ -749,6 +771,27 @@
         const css = document.querySelector('#maison-cloudbeds-theme');
         if (root instanceof ShadowRoot && css && !root.querySelector('#maison-cloudbeds-theme')) root.appendChild(css.cloneNode(true));
     }
+    function setGuestHostState(active) {
+        all(document, 'cb-immersive-experience').forEach(host => {
+            host.classList.toggle('mb-cb-guest-checkout-host', Boolean(active));
+        });
+    }
+    function setGuestProviderHeaderHidden(active) {
+        roots.forEach(scope => {
+            all(scope, 'header[data-testid="header"]').forEach(header => {
+                if (active) {
+                    header.dataset.mbGuestHeaderHidden = 'true';
+                    header.style.setProperty('display', 'none', 'important');
+                    header.setAttribute('aria-hidden', 'true');
+                    return;
+                }
+                if (header.dataset.mbGuestHeaderHidden !== 'true') return;
+                header.style.removeProperty('display');
+                header.removeAttribute('aria-hidden');
+                delete header.dataset.mbGuestHeaderHidden;
+            });
+        });
+    }
     function refresh() {
         scheduled = false;
         scanCount += 1;
@@ -779,10 +822,13 @@
                 && /last name/i.test(guestFields)
                 && /(?:email|phone)/i.test(guestFields);
         });
-        if (guestCheckoutDetected) guestCheckoutLastSeen = performance.now();
-        guestCheckoutActive = guestCheckoutDetected || (
-            guestCheckoutActive && performance.now() - guestCheckoutLastSeen < 1200
-        );
+        // Once detected, keep the guest layout stable until Cloudbeds' Back control is
+        // used. Its fields are briefly removed and recreated during hydration; a timed
+        // fallback made the page alternate between results and checkout presentation.
+        if (guestCheckoutDetected) {
+            guestCheckoutActive = true;
+            guestTransitionActive = false;
+        }
         providerDialogActive = [...roots].some(scope =>
             all(scope, '[role="dialog"], dialog').some(dialog => {
                 if (!visible(dialog)) return false;
@@ -791,6 +837,9 @@
             })
         );
         document.body?.classList.toggle('mb-cb-guest-checkout', guestCheckoutActive);
+        document.body?.classList.toggle('mb-cb-guest-transition', guestTransitionActive);
+        setGuestHostState(guestCheckoutActive || guestTransitionActive);
+        setGuestProviderHeaderHidden(guestCheckoutActive || guestTransitionActive);
         document.body?.classList.toggle('mb-cb-provider-dialog-open', providerDialogActive);
         if (guestCheckoutActive) {
             drawerOpen = false;
@@ -812,10 +861,15 @@
                     if (primaryText.test(value) && value.length < 50) mark(button, 'maison-cb-primary');
                     else if (/^(promo code|add code|filters?|modify|change|back)$/i.test(value)) mark(button, 'maison-cb-secondary');
                 });
-                decoratePropertyIdentity(root);
-                decorateSearchArea(root);
-                decorateCalendar(root);
-                decorateLanguage(root);
+                // These decorators belong to the residence-results screen. Reapplying
+                // them while Cloudbeds hydrates Add Guests rebuilt the navy search
+                // header repeatedly and made the checkout form visibly shake.
+                if (!guestCheckoutActive && !guestTransitionActive) {
+                    decoratePropertyIdentity(root);
+                    decorateSearchArea(root);
+                    decorateCalendar(root);
+                    decorateLanguage(root);
+                }
             });
             if (!guestCheckoutActive) {
                 all(scope, PAGE).filter(page => !page.closest(PORTAL)).forEach(page => {

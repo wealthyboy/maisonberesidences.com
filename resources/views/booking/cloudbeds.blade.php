@@ -153,7 +153,7 @@
 
         <script
             data-cb-immersive-experience-root
-            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260927-guest-stability-14"
+            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260927-guest-stability-16"
             defer
         ></script>
     </body>

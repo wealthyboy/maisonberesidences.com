@@ -957,14 +957,25 @@
     }
     /* The provider repeats its property/search header above Add Guests. It is useful
        on results, but redundant here and was the navy strip seen above the form. */
-    body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root) :is(
+    body:is(.mb-cb-guest-checkout, .mb-cb-guest-transition) :is(#cb-bookingengine, .cb-bookingengine-root) :is(
         .mb-cb-search-shell,
         .mb-cb-search-header,
         .maison-cb-search-form
     ) {
         display: none !important;
     }
-    body:is(.mb-cb-guest-checkout, .mb-cb-provider-dialog-open) :is(.maison-cb-drawer-backdrop, .maison-cb-drawer-close, .maison-cb-selection-trigger) {
+    /* Stable Cloudbeds hook for the same repeated header. This remains effective
+       while Cloudbeds replaces its generated classes during guest-step hydration. */
+    body:is(.mb-cb-guest-checkout, .mb-cb-guest-transition) :is(#cb-bookingengine, .cb-bookingengine-root) header[data-testid="header"] {
+        display: none !important;
+    }
+    /* This stylesheet is also cloned into Cloudbeds' open shadow root. The host
+       state survives React replacing the internal checkout markup, preventing a
+       one-frame flash of the navy header on the Add Guests step. */
+    :host(.mb-cb-guest-checkout-host) header[data-testid="header"] {
+        display: none !important;
+    }
+    body:is(.mb-cb-guest-checkout, .mb-cb-guest-transition, .mb-cb-provider-dialog-open) :is(.maison-cb-drawer-backdrop, .maison-cb-drawer-close, .maison-cb-selection-trigger) {
         display: none !important;
     }
     .maison-cb-drawer-backdrop {
