@@ -5,6 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="description" content="Reserve your stay at Maison Be Residences securely through our booking engine.">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+        <meta http-equiv="Pragma" content="no-cache">
+        <meta http-equiv="Expires" content="0">
         <x-brand-head />
 
         <title>Book Your Stay | Maison Be Residences</title>
@@ -21,6 +24,8 @@
                 'rate' => 1,
             ]);
             $cloudbedsPropertyCode = config('cloudbeds.property_code', 'ef9dzW');
+            $cloudbedsThemePath = public_path('js/maisonbe-cloudbeds-theme.js');
+            $cloudbedsThemeVersion = is_file($cloudbedsThemePath) ? filemtime($cloudbedsThemePath) : now()->timestamp;
             $rawCheckin = request('checkin');
             $rawCheckout = request('checkout');
             $adults = max(1, (int) (request('adults') ?: request('guests', 2)));
@@ -39,6 +44,10 @@
 
         <script>
             (() => {
+                window.addEventListener('pageshow', (event) => {
+                    if (event.persisted) window.location.reload();
+                });
+
                 const url = new URL(window.location.href);
                 let changed = false;
 
@@ -160,7 +169,7 @@
 
         <script
             data-cb-immersive-experience-root
-            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v=20260927-guest-cleanup-20"
+            src="{{ asset('js/maisonbe-cloudbeds-theme.js') }}?v={{ $cloudbedsThemeVersion }}"
             defer
         ></script>
     </body>
