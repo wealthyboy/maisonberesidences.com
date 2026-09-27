@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260927-guest-cleanup-20';
+    const VERSION = '20260927-three-plus-selection-21';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -633,6 +633,17 @@
             const control = eventControl(event);
             if (!control) return;
             const value = text(control);
+            const controlName = [
+                value,
+                control.getAttribute('aria-label'),
+                control.getAttribute('title'),
+                control.getAttribute('data-testid'),
+                ...all(control, '[aria-label], [title], [data-testid]').flatMap(element => [
+                    element.getAttribute('aria-label'),
+                    element.getAttribute('title'),
+                    element.getAttribute('data-testid'),
+                ]),
+            ].filter(Boolean).join(' ');
             const confirmsGuestSelection = /^confirm$/i.test(value) && Boolean(control.closest('[role="dialog"], dialog'));
             const startsGuestCheckout = /^(?:book now|continue)$/i.test(value)
                 && !control.closest('[role="dialog"], dialog');
@@ -655,6 +666,23 @@
                 document.body?.classList.remove('mb-cb-guest-checkout', 'mb-cb-guest-transition');
                 setGuestHostState(false);
                 window.setTimeout(schedule, 80);
+            }
+            // Removing the final accommodation from Add Guests sends Cloudbeds back
+            // to its residence results without using the visible Back control. Clear
+            // the latched guest state immediately so the results recover their stable
+            // three-card + selection-column layout after React replaces the page.
+            if (guestCheckoutActive && /\b(?:delete|remove)(?: accommodation| room| reservation)?\b/i.test(controlName)) {
+                guestCheckoutActive = false;
+                guestTransitionActive = false;
+                presentationReady = false;
+                stableLayoutKey = '';
+                stableLayoutSince = 0;
+                document.body?.classList.remove('mb-cb-guest-checkout', 'mb-cb-guest-transition');
+                setGuestHostState(false);
+                setGuestProviderHeaderHidden(false);
+                window.setTimeout(schedule, 0);
+                window.setTimeout(schedule, 120);
+                window.setTimeout(schedule, 400);
             }
             if (/^(?:add|select)(?:\s|$)/i.test(value)) {
                 providerDialogActive = true;
@@ -874,6 +902,23 @@
         if (guestCheckoutDetected) {
             guestCheckoutActive = true;
             guestTransitionActive = false;
+        } else if (guestCheckoutActive) {
+            // Cloudbeds does not use the visible Back button when the final room is
+            // deleted from Add Guests. If its visible accommodation results have
+            // returned, release the latched guest state even when the trash icon did
+            // not expose an accessible delete label to the click listener.
+            const visibleResultsReturned = [...roots].some(scope =>
+                all(scope, PAGE).some(page => visible(page) && findCards(page).some(({ card }) => visible(card)))
+            );
+            if (visibleResultsReturned) {
+                guestCheckoutActive = false;
+                guestTransitionActive = false;
+                presentationReady = false;
+                stableLayoutKey = '';
+                stableLayoutSince = 0;
+                setGuestHostState(false);
+                setGuestProviderHeaderHidden(false);
+            }
         }
         providerDialogActive = [...roots].some(scope =>
             all(scope, '[role="dialog"], dialog').some(dialog => {

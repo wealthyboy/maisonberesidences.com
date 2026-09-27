@@ -155,7 +155,7 @@
     }
     :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-grid {
         display: grid !important;
-        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
         align-items: stretch !important;
         gap: clamp(.6rem, 1.1vw, 1.1rem) !important;
         width: 100% !important;
@@ -1067,6 +1067,59 @@
         display: inline-flex;
         align-items: center;
         gap: .55rem;
+    }
+    /* Desktop residence selection is a stable 3 + 1 composition: three apartment
+       cards on the left and Cloudbeds' real live selection/cart as column four.
+       The provider still owns every action and total; only its placement changes. */
+    @media (min-width: 1024px) {
+        :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-results-layout {
+            display: grid !important;
+            grid-template-columns: minmax(0, 3fr) minmax(280px, 1fr) !important;
+            align-items: start !important;
+            gap: clamp(1rem, 1.5vw, 1.5rem) !important;
+        }
+        :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-results-column {
+            grid-column: 1 !important;
+            width: 100% !important;
+            min-width: 0 !important;
+        }
+        :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-cart-column,
+        :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-cart-column.mb-cb-cart-drawer {
+            position: sticky !important;
+            top: 1.25rem !important;
+            right: auto !important;
+            bottom: auto !important;
+            left: auto !important;
+            z-index: 5 !important;
+            grid-column: 2 !important;
+            display: block !important;
+            width: 100% !important;
+            max-width: none !important;
+            min-width: 0 !important;
+            height: auto !important;
+            max-height: calc(100vh - 2.5rem) !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            border: 0 !important;
+            border-radius: 16px !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            transform: none !important;
+            transition: none !important;
+            visibility: visible !important;
+            order: initial !important;
+        }
+        :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-cart-column.mb-cb-cart-empty {
+            display: block !important;
+        }
+        body.mb-cb-selection-open {
+            overflow: auto !important;
+        }
+        body:not(.mb-cb-guest-checkout) :is(.maison-cb-drawer-backdrop, .maison-cb-drawer-close, .maison-cb-selection-trigger) {
+            display: none !important;
+        }
     }
     @media (max-width: 760px) {
         :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-shell {
