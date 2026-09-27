@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260927-guest-stability-16';
+    const VERSION = '20260927-guest-stability-17';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -776,9 +776,33 @@
             host.classList.toggle('mb-cb-guest-checkout-host', Boolean(active));
         });
     }
+    function guestProviderHeaders(scope) {
+        const candidates = new Set(all(scope, 'header[data-testid="header"], header[role="banner"]'));
+        const exactTitle = /^Maison\s+BE\s+Residence$/i;
+
+        all(scope, 'span, p, strong, b, h1, h2, h3, h4, h5, div')
+            .filter(element => exactTitle.test(text(element)))
+            .forEach(title => {
+                for (let element = title; element && element !== scope; element = element.parentElement) {
+                    if (element.matches?.(PAGE) || element.querySelector?.(PAGE)) break;
+                    const value = text(element);
+                    const containsSearchControls = /promo\s*code/i.test(value)
+                        && /filters?/i.test(value)
+                        && /\b(?:NGN|USD|EUR|GBP|CAD|AUD|ZAR)\b/i.test(value);
+                    if (!containsSearchControls) continue;
+                    candidates.add(element);
+                    break;
+                }
+            });
+
+        return [...candidates];
+    }
     function setGuestProviderHeaderHidden(active) {
         roots.forEach(scope => {
-            all(scope, 'header[data-testid="header"]').forEach(header => {
+            const headers = active
+                ? guestProviderHeaders(scope)
+                : all(scope, '[data-mb-guest-header-hidden="true"]');
+            headers.forEach(header => {
                 if (active) {
                     header.dataset.mbGuestHeaderHidden = 'true';
                     header.style.setProperty('display', 'none', 'important');
