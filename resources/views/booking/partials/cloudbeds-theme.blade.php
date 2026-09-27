@@ -90,6 +90,10 @@
         border-color: #c9ccd5;
         border-radius: 10px;
     }
+    :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal, [data-reach-portal]) .d-1dkqgsj {
+        padding-top: 6px !important;
+        padding-bottom: 18px !important;
+    }
     :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) :is(button, a, input, select, textarea):focus-visible {
         outline: 3px solid #b3832f !important;
         outline-offset: 3px;
