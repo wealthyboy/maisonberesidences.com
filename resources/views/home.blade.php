@@ -148,10 +148,22 @@
                     </div>
                 </div>
 
-                <div class="residence-grid">
-                    @foreach ($apartments as $apartment)
-                        <x-apartment-card :apartment="$apartment" :quote="$apartment->home_quote" :link-url="route('apartments.index')" :booking-enabled="false" />
-                    @endforeach
+                <div class="residences-carousel" data-residences-carousel>
+                    <button class="residences-carousel-control is-previous" type="button" data-residences-previous aria-label="View previous apartments">
+                        <span aria-hidden="true">&#8249;</span>
+                    </button>
+
+                    <div class="residence-grid residences-carousel-track" data-residences-track>
+                        @foreach ($apartments as $apartment)
+                            <div class="residences-carousel-slide" data-residences-slide>
+                                <x-apartment-card :apartment="$apartment" :quote="$apartment->home_quote" :link-url="$viewAllApartmentsUrl" :booking-enabled="false" />
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <button class="residences-carousel-control is-next" type="button" data-residences-next aria-label="View more apartments">
+                        <span aria-hidden="true">&#8250;</span>
+                    </button>
                 </div>
             </section>
 

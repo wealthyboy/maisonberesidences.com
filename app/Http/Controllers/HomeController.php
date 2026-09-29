@@ -94,10 +94,10 @@ class HomeController extends Controller
         }
 
         $apartments = Apartment::query()
+            ->publiclyAvailable()
             ->with(['images', 'attributes.parent'])
             ->orderBy('sort_order')
             ->orderBy('id')
-            ->limit(4)
             ->get();
 
         $apartments->each(function (Apartment $apartment) use ($currency): void {

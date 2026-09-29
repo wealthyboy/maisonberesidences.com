@@ -70,3 +70,46 @@ if (heroImageCarousel) {
         window.addEventListener('pagehide', () => window.clearInterval(interval), { once: true });
     }
 }
+
+document.querySelectorAll('[data-residences-carousel]').forEach((carousel) => {
+    const track = carousel.querySelector('[data-residences-track]');
+    const slides = Array.from(carousel.querySelectorAll('[data-residences-slide]'));
+    const previous = carousel.querySelector('[data-residences-previous]');
+    const next = carousel.querySelector('[data-residences-next]');
+
+    if (!track || !previous || !next || slides.length === 0) {
+        return;
+    }
+
+    const scrollAmount = () => {
+        const styles = window.getComputedStyle(track);
+        const gap = Number.parseFloat(styles.columnGap || styles.gap || '0') || 0;
+
+        return slides[0].getBoundingClientRect().width + gap;
+    };
+
+    const updateControls = () => {
+        const maximum = Math.max(0, track.scrollWidth - track.clientWidth);
+        const isStatic = maximum < 2;
+
+        carousel.classList.toggle('is-static', isStatic);
+        previous.disabled = isStatic || track.scrollLeft <= 2;
+        next.disabled = isStatic || track.scrollLeft >= maximum - 2;
+    };
+
+    previous.addEventListener('click', () => {
+        track.scrollBy({ left: -scrollAmount(), behavior: 'smooth' });
+    });
+
+    next.addEventListener('click', () => {
+        track.scrollBy({ left: scrollAmount(), behavior: 'smooth' });
+    });
+
+    let frame;
+    track.addEventListener('scroll', () => {
+        window.cancelAnimationFrame(frame);
+        frame = window.requestAnimationFrame(updateControls);
+    }, { passive: true });
+    window.addEventListener('resize', updateControls, { passive: true });
+    updateControls();
+});

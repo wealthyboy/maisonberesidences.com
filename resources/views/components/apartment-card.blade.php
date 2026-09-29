@@ -48,7 +48,9 @@
     }
 
     $query = collect($filters)->only(['checkin', 'checkout', 'guests', 'rooms'])->filter()->all();
-    $showUrl = route('apartments.show', $apartment).($query ? '?'.http_build_query($query) : '');
+    $showUrl = filled($linkUrl)
+        ? $linkUrl
+        : route('apartments.show', $apartment).($query ? '?'.http_build_query($query) : '');
     $beds = $apartment->no_of_rooms ?: collect([$apartment->bedroom_1, $apartment->bedroom_2, $apartment->bedroom_3, $apartment->bedroom_4, $apartment->bedroom_5, $apartment->bedroom_6])->filter()->count();
     $amenityGroups = $apartment->attributes
         ->filter(fn ($attribute) => $attribute->parent && $attribute->type === 'apartment_facility')
