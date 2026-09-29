@@ -917,9 +917,6 @@ body[data-cloudbeds-state="ready"] .cloudbeds-booking-embed, body[data-cloudbeds
 .cloudbeds-stage-error button, .cloudbeds-stage-error a { display: inline-flex; min-height: 46px; padding: 0 1.25rem; border-radius: 999px; align-items: center; justify-content: center; font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; }
 .cloudbeds-stage-error button { border: 1px solid var(--deep); color: #fff; background: var(--deep); }
 .cloudbeds-stage-error a { border: 1px solid rgba(6,17,46,.18); color: var(--deep); background: #fff; }
-.cloudbeds-trust-row { display: grid; width: min(calc(100% - 4rem), 1420px); margin: 1.2rem auto 0; padding: 1.15rem 0 0; border-top: 1px solid rgba(6,17,46,.1); grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
-.cloudbeds-trust-row span { position: relative; padding-left: 1.1rem; color: #7a8191; font-size: .58rem; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
-.cloudbeds-trust-row span::before { position: absolute; top: 50%; left: 0; width: 5px; height: 5px; border-radius: 50%; background: var(--gold); content: ""; transform: translateY(-50%); }
 .cloudbeds-booking-noscript { display: grid; min-height: 340px; place-items: center; align-content: center; gap: 1rem; text-align: center; }
 .cloudbeds-booking-noscript p { margin: 0; color: var(--soft-ink); }
 .cloudbeds-booking-noscript a { display: inline-flex; min-height: 46px; padding: 0 1.25rem; border-radius: 999px; color: #fff; background: var(--deep); align-items: center; text-decoration: none; }
@@ -932,7 +929,6 @@ body[data-cloudbeds-state="ready"] .cloudbeds-booking-embed, body[data-cloudbeds
     .cloudbeds-stay-edit { justify-self: start; }
     .cloudbeds-immersive-stage { width: min(calc(100% - 1rem), 1500px); border-radius: 18px; }
     .cloudbeds-booking-embed { padding: 0; }
-    .cloudbeds-trust-row { width: min(calc(100% - 2rem), 1420px); grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 620px) {
@@ -943,5 +939,4 @@ body[data-cloudbeds-state="ready"] .cloudbeds-booking-embed, body[data-cloudbeds
     .cloudbeds-immersive-stage { width: 100%; min-height: 660px; border-right: 0; border-left: 0; border-radius: 0; }
     .cloudbeds-booking-embed, .cloudbeds-booking-embed cb-immersive-experience { min-height: 640px; }
     .cloudbeds-stage-error { inset: .75rem; padding: 1.5rem; }
-    .cloudbeds-trust-row { grid-template-columns: 1fr; }
 }

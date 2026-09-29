@@ -155,12 +155,6 @@
                 </div>
             </section>
 
-            <section class="cloudbeds-trust-row" aria-label="Booking benefits">
-                <span>Direct booking</span>
-                <span>Secure checkout</span>
-                <span>Live Cloudbeds availability</span>
-                <span>Maison Be support</span>
-            </section>
         </main>
 
         <x-site-footer />

@@ -6,7 +6,7 @@
     .cloudbeds-booking-page .cloudbeds-booking-main--immersive {
         width: min(100%, 1920px);
     }
-    .cloudbeds-booking-page :is(.cloudbeds-booking-intro, .cloudbeds-stay-context, .cloudbeds-trust-row) {
+    .cloudbeds-booking-page :is(.cloudbeds-booking-intro, .cloudbeds-stay-context) {
         width: calc(100% - clamp(2rem, 4.4vw, 5rem));
         max-width: none;
     }
