@@ -15,6 +15,15 @@
         @vite(['resources/css/app.css', 'resources/js/home.js'])
     </head>
     <body>
+        @php
+            $viewAllApartmentsUrl = route('booking.cloudbeds', [
+                'currency' => 'NGN',
+                'utm_source' => 'maisonbe_website',
+                'checkin' => today()->toDateString(),
+                'checkout' => today()->addDay()->toDateString(),
+                'adults' => 1,
+            ]);
+        @endphp
         <main>
             <section class="hero" aria-labelledby="hero-title">
                 <div class="hero-image-carousel" aria-hidden="true" @if ($heroImages->isNotEmpty()) data-hero-image-carousel @endif>
@@ -124,7 +133,7 @@
                 <div class="introduction-copy">
                     <h2 id="introduction-title">More than a place to stay, Maison Be is a place to belong.</h2>
                     <p>Built around comfort, trust and understated luxury, our residence offers a warm, composed home away from home for short stays, extended visits and every moment in between.</p>
-                    <a class="introduction-cta" href="{{ route('apartments.index') }}">View all apartments <span aria-hidden="true">→</span></a>
+                    <a class="introduction-cta" href="{{ $viewAllApartmentsUrl }}">View all apartments <span aria-hidden="true">→</span></a>
                 </div>
             </section>
 
@@ -135,7 +144,7 @@
                         <h2 id="residences-title">Find your stay.</h2>
                         <div class="residences-heading-summary">
                             <p>Each residence has its own point of view. Choose the space that feels like yours.</p>
-                            <a href="{{ route('apartments.index') }}">View all apartments <span aria-hidden="true">→</span></a>
+                            <a href="{{ $viewAllApartmentsUrl }}">View all apartments <span aria-hidden="true">→</span></a>
                         </div>
                     </div>
                 </div>
@@ -171,7 +180,7 @@
                                 <p class="eyebrow">{{ $loop->first ? 'The Maison Be way' : 'Made for lingering' }}</p>
                                 <h2>{{ $loop->first ? 'A more considered way to stay.' : 'Space to settle into your own rhythm.' }}</h2>
                                 <p>{{ $loop->first ? 'From the first arrival to the last unhurried morning, each Maison Be residence is designed around the quiet details that make a stay feel effortless.' : 'Thoughtful interiors, generous rooms and a private sense of calm make every visit feel less like a booking and more like coming home.' }}</p>
-                                <a href="{{ route('apartments.index') }}">View all apartments <span aria-hidden="true">→</span></a>
+                                <a href="{{ $viewAllApartmentsUrl }}">View all apartments <span aria-hidden="true">→</span></a>
                             </div>
                             <div class="residence-story-slider" data-story-slider>
                                 @foreach ($flavourSlides as $index => $slide)
