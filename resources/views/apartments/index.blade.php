@@ -18,7 +18,6 @@
                 </button>
                 <a class="results-wordmark" href="{{ url('/') }}" aria-label="Maison Be Residences home"><x-brand-logo tone="light" /></a>
                 <div class="results-actions">
-                    <x-currency-selector :currency="$currency" tone="light" />
                     <a href="{{ url('/') }}" class="results-back">Home</a>
                 </div>
             </nav>

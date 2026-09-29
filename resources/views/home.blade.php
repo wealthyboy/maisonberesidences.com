@@ -59,7 +59,6 @@
                     </button>
                     <a class="hero-wordmark" href="/" aria-label="Maison Be Residences home"><x-brand-logo tone="light" /></a>
                     <div class="hero-actions">
-                        <x-currency-selector :currency="$currency" tone="light" />
                         <a class="reserve-link" href="{{ route('booking.cloudbeds') }}">Reserve</a>
                     </div>
                 </header>
