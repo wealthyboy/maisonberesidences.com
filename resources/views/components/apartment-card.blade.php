@@ -4,6 +4,8 @@
     'filters' => [],
     'linkUrl' => null,
     'bookingEnabled' => true,
+    'showPrice' => true,
+    'titleLink' => true,
 ])
 
 @php
@@ -48,9 +50,9 @@
     }
 
     $query = collect($filters)->only(['checkin', 'checkout', 'guests', 'rooms'])->filter()->all();
-    $showUrl = filled($linkUrl)
-        ? $linkUrl
-        : route('apartments.show', $apartment).($query ? '?'.http_build_query($query) : '');
+    $hasStayDates = filled($filters['checkin'] ?? null) && filled($filters['checkout'] ?? null);
+    $showUrl = route('apartments.show', $apartment).($query ? '?'.http_build_query($query) : '');
+    $cardBookUrl = filled($linkUrl) ? $linkUrl : ($hasStayDates ? route('reservations.create', $apartment).'?'.http_build_query($query) : null);
     $beds = $apartment->no_of_rooms ?: collect([$apartment->bedroom_1, $apartment->bedroom_2, $apartment->bedroom_3, $apartment->bedroom_4, $apartment->bedroom_5, $apartment->bedroom_6])->filter()->count();
     $amenityGroups = $apartment->attributes
         ->filter(fn ($attribute) => $attribute->parent && $attribute->type === 'apartment_facility')
@@ -120,10 +122,6 @@
     $refundability = 'Partial Refund';
     $cancellationPolicyUrl = route('information.show', ['information' => 'cancellation-refund-policy']);
     $modalId = 'apartment-card-modal-'.$apartment->id;
-    $hasStayDates = filled($filters['checkin'] ?? null) && filled($filters['checkout'] ?? null);
-    $bookUrl = $hasStayDates
-        ? route('reservations.create', $apartment).'?'.http_build_query($query)
-        : null;
 @endphp
 
 <article class="residence-card" data-apartment-card>
@@ -149,7 +147,13 @@
     </div>
     <div class="residence-card-copy">
         <p>Maison Be Residences</p>
-        <h3><a href="{{ $showUrl }}">{{ \Illuminate\Support\Str::title(\Illuminate\Support\Str::lower($apartment->name)) }}</a></h3>
+        <h3>
+            @if ($titleLink)
+                <a href="{{ $showUrl }}">{{ \Illuminate\Support\Str::title(\Illuminate\Support\Str::lower($apartment->name)) }}</a>
+            @else
+                {{ \Illuminate\Support\Str::title(\Illuminate\Support\Str::lower($apartment->name)) }}
+            @endif
+        </h3>
         <ul class="residence-card-highlights">
             @if ($parkingAmenity)<li class="is-parking"><x-amenity-icon name="parking" />{{ $parkingAmenity->name }}</li>@endif
             @if ($displaySize)<li><x-amenity-icon name="area" />{{ $displaySize }}</li>@endif
@@ -180,14 +184,16 @@
             <button type="button" data-card-modal-open aria-controls="{{ $modalId }}">More details <x-amenity-icon name="chevron-right" /></button>
         </div>
         <div class="residence-card-footer">
-            <div class="residence-card-rate">
-                <span class="residence-card-price">
-                    <strong>{{ $quote['display_nightly'] }}</strong>
-                    <small>per night</small>
-                </span>
-            </div>
-            @if ($apartment->allow && $bookingEnabled && $bookUrl)
-                <a class="residence-card-book" href="{{ $bookUrl }}">Book now</a>
+            @if ($showPrice)
+                <div class="residence-card-rate">
+                    <span class="residence-card-price">
+                        <strong>{{ $quote['display_nightly'] }}</strong>
+                        <small>per night</small>
+                    </span>
+                </div>
+            @endif
+            @if ($apartment->allow && $bookingEnabled && $cardBookUrl)
+                <a class="residence-card-book" href="{{ $cardBookUrl }}">Book now</a>
             @endif
         </div>
     </div>
