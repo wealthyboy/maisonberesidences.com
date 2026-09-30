@@ -15,15 +15,18 @@
         @vite(['resources/css/app.css', 'resources/js/home.js'])
     </head>
     <body>
-        @php
-            $viewAllApartmentsUrl = route('booking.cloudbeds', [
-                'currency' => 'NGN',
-                'utm_source' => 'maisonbe_website',
-                'checkin' => today()->toDateString(),
-                'checkout' => today()->addDay()->toDateString(),
-                'adults' => 1,
-            ]);
-        @endphp
+@php
+    $defaultBookingCheckin = today();
+    $defaultBookingCheckout = $defaultBookingCheckin->copy()->endOfYear();
+
+    $viewAllApartmentsUrl = route('booking.cloudbeds', [
+        'currency' => 'NGN',
+        'utm_source' => 'maisonbe_website',
+        'checkin' => $defaultBookingCheckin->toDateString(),
+        'checkout' => $defaultBookingCheckout->toDateString(),
+        'adults' => 1,
+    ]);
+@endphp
         <main>
             <section class="hero" aria-labelledby="hero-title">
                 <div class="hero-image-carousel" aria-hidden="true" @if ($heroImages->isNotEmpty()) data-hero-image-carousel @endif>
