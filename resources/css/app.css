@@ -1019,63 +1019,69 @@ body[data-cloudbeds-state="empty"] .cloudbeds-booking-embed { display: none !imp
     .cloudbeds-stage-error { inset: .75rem; padding: 1.5rem; }
 }
 
-/* Maison Be Cloudbeds loader: hard-center every loader element against the full stage. */
+/* Maison Be Cloudbeds loader: structural centering.
+   This loader belongs to the Maison Be host page, not to Cloudbeds itself. */
 body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-loading {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    display: grid !important;
+    place-items: center !important;
+    padding-inline: clamp(1rem, 4vw, 3rem) !important;
 }
 
 body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-loading-inner {
-    display: flex !important;
-    flex-direction: column !important;
+    display: grid !important;
+    width: fit-content !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    justify-items: center !important;
     align-items: center !important;
-    justify-content: center !important;
-    width: min(100%, 720px) !important;
-    margin: 0 auto !important;
     gap: 1.15rem !important;
     text-align: center !important;
 }
 
 body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-mark {
-    display: flex !important;
-    width: 76px !important;
-    height: 76px !important;
-    margin: 0 auto !important;
-    align-self: center !important;
-    justify-self: center !important;
-    align-items: center !important;
-    justify-content: center !important;
-    flex: 0 0 76px !important;
-}
-
-body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-mark .brand-lockup {
-    display: flex !important;
-    width: 100% !important;
-    height: 100% !important;
+    display: grid !important;
+    width: 92px !important;
+    height: 92px !important;
     margin: 0 !important;
-    align-items: center !important;
-    justify-content: center !important;
+    padding: .55rem !important;
+    place-items: center !important;
+    box-sizing: border-box !important;
+    justify-self: center !important;
+    align-self: center !important;
 }
 
-body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-mark .brand-lockup-mark {
+body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-mark > img {
     display: block !important;
     width: 100% !important;
     height: 100% !important;
-    margin: 0 auto !important;
+    margin: 0 !important;
     object-fit: contain !important;
+    object-position: 50% 50% !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
     transform: none !important;
     animation: none !important;
 }
 
 body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-loading p {
-    width: 100% !important;
-    margin: 0 auto !important;
+    width: auto !important;
+    max-width: min(720px, calc(100vw - 3rem)) !important;
+    margin: 0 !important;
     text-align: center !important;
+    justify-self: center !important;
 }
 
 body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-progress {
-    margin: 0 auto !important;
-    align-self: center !important;
+    width: min(260px, 70vw) !important;
+    margin: 0 !important;
     justify-self: center !important;
+    align-self: center !important;
+}
+
+@media (max-width: 620px) {
+    body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-mark {
+        width: 82px !important;
+        height: 82px !important;
+    }
 }
