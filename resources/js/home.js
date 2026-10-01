@@ -113,3 +113,32 @@ document.querySelectorAll('[data-residences-carousel]').forEach((carousel) => {
     window.addEventListener('resize', updateControls, { passive: true });
     updateControls();
 });
+
+
+// Homepage apartment cards should bring guests back to the booking calendar.
+// The actual Cloudbeds redirect only happens after the guest submits valid stay dates.
+const homeStaySearch = document.getElementById('stay-search');
+
+if (homeStaySearch) {
+    document.addEventListener('click', (event) => {
+        const availabilityLink = event.target.closest('a[href="#stay-search"]');
+        if (!availabilityLink) {
+            return;
+        }
+
+        event.preventDefault();
+        homeStaySearch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        window.setTimeout(() => {
+            const checkin = homeStaySearch.querySelector('[data-checkin-input]');
+            const checkout = homeStaySearch.querySelector('[data-checkout-input]');
+            const field = checkin?.value && !checkout?.value ? 'checkout' : 'checkin';
+            const trigger = homeStaySearch.querySelector(`[data-date-trigger][data-date-field="${field}"]`);
+            const picker = homeStaySearch.querySelector('[data-date-picker]');
+
+            if (picker?.hidden) {
+                trigger?.click();
+            }
+        }, 260);
+    });
+}

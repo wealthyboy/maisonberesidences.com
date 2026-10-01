@@ -17,11 +17,7 @@
     <body>
 @php
     $viewAllApartmentsUrl = route('apartments.index');
-    $homeAvailabilityUrl = route('booking.cloudbeds', [
-        'currency' => 'NGN',
-        'utm_source' => 'maisonbe_website',
-        'adults' => 1,
-    ]);
+    $homeAvailabilityUrl = '#stay-search';
 @endphp
         <main>
             <section class="hero" aria-labelledby="hero-title">
@@ -153,6 +149,7 @@
                             :apartment="$apartment"
                             :quote="$apartment->home_quote"
                             :link-url="$homeAvailabilityUrl"
+                            booking-label="Check availability"
                             :booking-enabled="true"
                             :show-price="false"
                             :title-link="false"
