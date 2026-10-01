@@ -1281,12 +1281,13 @@
 
     :is(#cb-bookingengine, .cb-bookingengine-root, reach-portal) .d-73jlzc {
         font-size: var(--booking-engine-fontSizes-md) !important;
+        font-weight: 700 !important;
         left: -20px !important;
         position: absolute !important;
         padding-inline-start: var(--booking-engine-space-4) !important;
         padding-inline-end: var(--booking-engine-space-4) !important;
         z-index: 1 !important;
-        top: -8px !important;
+        top: -14px !important;
     }
 
 </style>
