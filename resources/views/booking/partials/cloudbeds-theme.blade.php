@@ -1017,16 +1017,12 @@
     :host(.mb-cb-guest-checkout-host) .maison-cb-guest-field-label {
         font-weight: 700 !important;
     }
-    body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-phone-field,
-    :host(.mb-cb-guest-checkout-host) .maison-cb-phone-field {
-        position: relative !important;
-    }
+    /* Phone is a compound control. Keep its native field structure intact and let
+       the presentation script align only the caption against the outer field shell. */
     body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-phone-field-label,
     :host(.mb-cb-guest-checkout-host) .maison-cb-phone-field-label {
-        position: absolute !important;
-        top: .85rem !important;
-        left: 1.35rem !important;
-        z-index: 2 !important;
+        top: auto !important;
+        left: auto !important;
         margin: 0 !important;
         color: #1f2937 !important;
         font-weight: 700 !important;

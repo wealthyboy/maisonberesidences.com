@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20261001-mobile-search-surface-exact-25';
+    const VERSION = '20261001-phone-label-align-26';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -1078,18 +1078,21 @@
                     }
                 });
 
-                // Phone is composed by Cloudbeds from a country selector plus the
-                // number input, so its caption is not always exposed like the other
-                // guest labels. Locate it from the real telephone input and mark the
-                // nearest short "Phone *" caption and its complete field wrapper.
+                // Phone is a compound Cloudbeds control (country picker + number input),
+                // so its caption lives inside the country-picker sub-control instead of
+                // aligning with the other field captions. Find the full bordered phone
+                // field, then visually align the existing caption to that outer field.
+                // We do not move/clone React-owned nodes; only presentation is adjusted.
                 all(scope, 'input').filter(input => {
                     const descriptor = `${input.type || ''} ${input.getAttribute('name') || ''} ${input.getAttribute('autocomplete') || ''} ${input.getAttribute('aria-label') || ''} ${input.getAttribute('placeholder') || ''}`;
                     return /(?:^|\s|[-_])tel(?:$|\s|[-_])|phone/i.test(descriptor);
                 }).forEach(input => {
-                    let wrapper = input.parentElement;
+                    let search = input.parentElement;
                     let phoneLabel = null;
-                    for (let depth = 0; wrapper && depth < 6; depth += 1, wrapper = wrapper.parentElement) {
-                        const candidates = all(wrapper, 'label, span, p, div');
+                    let commonAncestors = [];
+
+                    for (let depth = 0; search && depth < 8; depth += 1, search = search.parentElement) {
+                        const candidates = all(search, 'label, span, p, div');
                         phoneLabel = candidates.find(candidate => {
                             const own = Array.from(candidate.childNodes || [])
                                 .filter(node => node.nodeType === 3)
@@ -1100,13 +1103,57 @@
                             const value = own || text(candidate).replace(/\s+/g, ' ').trim();
                             return /^phone\s*\*?$/i.test(value);
                         });
-                        if (phoneLabel) {
-                            mark(phoneLabel, 'maison-cb-guest-field-label');
-                            mark(phoneLabel, 'maison-cb-phone-field-label');
-                            mark(wrapper, 'maison-cb-phone-field');
-                            break;
-                        }
+                        if (phoneLabel) break;
                     }
+                    if (!phoneLabel) return;
+
+                    // Gather common ancestors containing both the label and telephone input.
+                    for (let node = phoneLabel.parentElement, depth = 0; node && depth < 9; depth += 1, node = node.parentElement) {
+                        if (!node.contains(input)) continue;
+                        const rect = node.getBoundingClientRect();
+                        if (rect.width > 0 && rect.height > 0) commonAncestors.push({ node, rect });
+                    }
+
+                    // Prefer the actual rounded/bordered field shell. The country selector
+                    // is much narrower and normally has only a divider, not four borders.
+                    let field = commonAncestors.find(({ node, rect }) => {
+                        if (rect.width < 260 || rect.height < 64 || rect.height > 180) return false;
+                        const style = getComputedStyle(node);
+                        const borderSides = [
+                            style.borderTopWidth,
+                            style.borderRightWidth,
+                            style.borderBottomWidth,
+                            style.borderLeftWidth,
+                        ].map(value => parseFloat(value) || 0).filter(value => value >= .75).length;
+                        return borderSides >= 3;
+                    })?.node;
+
+                    // Fallback: choose the widest phone-only wrapper that is still field-sized.
+                    if (!field) {
+                        field = commonAncestors
+                            .filter(({ rect }) => rect.height >= 64 && rect.height <= 180)
+                            .sort((a, b) => b.rect.width - a.rect.width)[0]?.node || null;
+                    }
+                    if (!field) return;
+
+                    mark(phoneLabel, 'maison-cb-guest-field-label');
+                    mark(phoneLabel, 'maison-cb-phone-field-label');
+                    mark(field, 'maison-cb-phone-field');
+
+                    // Measure from the unshifted label on every Cloudbeds re-render, then
+                    // place it at the same inset used by First Name / Last Name / Email.
+                    phoneLabel.style.setProperty('transform', 'none', 'important');
+                    phoneLabel.style.setProperty('font-weight', '700', 'important');
+                    phoneLabel.style.setProperty('color', '#1f2937', 'important');
+                    phoneLabel.style.setProperty('line-height', '1.15', 'important');
+                    phoneLabel.style.setProperty('pointer-events', 'none', 'important');
+                    const fieldRect = field.getBoundingClientRect();
+                    const labelRect = phoneLabel.getBoundingClientRect();
+                    const dx = Math.round((fieldRect.left + 24) - labelRect.left);
+                    const dy = Math.round((fieldRect.top + 18) - labelRect.top);
+                    phoneLabel.style.setProperty('transform', `translate(${dx}px, ${dy}px)`, 'important');
+                    phoneLabel.style.setProperty('transform-origin', 'top left', 'important');
+                    phoneLabel.style.setProperty('z-index', '2', 'important');
                 });
             }
             all(scope, ROOT).filter(root => !root.parentElement?.closest(ROOT)).forEach(root => {
