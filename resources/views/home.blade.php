@@ -16,18 +16,9 @@
     </head>
     <body>
 @php
-    $defaultBookingCheckin = today();
-    $defaultBookingCheckout = $defaultBookingCheckin->copy()->endOfYear();
-
-    if ($defaultBookingCheckout->isSameDay($defaultBookingCheckin)) {
-        $defaultBookingCheckout = $defaultBookingCheckin->copy()->addDay();
-    }
-
     $viewAllApartmentsUrl = route('booking.cloudbeds', [
         'currency' => 'NGN',
         'utm_source' => 'maisonbe_website',
-        'checkin' => $defaultBookingCheckin->toDateString(),
-        'checkout' => $defaultBookingCheckout->toDateString(),
         'adults' => 1,
     ]);
 @endphp
