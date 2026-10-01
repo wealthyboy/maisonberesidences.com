@@ -1017,6 +1017,22 @@
     :host(.mb-cb-guest-checkout-host) .maison-cb-guest-field-label {
         font-weight: 700 !important;
     }
+    body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-phone-field,
+    :host(.mb-cb-guest-checkout-host) .maison-cb-phone-field {
+        position: relative !important;
+    }
+    body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-phone-field-label,
+    :host(.mb-cb-guest-checkout-host) .maison-cb-phone-field-label {
+        position: absolute !important;
+        top: .85rem !important;
+        left: 1.35rem !important;
+        z-index: 2 !important;
+        margin: 0 !important;
+        color: #1f2937 !important;
+        font-weight: 700 !important;
+        line-height: 1.15 !important;
+        pointer-events: none !important;
+    }
 
     /* Keep guest fields clean and stable when focused. Cloudbeds adds its own
        generated focus ring, so neutralise both that ring and our global one. */
@@ -1177,6 +1193,35 @@
         }
     }
     @media (max-width: 760px) {
+        /* Mobile results use Maison BE navy instead of the pale booking canvas.
+           Keep checkout/payment screens on their existing neutral surface. */
+        body.cloudbeds-booking-page:not(.mb-cb-guest-checkout):not(.mb-cb-guest-transition),
+        body.cloudbeds-booking-page:not(.mb-cb-guest-checkout):not(.mb-cb-guest-transition) :is(#cb-bookingengine, .cb-bookingengine-root),
+        :host:not(.mb-cb-guest-checkout-host),
+        :host:not(.mb-cb-guest-checkout-host) :is(#cb-bookingengine, .cb-bookingengine-root) {
+            background: #06112e !important;
+        }
+        :host(.mb-cb-guest-checkout-host),
+        :host(.mb-cb-guest-checkout-host) :is(#cb-bookingengine, .cb-bookingengine-root) {
+            background: #f1eadc !important;
+        }
+        body.cloudbeds-booking-page:not(.mb-cb-guest-checkout):not(.mb-cb-guest-transition) .cloudbeds-results-heading :is(h2, p) {
+            color: #fff !important;
+        }
+        body.cloudbeds-booking-page:not(.mb-cb-guest-checkout):not(.mb-cb-guest-transition)
+        :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-currency-wrap,
+        body.cloudbeds-booking-page:not(.mb-cb-guest-checkout):not(.mb-cb-guest-transition)
+        :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-currency-wrap :is(button, span, div, svg, path) {
+            color: #fff !important;
+            -webkit-text-fill-color: #fff !important;
+        }
+        :is(#cb-bookingengine, .cb-bookingengine-root) :is(.maison-cb-mobile-filter, .maison-cb-search-hidden, .maison-cb-hidden-control-wrap) {
+            display: none !important;
+        }
+        :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-date-control,
+        :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-date-control :is(span, p, strong, b, div) {
+            font-weight: 700 !important;
+        }
         :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-shell {
             width: 100% !important;
             max-width: none !important;

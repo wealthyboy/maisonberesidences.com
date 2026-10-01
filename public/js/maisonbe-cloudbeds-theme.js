@@ -428,8 +428,9 @@
 
     function decorateSearchArea(root) {
         const controls = all(root, 'button, [role="button"], a').filter(el => visible(el) && !el.closest(PORTAL));
+        const controlName = el => `${text(el)} ${el.getAttribute?.('aria-label') || ''} ${el.getAttribute?.('title') || ''}`.replace(/\s+/g, ' ').trim();
         const promo = controls.find(el => /^(promo code|add code)$/i.test(text(el)));
-        const filters = controls.find(el => /^filters?$/i.test(text(el)));
+        const filters = controls.find(el => /\bfilters?\b/i.test(controlName(el)));
         if (!promo && !filters) return;
 
         if (promo) {
@@ -509,6 +510,23 @@
             const calendarIcon = all(dateControl, 'svg').find(svg => visible(svg));
             if (colouredIcon) mark(colouredIcon, 'maison-cb-calendar-icon');
             else if (calendarIcon?.parentElement) mark(calendarIcon.parentElement, 'maison-cb-calendar-icon');
+
+            // Some Cloudbeds builds render Filters as an icon-only button with no
+            // visible text. Identify the compact control immediately beside the date
+            // pill so mobile presentation can hide it without touching other actions.
+            const dateRect = dateControl.getBoundingClientRect();
+            const adjacentFilter = controls.find(control => {
+                if (control === promo || control === filters || dateControl.contains(control) || control.contains(dateControl)) return false;
+                if (!control.querySelector('svg')) return false;
+                const rect = control.getBoundingClientRect();
+                const centerDelta = Math.abs((rect.top + rect.height / 2) - (dateRect.top + dateRect.height / 2));
+                const horizontalGap = rect.left - dateRect.right;
+                return rect.width >= 42 && rect.width <= 100
+                    && rect.height >= 42 && rect.height <= 100
+                    && centerDelta <= 36
+                    && horizontalGap >= -8 && horizontalGap <= 140;
+            });
+            if (adjacentFilter) mark(adjacentFilter, 'maison-cb-mobile-filter');
         }
 
         all(best, '*').forEach(el => {
@@ -1007,6 +1025,37 @@
                     const value = text(candidate).replace(/\s+/g, ' ').trim();
                     if (/^(?:first name|last name|country|email|phone)\s*\*?$/i.test(value)) {
                         mark(candidate, 'maison-cb-guest-field-label');
+                    }
+                });
+
+                // Phone is composed by Cloudbeds from a country selector plus the
+                // number input, so its caption is not always exposed like the other
+                // guest labels. Locate it from the real telephone input and mark the
+                // nearest short "Phone *" caption and its complete field wrapper.
+                all(scope, 'input').filter(input => {
+                    const descriptor = `${input.type || ''} ${input.getAttribute('name') || ''} ${input.getAttribute('autocomplete') || ''} ${input.getAttribute('aria-label') || ''} ${input.getAttribute('placeholder') || ''}`;
+                    return /(?:^|\s|[-_])tel(?:$|\s|[-_])|phone/i.test(descriptor);
+                }).forEach(input => {
+                    let wrapper = input.parentElement;
+                    let phoneLabel = null;
+                    for (let depth = 0; wrapper && depth < 6; depth += 1, wrapper = wrapper.parentElement) {
+                        const candidates = all(wrapper, 'label, span, p, div');
+                        phoneLabel = candidates.find(candidate => {
+                            const own = Array.from(candidate.childNodes || [])
+                                .filter(node => node.nodeType === 3)
+                                .map(node => node.textContent || '')
+                                .join(' ')
+                                .replace(/\s+/g, ' ')
+                                .trim();
+                            const value = own || text(candidate).replace(/\s+/g, ' ').trim();
+                            return /^phone\s*\*?$/i.test(value);
+                        });
+                        if (phoneLabel) {
+                            mark(phoneLabel, 'maison-cb-guest-field-label');
+                            mark(phoneLabel, 'maison-cb-phone-field-label');
+                            mark(wrapper, 'maison-cb-phone-field');
+                            break;
+                        }
                     }
                 });
             }
