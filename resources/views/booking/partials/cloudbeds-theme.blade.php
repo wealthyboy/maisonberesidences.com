@@ -979,6 +979,35 @@
         border-color: #98a2b3 !important;
         box-shadow: none !important;
     }
+    /* Give Cloudbeds' floating checkout labels their own breathing room.
+       We only tag identity/payment text fields, so radios, checkboxes and provider
+       controls keep their native spacing and payment behaviour. */
+    body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-checkout-label {
+        margin-bottom: .4rem !important;
+        line-height: 1.15 !important;
+    }
+    body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-checkout-control {
+        min-height: 66px !important;
+        padding-top: 1.75rem !important;
+        padding-bottom: .6rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        line-height: 1.25 !important;
+        box-sizing: border-box !important;
+    }
+    :host(.mb-cb-guest-checkout-host) .maison-cb-checkout-label {
+        margin-bottom: .4rem !important;
+        line-height: 1.15 !important;
+    }
+    :host(.mb-cb-guest-checkout-host) .maison-cb-checkout-control {
+        min-height: 66px !important;
+        padding-top: 1.75rem !important;
+        padding-bottom: .6rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        line-height: 1.25 !important;
+        box-sizing: border-box !important;
+    }
     /* The provider repeats its property/search header above Add Guests. It is useful
        on results, but redundant here and was the navy strip seen above the form. */
     body:is(.mb-cb-guest-checkout, .mb-cb-guest-transition) :is(#cb-bookingengine, .cb-bookingengine-root) :is(

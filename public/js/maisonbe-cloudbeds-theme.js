@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20261001-stable-loader-empty-state-22';
+    const VERSION = '20261001-checkout-field-spacing-23';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -877,6 +877,48 @@
             });
         });
     }
+    function decorateCheckoutFields(scope) {
+        const fieldPattern = /\b(?:first name|last name|email|phone|cardholder|card holder|card number|expiration|expiry|cvv|cvc|security code|billing address|address|city|state|province|country|postal|zip)\b/i;
+        const labels = all(scope, 'label');
+
+        all(scope, 'input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea')
+            .filter(control => !control.closest(PORTAL))
+            .forEach(control => {
+                const associated = [];
+                if (control.labels) associated.push(...Array.from(control.labels));
+
+                const id = control.getAttribute('id');
+                if (id) {
+                    labels.forEach(candidate => {
+                        if (candidate.getAttribute('for') === id) associated.push(candidate);
+                    });
+                }
+
+                const wrappingLabel = control.closest('label');
+                if (wrappingLabel) associated.push(wrappingLabel);
+
+                if (!associated.length) {
+                    const previous = control.previousElementSibling;
+                    if (previous?.tagName === 'LABEL') associated.push(previous);
+                }
+
+                const labelElement = associated.find(candidate => candidate && candidate.isConnected) || null;
+                const descriptor = [
+                    text(labelElement),
+                    control.getAttribute('name'),
+                    control.getAttribute('placeholder'),
+                    control.getAttribute('aria-label'),
+                    control.getAttribute('autocomplete'),
+                    control.getAttribute('data-testid'),
+                ].filter(Boolean).join(' ');
+
+                if (!fieldPattern.test(descriptor)) return;
+
+                mark(control, 'maison-cb-checkout-control');
+                if (labelElement) mark(labelElement, 'maison-cb-checkout-label');
+            });
+    }
+
     function refresh() {
         scheduled = false;
         scanCount += 1;
@@ -944,6 +986,7 @@
         setGuestProviderHeaderHidden(guestCheckoutActive || guestTransitionActive);
         document.body?.classList.toggle('mb-cb-provider-dialog-open', providerDialogActive);
         if (guestCheckoutActive) {
+            roots.forEach(scope => decorateCheckoutFields(scope));
             drawerOpen = false;
             pendingDrawerOpen = false;
             document.body?.classList.remove('mb-cb-has-selection', 'mb-cb-selection-open');
