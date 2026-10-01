@@ -1085,3 +1085,12 @@ body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-progress
         height: 82px !important;
     }
 }
+
+/* Cloudbeds loader visibility must win over the centering display override.
+   The loader is only visible while the page state is explicitly `loading`. */
+body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-loading[hidden],
+body.cloudbeds-booking-page[data-cloudbeds-state="ready"] .cloudbeds-immersive-stage .cloudbeds-stage-loading,
+body.cloudbeds-booking-page[data-cloudbeds-state="empty"] .cloudbeds-immersive-stage .cloudbeds-stage-loading,
+body.cloudbeds-booking-page[data-cloudbeds-state="error"] .cloudbeds-immersive-stage .cloudbeds-stage-loading {
+    display: none !important;
+}
