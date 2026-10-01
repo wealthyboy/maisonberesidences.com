@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20261001-provider-auto-retry-23';
+    const VERSION = '20261001-mobile-search-surface-clear-24';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -545,6 +545,7 @@
             if (adjacentFilter) mark(adjacentFilter, 'maison-cb-mobile-filter');
         }
 
+        let detectedCurrencyWrap = null;
         all(best, '*').forEach(el => {
             const value = text(el);
             if (/^\s*(?:NGN|USD|EUR|GBP|CAD|AUD|ZAR)\s*$/i.test(value) && !el.querySelector('button, [role="button"]')) {
@@ -558,9 +559,35 @@
                     if (/check[- ]?in|check[- ]?out|promo|filters?|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/i.test(parentText)) break;
                     currencyWrap = parent;
                 }
+                detectedCurrencyWrap = currencyWrap;
                 mark(currencyWrap, 'maison-cb-currency-wrap');
             }
         });
+
+        // On the mobile results screen Cloudbeds sometimes paints a navy panel
+        // behind the currency + date control during/after a re-render. Remove
+        // only that provider surface and let the Maison BE page background show
+        // through. The date pill stays white and the calendar circle stays navy.
+        if (dateControl && window.matchMedia('(max-width: 760px)').matches) {
+            const commonSurface = detectedCurrencyWrap
+                ? lca([dateControl, detectedCurrencyWrap])
+                : dateControl.parentElement;
+            const surfaces = [commonSurface, best, shell].filter(Boolean);
+            surfaces.forEach(surface => {
+                if (!neutral(surface) || surface.matches(PAGE) || surface.querySelector(PAGE)) return;
+                surface.style.setProperty('background-color', 'transparent', 'important');
+                surface.style.setProperty('background-image', 'none', 'important');
+            });
+
+            // Also clear any small structural wrapper between the date pill and
+            // the search form. This covers Cloudbeds builds that insert one extra
+            // generated container around the controls.
+            for (let surface = dateControl.parentElement; surface && surface !== best; surface = surface.parentElement) {
+                if (!neutral(surface)) continue;
+                surface.style.setProperty('background-color', 'transparent', 'important');
+                surface.style.setProperty('background-image', 'none', 'important');
+            }
+        }
     }
 
     function decorateLanguage(root) {
