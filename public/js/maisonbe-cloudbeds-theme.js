@@ -944,8 +944,11 @@
         roots.forEach(scope => {
             if (guestCheckoutActive) {
                 all(scope, 'h1, h2, h3, h4, h5, h6, [role="heading"]').forEach(heading => {
-                    if (/^contact information$/i.test(text(heading))) {
+                    const headingText = text(heading);
+                    if (/^contact information$/i.test(headingText)) {
                         mark(heading, 'maison-cb-contact-heading');
+                    } else if (/^payment details$/i.test(headingText)) {
+                        mark(heading, 'maison-cb-payment-heading');
                     }
                 });
 

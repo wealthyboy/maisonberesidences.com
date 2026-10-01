@@ -963,16 +963,37 @@
     body:is(.mb-cb-guest-checkout, .mb-cb-guest-transition) .cloudbeds-results-heading {
         display: none !important;
     }
-    /* Separate the Cloudbeds required-fields note from the Contact Information
-       section heading. This targets the heading only; field labels and input
-       spacing remain exactly as Cloudbeds renders them. */
+    /* Give the Contact Information and Payment Details headings breathing room
+       before their fields. Keep Cloudbeds' native field labels and input spacing intact. */
     body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-contact-heading {
         margin-top: 1rem !important;
-        margin-bottom: .65rem !important;
+    }
+    body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) :is(
+        .maison-cb-contact-heading,
+        .maison-cb-payment-heading
+    ) {
+        margin-bottom: .85rem !important;
     }
     :host(.mb-cb-guest-checkout-host) .maison-cb-contact-heading {
         margin-top: 1rem !important;
-        margin-bottom: .65rem !important;
+    }
+    :host(.mb-cb-guest-checkout-host) :is(
+        .maison-cb-contact-heading,
+        .maison-cb-payment-heading
+    ) {
+        margin-bottom: .85rem !important;
+    }
+    @media (min-width: 768px) {
+        body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) :is(
+            .maison-cb-contact-heading,
+            .maison-cb-payment-heading
+        ),
+        :host(.mb-cb-guest-checkout-host) :is(
+            .maison-cb-contact-heading,
+            .maison-cb-payment-heading
+        ) {
+            margin-bottom: 1rem !important;
+        }
     }
 
     /* Match the Add Guests field labels to the stronger payment-field labels.
