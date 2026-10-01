@@ -943,7 +943,10 @@
 
         roots.forEach(scope => {
             if (guestCheckoutActive) {
-                all(scope, 'h1, h2, h3, h4, h5, h6, [role="heading"]').forEach(heading => {
+                // Cloudbeds renders these section titles as <legend> elements on the
+                // payment step, not headings. Include legend explicitly so spacing rules
+                // apply to the real section title in both light DOM and shadow roots.
+                all(scope, 'legend, h1, h2, h3, h4, h5, h6, [role="heading"]').forEach(heading => {
                     const headingText = text(heading);
                     if (/^contact information$/i.test(headingText)) {
                         mark(heading, 'maison-cb-contact-heading');
