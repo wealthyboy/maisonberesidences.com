@@ -948,6 +948,16 @@
                         mark(heading, 'maison-cb-contact-heading');
                     }
                 });
+
+                // Cloudbeds' Add Guests labels are visually lighter than its payment
+                // labels. Mark only the five guest-field captions so styling stays
+                // isolated from entered values, selects and the payment step.
+                all(scope, 'label, span, p, div').forEach(candidate => {
+                    const value = text(candidate).replace(/\s+/g, ' ').trim();
+                    if (/^(?:first name|last name|country|email|phone)\s*\*?$/i.test(value)) {
+                        mark(candidate, 'maison-cb-guest-field-label');
+                    }
+                });
             }
             all(scope, ROOT).filter(root => !root.parentElement?.closest(ROOT)).forEach(root => {
                 rootPresent = true;

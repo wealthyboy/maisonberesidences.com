@@ -975,6 +975,15 @@
         margin-bottom: .65rem !important;
     }
 
+    /* Match the Add Guests field labels to the stronger payment-field labels.
+       Only the label text is changed; input dimensions, padding and values stay native. */
+    body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-guest-field-label {
+        font-weight: 700 !important;
+    }
+    :host(.mb-cb-guest-checkout-host) .maison-cb-guest-field-label {
+        font-weight: 700 !important;
+    }
+
     /* Keep guest fields clean and stable when focused. Cloudbeds adds its own
        generated focus ring, so neutralise both that ring and our global one. */
     body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal)
