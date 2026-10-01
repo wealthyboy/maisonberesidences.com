@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20261001-checkout-field-spacing-23';
+    const VERSION = '20260927-three-plus-selection-21';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -118,15 +118,6 @@
         }
         const style = getComputedStyle(el);
         return style.display !== 'none' && style.visibility !== 'hidden' && el.getClientRects().length > 0;
-    }
-    function hasNativeEmptyState(root) {
-        const emptyPattern = /(?:^|\b)(?:no|0)\s+(?:rooms?|accommodations?|apartments?|properties)\b.{0,90}(?:available|found)|(?:^|\b)no availability\b|(?:^|\b)nothing available\b|there (?:are|is) no (?:rooms?|accommodations?|apartments?|properties)\b/i;
-        return all(root, 'p, span, strong, h1, h2, h3, h4, div')
-            .filter(el => visible(el))
-            .some(el => {
-                const value = text(el);
-                return value.length > 0 && value.length <= 220 && emptyPattern.test(value);
-            });
     }
     function greenishBackground(el) {
         const match = getComputedStyle(el).backgroundColor.match(/[\d.]+/g);
@@ -794,11 +785,9 @@
         if (!document.body) return;
         if (document.body.dataset.cloudbedsState !== state) document.body.dataset.cloudbedsState = state;
         const loading = document.querySelector('[data-cloudbeds-loading]');
-        const empty = document.querySelector('[data-cloudbeds-empty]');
         const error = document.querySelector('[data-cloudbeds-error]');
         const stage = document.querySelector('[data-cloudbeds-stage]');
         if (loading) loading.hidden = state !== 'loading';
-        if (empty) empty.hidden = state !== 'empty';
         if (error) error.hidden = state !== 'error';
         stage?.setAttribute('aria-busy', state === 'loading' ? 'true' : 'false');
     }
@@ -877,48 +866,6 @@
             });
         });
     }
-    function decorateCheckoutFields(scope) {
-        const fieldPattern = /\b(?:first name|last name|email|phone|cardholder|card holder|card number|expiration|expiry|cvv|cvc|security code|billing address|address|city|state|province|country|postal|zip)\b/i;
-        const labels = all(scope, 'label');
-
-        all(scope, 'input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea')
-            .filter(control => !control.closest(PORTAL))
-            .forEach(control => {
-                const associated = [];
-                if (control.labels) associated.push(...Array.from(control.labels));
-
-                const id = control.getAttribute('id');
-                if (id) {
-                    labels.forEach(candidate => {
-                        if (candidate.getAttribute('for') === id) associated.push(candidate);
-                    });
-                }
-
-                const wrappingLabel = control.closest('label');
-                if (wrappingLabel) associated.push(wrappingLabel);
-
-                if (!associated.length) {
-                    const previous = control.previousElementSibling;
-                    if (previous?.tagName === 'LABEL') associated.push(previous);
-                }
-
-                const labelElement = associated.find(candidate => candidate && candidate.isConnected) || null;
-                const descriptor = [
-                    text(labelElement),
-                    control.getAttribute('name'),
-                    control.getAttribute('placeholder'),
-                    control.getAttribute('aria-label'),
-                    control.getAttribute('autocomplete'),
-                    control.getAttribute('data-testid'),
-                ].filter(Boolean).join(' ');
-
-                if (!fieldPattern.test(descriptor)) return;
-
-                mark(control, 'maison-cb-checkout-control');
-                if (labelElement) mark(labelElement, 'maison-cb-checkout-label');
-            });
-    }
-
     function refresh() {
         scheduled = false;
         scanCount += 1;
@@ -986,7 +933,6 @@
         setGuestProviderHeaderHidden(guestCheckoutActive || guestTransitionActive);
         document.body?.classList.toggle('mb-cb-provider-dialog-open', providerDialogActive);
         if (guestCheckoutActive) {
-            roots.forEach(scope => decorateCheckoutFields(scope));
             drawerOpen = false;
             pendingDrawerOpen = false;
             document.body?.classList.remove('mb-cb-has-selection', 'mb-cb-selection-open');
@@ -996,11 +942,18 @@
         }
 
         roots.forEach(scope => {
+            if (guestCheckoutActive) {
+                all(scope, 'h1, h2, h3, h4, h5, h6, [role="heading"]').forEach(heading => {
+                    if (/^contact information$/i.test(text(heading))) {
+                        mark(heading, 'maison-cb-contact-heading');
+                    }
+                });
+            }
             all(scope, ROOT).filter(root => !root.parentElement?.closest(ROOT)).forEach(root => {
                 rootPresent = true;
                 const content = text(root).toLowerCase();
                 if (content.includes('oops! something went wrong') && /property failed to load|page is currently not loading/.test(content)) failed = true;
-                if (hasNativeEmptyState(root)) nativeEmptyState = true;
+                if (/no (?:rooms?|accommodations?|properties) (?:are )?available|no availability|nothing available/.test(content)) nativeEmptyState = true;
                 all(root, 'button, [role="button"]').forEach(button => {
                     const value = text(button);
                     if (primaryText.test(value) && value.length < 50) mark(button, 'maison-cb-primary');
@@ -1071,11 +1024,7 @@
         }
 
         if (failed) setState('error');
-        else if (rootPresent && nativeEmptyState && hasStaySearch) {
-            ready = true;
-            presentationReady = true;
-            setState('empty');
-        } else if (rootPresent && (presentationReady || nativeFlowReady)) {
+        else if (rootPresent && (presentationReady || nativeFlowReady)) {
             ready = true;
             presentationReady = true;
             setState('ready');
@@ -1088,7 +1037,7 @@
             cards: grids.reduce((sum, item) => sum + item.count, 0),
             grids: grids.length,
             columns: grids.map(({ grid }) => getComputedStyle(grid).gridTemplateColumns.split(/\s+/).filter(Boolean).length),
-            mode: failed ? 'provider-error' : nativeEmptyState && hasStaySearch ? 'empty-results' : grids.length ? 'residence-grid' : rootPresent ? 'native-flow' : 'waiting',
+            mode: failed ? 'provider-error' : grids.length ? 'residence-grid' : rootPresent ? 'native-flow' : 'waiting',
         };
     }
     function schedule() {

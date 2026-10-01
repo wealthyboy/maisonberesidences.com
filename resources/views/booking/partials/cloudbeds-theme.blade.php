@@ -11,12 +11,11 @@
         max-width: none;
     }
     .cloudbeds-booking-page .cloudbeds-immersive-stage {
-        position: relative;
         width: calc(100% - clamp(2rem, 4.4vw, 5rem));
         max-width: none;
         min-height: 560px;
         overflow: visible;
-        isolation: isolate;
+        isolation: auto;
         border: 0;
         border-radius: 0;
         box-shadow: none;
@@ -964,6 +963,18 @@
     body:is(.mb-cb-guest-checkout, .mb-cb-guest-transition) .cloudbeds-results-heading {
         display: none !important;
     }
+    /* Separate the Cloudbeds required-fields note from the Contact Information
+       section heading. This targets the heading only; field labels and input
+       spacing remain exactly as Cloudbeds renders them. */
+    body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-contact-heading {
+        margin-top: 1rem !important;
+        margin-bottom: .65rem !important;
+    }
+    :host(.mb-cb-guest-checkout-host) .maison-cb-contact-heading {
+        margin-top: 1rem !important;
+        margin-bottom: .65rem !important;
+    }
+
     /* Keep guest fields clean and stable when focused. Cloudbeds adds its own
        generated focus ring, so neutralise both that ring and our global one. */
     body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal)
@@ -978,35 +989,6 @@
         outline-offset: 0 !important;
         border-color: #98a2b3 !important;
         box-shadow: none !important;
-    }
-    /* Give Cloudbeds' floating checkout labels their own breathing room.
-       We only tag identity/payment text fields, so radios, checkboxes and provider
-       controls keep their native spacing and payment behaviour. */
-    body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-checkout-label {
-        margin-bottom: .4rem !important;
-        line-height: 1.15 !important;
-    }
-    body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-checkout-control {
-        min-height: 66px !important;
-        padding-top: 1.75rem !important;
-        padding-bottom: .6rem !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
-        line-height: 1.25 !important;
-        box-sizing: border-box !important;
-    }
-    :host(.mb-cb-guest-checkout-host) .maison-cb-checkout-label {
-        margin-bottom: .4rem !important;
-        line-height: 1.15 !important;
-    }
-    :host(.mb-cb-guest-checkout-host) .maison-cb-checkout-control {
-        min-height: 66px !important;
-        padding-top: 1.75rem !important;
-        padding-bottom: .6rem !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
-        line-height: 1.25 !important;
-        box-sizing: border-box !important;
     }
     /* The provider repeats its property/search header above Add Guests. It is useful
        on results, but redundant here and was the navy strip seen above the form. */
