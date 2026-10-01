@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20261001-mobile-search-surface-clear-24';
+    const VERSION = '20261001-mobile-search-surface-exact-25';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -564,11 +564,18 @@
             }
         });
 
-        // On the mobile results screen Cloudbeds sometimes paints a navy panel
-        // behind the currency + date control during/after a re-render. Remove
-        // only that provider surface and let the Maison BE page background show
-        // through. The date pill stays white and the calendar circle stays navy.
+        // On the mobile results screen Cloudbeds paints the currency/date wrapper
+        // with its generated .d-17bm7j9 class and a navy background. Target that
+        // exact wrapper when it contains the active date control. Keep the wrapper
+        // transparent; only the small calendar icon circle remains navy.
         if (dateControl && window.matchMedia('(max-width: 760px)').matches) {
+            all(root, '.d-17bm7j9').forEach(surface => {
+                if (!surface.contains(dateControl)) return;
+                surface.style.setProperty('background', 'transparent', 'important');
+                surface.style.setProperty('background-color', 'transparent', 'important');
+                surface.style.setProperty('background-image', 'none', 'important');
+            });
+
             const commonSurface = detectedCurrencyWrap
                 ? lca([dateControl, detectedCurrencyWrap])
                 : dateControl.parentElement;
