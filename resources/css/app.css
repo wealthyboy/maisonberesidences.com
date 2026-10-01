@@ -969,8 +969,9 @@ body[data-cloudbeds-state="ready"] .cloudbeds-booking-embed, body[data-cloudbeds
 .cloudbeds-booking-page { --cloudbeds-loader-top: clamp(5.75rem, 7vw, 7.4rem); }
 .cloudbeds-immersive-stage { min-height: calc(100dvh - var(--cloudbeds-loader-top)); overflow: hidden; isolation: isolate; }
 .cloudbeds-booking-embed { min-height: calc(100dvh - var(--cloudbeds-loader-top)); }
-.cloudbeds-stage-loading { position: fixed; z-index: 60; inset: var(--cloudbeds-loader-top) 0 0; display: grid; min-height: 0; height: auto; padding: 2rem; background: linear-gradient(145deg, #fcf9f1 0%, #f2eadc 100%); place-content: center; justify-items: center; gap: 1.2rem; text-align: center; transform: translateZ(0); backface-visibility: hidden; }
+.cloudbeds-stage-loading { position: fixed !important; z-index: 2147483000; top: var(--cloudbeds-loader-top); right: 0; bottom: auto; left: 0; display: block; width: 100vw; height: calc(100vh - var(--cloudbeds-loader-top)); height: calc(100dvh - var(--cloudbeds-loader-top)); min-height: 0; padding: 0; overflow: hidden; background: linear-gradient(145deg, #fcf9f1 0%, #f2eadc 100%); contain: strict; transform: translateZ(0); backface-visibility: hidden; pointer-events: auto; }
 .cloudbeds-stage-loading[hidden] { display: none !important; }
+.cloudbeds-stage-loading-inner { position: absolute; top: 50%; left: 50%; display: grid; width: min(90vw, 720px); justify-items: center; gap: 1.2rem; text-align: center; transform: translate3d(-50%, -50%, 0); will-change: opacity; }
 .cloudbeds-stage-mark { display: grid; width: 76px; height: 76px; padding: .5rem; border: 1px solid rgba(6,17,46,.12); border-radius: 20px; background: #fff; place-items: center; box-shadow: 0 16px 35px rgba(6,17,46,.08); }
 .cloudbeds-stage-mark .brand-lockup-mark { width: 100%; height: 100%; border-radius: 14px; box-shadow: none; }
 .cloudbeds-stage-loading p { margin: 0; color: var(--deep); font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(1.3rem, 2vw, 1.8rem); }

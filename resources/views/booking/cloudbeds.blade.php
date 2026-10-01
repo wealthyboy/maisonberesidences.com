@@ -119,9 +119,11 @@
 
             <section class="cloudbeds-immersive-stage" data-cloudbeds-stage aria-label="Maison Be secure booking">
                 <div class="cloudbeds-stage-loading" data-cloudbeds-loading aria-live="polite">
-                    <span class="cloudbeds-stage-mark"><x-brand-logo :show-name="false" /></span>
-                    <p>Preparing your Maison Be booking experience</p>
-                    <span class="cloudbeds-stage-progress" aria-hidden="true"><i></i></span>
+                    <div class="cloudbeds-stage-loading-inner">
+                        <span class="cloudbeds-stage-mark"><x-brand-logo :show-name="false" /></span>
+                        <p>Preparing your Maison Be booking experience</p>
+                        <span class="cloudbeds-stage-progress" aria-hidden="true"><i></i></span>
+                    </div>
                 </div>
 
                 <div class="cloudbeds-stage-error" data-cloudbeds-error hidden>
