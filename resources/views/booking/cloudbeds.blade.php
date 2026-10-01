@@ -143,11 +143,10 @@
 
                 <div class="cloudbeds-stage-error" data-cloudbeds-error hidden>
                     <p class="eyebrow">Secure booking</p>
-                    <h2>We could not load availability here.</h2>
-                    <p>Availability is temporarily unavailable here. Please try again, or continue to our secure booking page.</p>
+                    <h2>The booking page is taking longer than expected.</h2>
+                    <p>Refresh this page to reconnect. Your selected dates and guests will stay in place.</p>
                     <div>
-                        <button type="button" data-cloudbeds-retry>Try again</button>
-                        <a href="https://hotels.cloudbeds.com/reservation/{{ $cloudbedsPropertyCode }}">Continue to booking</a>
+                        <button type="button" data-cloudbeds-retry>Refresh page</button>
                     </div>
                 </div>
 

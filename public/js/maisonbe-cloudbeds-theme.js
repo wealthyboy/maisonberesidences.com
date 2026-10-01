@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20261001-checkout-cleanup-22';
+    const VERSION = '20261001-provider-auto-retry-23';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -17,6 +17,9 @@
     const detailsText = /^(view|more) details$/i;
     const offersText = /^(view|hide|show) (offers|rates)$/i;
     const emptyCartText = /^no accommodations added[.!]?$/i;
+    const PROVIDER_RETRY_KEY = `maisonbe:cloudbeds:auto-retry:${window.location.pathname}${window.location.search}`;
+    const MAX_PROVIDER_AUTO_RELOADS = 2;
+    let providerReloadScheduled = false;
     const text = el => (el?.textContent || '').replace(/\s+/g, ' ').trim();
     const all = (scope, selector) => Array.from(scope.querySelectorAll(selector));
     const normalizeName = value => String(value || '')
@@ -790,6 +793,25 @@
         if (loading) loading.hidden = state !== 'loading';
         if (error) error.hidden = state !== 'error';
         stage?.setAttribute('aria-busy', state === 'loading' ? 'true' : 'false');
+        if (state === 'ready') {
+            try { sessionStorage.removeItem(PROVIDER_RETRY_KEY); } catch (_) {}
+            providerReloadScheduled = false;
+        }
+    }
+    function autoRetryProviderLoad() {
+        if (providerReloadScheduled) return true;
+        let attempts = 0;
+        try { attempts = Number(sessionStorage.getItem(PROVIDER_RETRY_KEY) || 0); } catch (_) {}
+        if (!Number.isFinite(attempts) || attempts < 0) attempts = 0;
+        if (attempts >= MAX_PROVIDER_AUTO_RELOADS) return false;
+
+        providerReloadScheduled = true;
+        try { sessionStorage.setItem(PROVIDER_RETRY_KEY, String(attempts + 1)); } catch (_) {}
+        setState('loading');
+        const copy = document.querySelector('[data-cloudbeds-loading] p');
+        if (copy) copy.textContent = 'Reconnecting to your Maison Be booking';
+        window.setTimeout(() => window.location.reload(), 650);
+        return true;
     }
     function addRoot(root) {
         if (roots.has(root)) return;
@@ -1062,8 +1084,9 @@
             }
         }
 
-        if (failed) setState('error');
-        else if (rootPresent && (presentationReady || nativeFlowReady)) {
+        if (failed) {
+            if (!autoRetryProviderLoad()) setState('error');
+        } else if (rootPresent && (presentationReady || nativeFlowReady)) {
             ready = true;
             presentationReady = true;
             setState('ready');
@@ -1130,7 +1153,10 @@
         bindInteractions(document);
         observe(document.body);
         startHydrationWatchdog();
-        document.querySelector('[data-cloudbeds-retry]')?.addEventListener('click', () => window.location.reload());
+        document.querySelector('[data-cloudbeds-retry]')?.addEventListener('click', () => {
+            try { sessionStorage.removeItem(PROVIDER_RETRY_KEY); } catch (_) {}
+            window.location.reload();
+        });
         window.addEventListener('on-booking-engine-ready', () => { discoverOpenRoots(); schedule(); });
         window.addEventListener('load', () => { discoverOpenRoots(); schedule(); }, { once: true });
         window.addEventListener('pageshow', () => { discoverOpenRoots(); schedule(); });
