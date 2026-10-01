@@ -44,10 +44,6 @@
 
         <script>
             (() => {
-                window.addEventListener('pageshow', (event) => {
-                    if (event.persisted) window.location.reload();
-                });
-
                 const url = new URL(window.location.href);
                 let changed = false;
 
@@ -87,7 +83,6 @@
     </head>
     <body
         class="cloudbeds-booking-page"
-        data-cloudbeds-state="loading"
         data-has-stay-search="{{ $hasStaySearch ? 'true' : 'false' }}"
     >
         <script>
@@ -118,38 +113,6 @@
             @endif
 
             <section class="cloudbeds-immersive-stage" data-cloudbeds-stage aria-label="Maison Be secure booking">
-                <div class="cloudbeds-stage-loading" data-cloudbeds-loading aria-live="polite">
-                    <div class="cloudbeds-stage-loading-inner">
-                        <span class="cloudbeds-stage-mark" aria-hidden="true">
-                            <img src="{{ asset('brand/maison-be-mark-official.png') }}" alt="">
-                        </span>
-                        <p>Preparing your Maison Be booking experience</p>
-                        <span class="cloudbeds-stage-progress" aria-hidden="true"><i></i></span>
-                    </div>
-                </div>
-
-                <div class="cloudbeds-stage-empty" data-cloudbeds-empty hidden>
-                    <p class="eyebrow">No availability</p>
-                    <h2>No apartments available for your selected dates.</h2>
-                    <p>
-                        @if (filled($displayCheckin) && filled($displayCheckout))
-                            We could not find an available Maison Be residence from {{ $displayCheckin }} to {{ $displayCheckout }}. Please choose different dates and check again.
-                        @else
-                            We could not find an available Maison Be residence for this stay. Please choose different dates and check again.
-                        @endif
-                    </p>
-                    <a href="{{ url('/apartments') }}">Choose different dates</a>
-                </div>
-
-                <div class="cloudbeds-stage-error" data-cloudbeds-error hidden>
-                    <p class="eyebrow">Secure booking</p>
-                    <h2>The booking page is taking longer than expected.</h2>
-                    <p>Refresh this page to reconnect. Your selected dates and guests will stay in place.</p>
-                    <div>
-                        <button type="button" data-cloudbeds-retry>Refresh page</button>
-                    </div>
-                </div>
-
                 <div class="cloudbeds-booking-embed" data-cloudbeds-embed>
                     <cb-immersive-experience
                         mode="standard"

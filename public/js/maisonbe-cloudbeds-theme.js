@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20261001-phone-label-align-26';
+    const VERSION = '20261001-fail-open-cleanup-27';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -17,9 +17,6 @@
     const detailsText = /^(view|more) details$/i;
     const offersText = /^(view|hide|show) (offers|rates)$/i;
     const emptyCartText = /^no accommodations added[.!]?$/i;
-    const PROVIDER_RETRY_KEY = `maisonbe:cloudbeds:auto-retry:${window.location.pathname}${window.location.search}`;
-    const MAX_PROVIDER_AUTO_RELOADS = 2;
-    let providerReloadScheduled = false;
     const text = el => (el?.textContent || '').replace(/\s+/g, ' ').trim();
     const all = (scope, selector) => Array.from(scope.querySelectorAll(selector));
     const normalizeName = value => String(value || '')
@@ -54,7 +51,6 @@
     let stableLayoutKey = '';
     let stableLayoutSince = 0;
     const interactionRoots = new WeakSet();
-    let ready = false;
     let scanCount = 0;
     let lastSummary = { version: VERSION, cards: 0, grids: 0, columns: [], mode: 'waiting' };
     let nextClasses, nextLabels;
@@ -852,35 +848,6 @@
         }
         return { grid, count: cards.length, page, cartColumn };
     }
-    function setState(state) {
-        if (!document.body) return;
-        if (document.body.dataset.cloudbedsState !== state) document.body.dataset.cloudbedsState = state;
-        const loading = document.querySelector('[data-cloudbeds-loading]');
-        const error = document.querySelector('[data-cloudbeds-error]');
-        const stage = document.querySelector('[data-cloudbeds-stage]');
-        if (loading) loading.hidden = state !== 'loading';
-        if (error) error.hidden = state !== 'error';
-        stage?.setAttribute('aria-busy', state === 'loading' ? 'true' : 'false');
-        if (state === 'ready') {
-            try { sessionStorage.removeItem(PROVIDER_RETRY_KEY); } catch (_) {}
-            providerReloadScheduled = false;
-        }
-    }
-    function autoRetryProviderLoad() {
-        if (providerReloadScheduled) return true;
-        let attempts = 0;
-        try { attempts = Number(sessionStorage.getItem(PROVIDER_RETRY_KEY) || 0); } catch (_) {}
-        if (!Number.isFinite(attempts) || attempts < 0) attempts = 0;
-        if (attempts >= MAX_PROVIDER_AUTO_RELOADS) return false;
-
-        providerReloadScheduled = true;
-        try { sessionStorage.setItem(PROVIDER_RETRY_KEY, String(attempts + 1)); } catch (_) {}
-        setState('loading');
-        const copy = document.querySelector('[data-cloudbeds-loading] p');
-        if (copy) copy.textContent = 'Reconnecting to your Maison Be booking';
-        window.setTimeout(() => window.location.reload(), 650);
-        return true;
-    }
     function addRoot(root) {
         if (roots.has(root)) return;
         roots.add(root);
@@ -1230,22 +1197,15 @@
             }
         }
 
-        if (failed) {
-            if (!autoRetryProviderLoad()) setState('error');
-        } else if (rootPresent && (presentationReady || nativeFlowReady)) {
-            ready = true;
-            presentationReady = true;
-            setState('ready');
-        } else if (rootPresent) {
-            setState('loading');
-            window.setTimeout(schedule, 120);
-        }
+        // Fail-open: Cloudbeds is always visible. These values are diagnostics only;
+        // Maison Be never reloads, hides, or blocks the provider while waiting for styling.
+        if (rootPresent && (presentationReady || nativeFlowReady)) presentationReady = true;
         lastSummary = {
             version: VERSION,
             cards: grids.reduce((sum, item) => sum + item.count, 0),
             grids: grids.length,
             columns: grids.map(({ grid }) => getComputedStyle(grid).gridTemplateColumns.split(/\s+/).filter(Boolean).length),
-            mode: failed ? 'provider-error' : grids.length ? 'residence-grid' : rootPresent ? 'native-flow' : 'waiting',
+            mode: failed ? 'provider-error' : nativeEmptyState ? 'native-empty' : grids.length ? 'residence-grid' : rootPresent ? 'native-flow' : 'waiting',
         };
     }
     function schedule() {
@@ -1261,7 +1221,6 @@
                     activeLabels.forEach((_, el) => el.removeAttribute('data-mb-amenity-label'));
                     activeClasses.clear(); activeLabels.clear();
                     lastSummary = { version: VERSION, cards: 0, grids: 0, columns: [], mode: 'native-fallback' };
-                    setState('ready');
                     console.warn('[Maison BE] Custom layout paused; native booking controls remain available.', error);
                 }
             }, 40);
@@ -1284,8 +1243,8 @@
     }
 
     function startHydrationWatchdog() {
-        // Cloudbeds can attach its open shadow root after DOMContentLoaded without
-        // mutating the host element. A short back-off watchdog removes that race.
+        // Best-effort styling discovery only. Cloudbeds remains visible and usable
+        // even if its open shadow root is attached later than expected.
         const delays = [0, 50, 120, 250, 450, 750, 1200, 1800, 2600, 3800, 5500, 8000, 12000, 18000, 26000];
         delays.forEach(delay => window.setTimeout(() => {
             discoverOpenRoots();
@@ -1299,15 +1258,10 @@
         bindInteractions(document);
         observe(document.body);
         startHydrationWatchdog();
-        document.querySelector('[data-cloudbeds-retry]')?.addEventListener('click', () => {
-            try { sessionStorage.removeItem(PROVIDER_RETRY_KEY); } catch (_) {}
-            window.location.reload();
-        });
         window.addEventListener('on-booking-engine-ready', () => { discoverOpenRoots(); schedule(); });
         window.addEventListener('load', () => { discoverOpenRoots(); schedule(); }, { once: true });
         window.addEventListener('pageshow', () => { discoverOpenRoots(); schedule(); });
         document.addEventListener('visibilitychange', () => { if (!document.hidden) { discoverOpenRoots(); schedule(); } });
-        window.setTimeout(() => { if (!ready) setState('error'); }, 30000);
         schedule();
     }
     window.MaisonBeCloudbedsTheme = Object.freeze({

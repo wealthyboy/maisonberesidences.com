@@ -963,38 +963,8 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .cloudbeds-stay-edit { display: inline-flex; min-height: 42px; padding: 0 1.1rem; border: 1px solid rgba(6,17,46,.18); border-radius: 999px; color: var(--deep); align-items: center; justify-content: center; font-size: .61rem; font-weight: 800; letter-spacing: .1em; text-decoration: none; text-transform: uppercase; white-space: nowrap; transition: color 180ms ease, border-color 180ms ease, background 180ms ease; }
 .cloudbeds-stay-edit:hover, .cloudbeds-stay-edit:focus-visible { border-color: var(--deep); color: #fff; background: var(--deep); }
 .cloudbeds-immersive-stage { position: relative; isolation: isolate; width: min(calc(100% - 2rem), 1500px); min-height: 760px; margin: 0 auto; overflow: clip; border: 1px solid rgba(6,17,46,.10); border-radius: 24px; background: #fff; box-shadow: 0 28px 90px rgba(6,17,46,.07); }
-.cloudbeds-booking-embed { min-height: 760px; padding: clamp(.25rem, 1vw, .75rem); background: #fcf9f1; opacity: 0; transform: translateY(8px); transition: opacity 420ms ease, transform 420ms ease; }
-body[data-cloudbeds-state="ready"] .cloudbeds-booking-embed, body[data-cloudbeds-state="error"] .cloudbeds-booking-embed { opacity: 1; transform: none; }
+.cloudbeds-booking-embed { min-height: 760px; padding: clamp(.25rem, 1vw, .75rem); background: #fcf9f1; opacity: 1; transform: none; transition: none; }
 .cloudbeds-booking-embed cb-immersive-experience { display: block; width: 100%; min-height: 740px; }
-.cloudbeds-booking-page { --cloudbeds-loader-height: clamp(520px, 70dvh, 720px); }
-.cloudbeds-immersive-stage { position: relative; min-height: var(--cloudbeds-loader-height); isolation: isolate; }
-.cloudbeds-booking-embed { min-height: var(--cloudbeds-loader-height); }
-.cloudbeds-stage-loading { position: absolute !important; z-index: 20; top: 0; right: 0; left: 0; display: grid; width: 100%; height: var(--cloudbeds-loader-height); min-height: 0; padding: clamp(2rem, 5vw, 4rem); overflow: hidden; background: linear-gradient(145deg, #fcf9f1 0%, #f2eadc 100%); box-sizing: border-box; place-items: center; pointer-events: auto; }
-.cloudbeds-stage-loading[hidden] { display: none !important; }
-.cloudbeds-stage-loading-inner { display: grid; width: min(100%, 720px); margin: 0 auto; justify-items: center; gap: 1.15rem; text-align: center; }
-.cloudbeds-stage-mark { display: grid; width: 76px; height: 76px; padding: .5rem; border: 1px solid rgba(6,17,46,.12); border-radius: 20px; background: #fff; place-items: center; box-shadow: 0 16px 35px rgba(6,17,46,.08); }
-.cloudbeds-stage-mark .brand-lockup { display: grid; width: 100%; height: 100%; margin: 0; place-items: center; }
-.cloudbeds-stage-mark .brand-lockup-mark { display: block; width: 100%; height: 100%; margin: 0; border-radius: 14px; object-fit: contain; box-shadow: none; transform: none !important; animation: none !important; }
-.cloudbeds-stage-loading p { margin: 0; color: var(--deep); font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(1.3rem, 2vw, 1.8rem); }
-.cloudbeds-stage-progress { display: block; width: min(260px, 70vw); height: 2px; overflow: hidden; background: rgba(6,17,46,.12); }
-.cloudbeds-stage-progress i { display: block; width: 100%; height: 100%; background: var(--gold); transform: none !important; animation: none !important; }
-.cloudbeds-stage-empty,
-.cloudbeds-stage-error { position: relative; z-index: 5; display: grid; width: min(calc(100% - 2rem), 760px); min-height: 310px; margin: clamp(1rem, 3vw, 2.5rem) auto; padding: clamp(2rem, 5vw, 4rem); border: 1px solid rgba(6,17,46,.10); border-radius: 22px; background: rgba(252,249,241,.98); align-content: center; justify-items: start; box-sizing: border-box; box-shadow: 0 22px 60px rgba(6,17,46,.08); }
-.cloudbeds-stage-empty[hidden],
-.cloudbeds-stage-error[hidden] { display: none !important; }
-.cloudbeds-stage-empty .eyebrow,
-.cloudbeds-stage-error .eyebrow { margin: 0 0 .75rem; color: #99752e; font-size: .6rem; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
-.cloudbeds-stage-empty h2,
-.cloudbeds-stage-error h2 { margin: 0; color: var(--deep); font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(2.15rem, 4.3vw, 3.8rem); font-weight: 500; line-height: .96; }
-.cloudbeds-stage-empty > p:not(.eyebrow),
-.cloudbeds-stage-error > p:not(.eyebrow) { max-width: 560px; margin: 1.15rem 0 0; color: var(--soft-ink); line-height: 1.7; }
-.cloudbeds-stage-empty > a { display: inline-flex; min-height: 46px; margin-top: 1.5rem; padding: 0 1.25rem; border: 1px solid var(--deep); border-radius: 999px; color: #fff; background: var(--deep); align-items: center; justify-content: center; font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; }
-.cloudbeds-stage-error > div { display: flex; margin-top: 1.75rem; flex-wrap: wrap; gap: .7rem; }
-.cloudbeds-stage-error button, .cloudbeds-stage-error a { display: inline-flex; min-height: 46px; padding: 0 1.25rem; border-radius: 999px; align-items: center; justify-content: center; font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; }
-.cloudbeds-stage-error button { border: 1px solid var(--deep); color: #fff; background: var(--deep); }
-.cloudbeds-stage-error a { border: 1px solid rgba(6,17,46,.18); color: var(--deep); background: #fff; }
-body[data-cloudbeds-state="empty"] .cloudbeds-immersive-stage { min-height: 0; }
-body[data-cloudbeds-state="empty"] .cloudbeds-booking-embed { display: none !important; }
 .cloudbeds-booking-noscript { display: grid; min-height: 340px; place-items: center; align-content: center; gap: 1rem; text-align: center; }
 .cloudbeds-booking-noscript p { margin: 0; color: var(--soft-ink); }
 .cloudbeds-booking-noscript a { display: inline-flex; min-height: 46px; padding: 0 1.25rem; border-radius: 999px; color: #fff; background: var(--deep); align-items: center; text-decoration: none; }
@@ -1016,81 +986,4 @@ body[data-cloudbeds-state="empty"] .cloudbeds-booking-embed { display: none !imp
     .cloudbeds-stay-context-copy strong { font-size: 1.3rem; }
     .cloudbeds-immersive-stage { width: 100%; min-height: 660px; border-right: 0; border-left: 0; border-radius: 0; }
     .cloudbeds-booking-embed, .cloudbeds-booking-embed cb-immersive-experience { min-height: 640px; }
-    .cloudbeds-stage-error { inset: .75rem; padding: 1.5rem; }
-}
-
-/* Maison Be Cloudbeds loader: structural centering.
-   This loader belongs to the Maison Be host page, not to Cloudbeds itself. */
-body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-loading {
-    display: grid !important;
-    place-items: center !important;
-    padding-inline: clamp(1rem, 4vw, 3rem) !important;
-}
-
-body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-loading-inner {
-    display: grid !important;
-    width: fit-content !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    justify-items: center !important;
-    align-items: center !important;
-    gap: 1.15rem !important;
-    text-align: center !important;
-}
-
-body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-mark {
-    display: grid !important;
-    width: 92px !important;
-    height: 92px !important;
-    margin: 0 !important;
-    padding: .55rem !important;
-    place-items: center !important;
-    box-sizing: border-box !important;
-    justify-self: center !important;
-    align-self: center !important;
-}
-
-body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-mark > img {
-    display: block !important;
-    width: 100% !important;
-    height: 100% !important;
-    margin: 0 !important;
-    object-fit: contain !important;
-    object-position: 50% 50% !important;
-    border-radius: 14px !important;
-    box-shadow: none !important;
-    transform: none !important;
-    animation: none !important;
-}
-
-body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-loading p {
-    width: auto !important;
-    max-width: min(720px, calc(100vw - 3rem)) !important;
-    margin: 0 !important;
-    text-align: center !important;
-    justify-self: center !important;
-}
-
-body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-progress {
-    width: min(260px, 70vw) !important;
-    margin: 0 !important;
-    justify-self: center !important;
-    align-self: center !important;
-}
-
-@media (max-width: 620px) {
-    body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-mark {
-        width: 82px !important;
-        height: 82px !important;
-    }
-}
-
-/* Cloudbeds loader visibility must win over the centering display override.
-   The loader is only visible while the page state is explicitly `loading`. */
-body.cloudbeds-booking-page .cloudbeds-immersive-stage .cloudbeds-stage-loading[hidden],
-body.cloudbeds-booking-page[data-cloudbeds-state="ready"] .cloudbeds-immersive-stage .cloudbeds-stage-loading,
-body.cloudbeds-booking-page[data-cloudbeds-state="empty"] .cloudbeds-immersive-stage .cloudbeds-stage-loading,
-body.cloudbeds-booking-page[data-cloudbeds-state="error"] .cloudbeds-immersive-stage .cloudbeds-stage-loading {
-    display: none !important;
 }
