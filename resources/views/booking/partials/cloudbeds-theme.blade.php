@@ -963,45 +963,50 @@
     body:is(.mb-cb-guest-checkout, .mb-cb-guest-transition) .cloudbeds-results-heading {
         display: none !important;
     }
-    /* Cloudbeds uses <legend> for Contact Information and Payment Details.
-       Give those real section titles bottom space without changing any field labels. */
+    /* Give the Contact Information and Payment Details headings breathing room
+       before their fields. Keep Cloudbeds' native field labels and input spacing intact. */
+    body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) .maison-cb-contact-heading {
+        margin-top: 1rem !important;
+    }
     body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) :is(
         .maison-cb-contact-heading,
         .maison-cb-payment-heading
-    ),
+    ) {
+        margin-bottom: .85rem !important;
+    }
+    :host(.mb-cb-guest-checkout-host) .maison-cb-contact-heading {
+        margin-top: 1rem !important;
+    }
     :host(.mb-cb-guest-checkout-host) :is(
         .maison-cb-contact-heading,
         .maison-cb-payment-heading
     ) {
-        margin-bottom: 1rem !important;
+        margin-bottom: .85rem !important;
+    }
+    @media (min-width: 768px) {
+        body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) :is(
+            .maison-cb-contact-heading,
+            .maison-cb-payment-heading
+        ),
+        :host(.mb-cb-guest-checkout-host) :is(
+            .maison-cb-contact-heading,
+            .maison-cb-payment-heading
+        ) {
+            margin-bottom: 1rem !important;
+        }
     }
 
-    /* Legends have special fieldset layout behavior. Make only the two marked
-       Cloudbeds section legends full-width so their bottom margin actually separates
-       the title from the first input on mobile and desktop. */
-    body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) legend:is(
-        .maison-cb-contact-heading,
-        .maison-cb-payment-heading
+    /* Checkout cleanup: hide provider helper copy requested for the Maison Be
+       presentation while preserving required asterisks and the secure-payment badge. */
+    body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) :is(
+        .maison-cb-checkout-helper-hidden,
+        .maison-cb-payment-learn-more-hidden
     ),
-    :host(.mb-cb-guest-checkout-host) legend:is(
-        .maison-cb-contact-heading,
-        .maison-cb-payment-heading
+    :host(.mb-cb-guest-checkout-host) :is(
+        .maison-cb-checkout-helper-hidden,
+        .maison-cb-payment-learn-more-hidden
     ) {
-        float: left !important;
-        width: 100% !important;
-        padding: 0 !important;
-        margin-top: 0 !important;
-        margin-bottom: 1rem !important;
-    }
-    body.mb-cb-guest-checkout :is(#cb-bookingengine, .cb-bookingengine-root, .cb-portal) legend:is(
-        .maison-cb-contact-heading,
-        .maison-cb-payment-heading
-    ) + *,
-    :host(.mb-cb-guest-checkout-host) legend:is(
-        .maison-cb-contact-heading,
-        .maison-cb-payment-heading
-    ) + * {
-        clear: left !important;
+        display: none !important;
     }
 
     /* Match the Add Guests field labels to the stronger payment-field labels.

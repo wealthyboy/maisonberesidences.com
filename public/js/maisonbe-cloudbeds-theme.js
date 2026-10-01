@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260927-three-plus-selection-21';
+    const VERSION = '20261001-checkout-cleanup-22';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -952,6 +952,29 @@
                         mark(heading, 'maison-cb-contact-heading');
                     } else if (/^payment details$/i.test(headingText)) {
                         mark(heading, 'maison-cb-payment-heading');
+                    }
+                });
+
+                // Remove two bits of provider helper copy from the branded checkout:
+                // the generic required-fields note and the payment-provider "Learn more" link.
+                // Keep "Secure Online Payment" itself visible.
+                all(scope, 'p, span, div, small').forEach(candidate => {
+                    const value = text(candidate).replace(/\s+/g, ' ').trim();
+                    if (/^fields marked with\s*\*\s*are required\.?$/i.test(value)) {
+                        mark(candidate, 'maison-cb-checkout-helper-hidden');
+                    }
+                });
+                all(scope, 'a, button, [role="link"]').forEach(candidate => {
+                    if (!/^learn more$/i.test(text(candidate))) return;
+                    let node = candidate.parentElement;
+                    let depth = 0;
+                    while (node && depth < 4) {
+                        if (/secure online payment/i.test(text(node))) {
+                            mark(candidate, 'maison-cb-payment-learn-more-hidden');
+                            break;
+                        }
+                        node = node.parentElement;
+                        depth += 1;
                     }
                 });
 
