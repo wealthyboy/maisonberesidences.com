@@ -1193,11 +1193,26 @@
         }
     }
     @media (max-width: 760px) {
-        /* Keep the original light mobile booking canvas.
-           Only the calendar icon is reversed to Maison BE navy/white. */
-        .maison-cb-calendar-icon,
-        .maison-cb-calendar-icon > * {
+        /* Restore the original Maison BE light search area on mobile.
+           The ONLY reversed element is the circular calendar icon. */
+        :is(#cb-bookingengine, .cb-bookingengine-root) header[data-testid="header"],
+        :is(#cb-bookingengine, .cb-bookingengine-root) :is(
+            .mb-cb-search-shell,
+            .mb-cb-search-header,
+            .maison-cb-search-form,
+            .mb-cb-search-controls
+        ) {
+            background-color: #f0eadd !important;
+            background-image: none !important;
+        }
+        .maison-cb-calendar-icon {
             background-color: #06112e !important;
+            background-image: none !important;
+            color: #fff !important;
+            -webkit-text-fill-color: #fff !important;
+        }
+        .maison-cb-calendar-icon > * {
+            background-color: transparent !important;
             background-image: none !important;
             color: #fff !important;
             -webkit-text-fill-color: #fff !important;
@@ -1220,14 +1235,14 @@
             padding: 0 !important;
             border: 0 !important;
             border-radius: 0 !important;
-            background: transparent !important;
+            background: #f0eadd !important;
             box-shadow: none !important;
         }
         :is(#cb-bookingengine, .cb-bookingengine-root) .mb-cb-search-header {
             min-height: 0 !important;
             padding: .25rem 0 1rem !important;
             flex-wrap: wrap !important;
-            background: transparent !important;
+            background: #f0eadd !important;
         }
         :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-search-form {
             left: auto !important;
@@ -1237,7 +1252,7 @@
             padding: 0 !important;
             border: 0 !important;
             border-radius: 0 !important;
-            background: transparent !important;
+            background: #f0eadd !important;
             box-shadow: none !important;
             transform: none !important;
         }
@@ -1251,7 +1266,7 @@
             flex-wrap: wrap !important;
             padding: 0 !important;
             border: 0 !important;
-            background: transparent !important;
+            background: #f0eadd !important;
             box-shadow: none !important;
         }
         :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-date-control {

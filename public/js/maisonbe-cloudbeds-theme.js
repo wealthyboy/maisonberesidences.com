@@ -508,8 +508,24 @@
                 return rect.width >= 30 && rect.width <= 100 && rect.height >= 30 && rect.height <= 100;
             });
             const calendarIcon = all(dateControl, 'svg').find(svg => visible(svg));
-            if (colouredIcon) mark(colouredIcon, 'maison-cb-calendar-icon');
-            else if (calendarIcon?.parentElement) mark(calendarIcon.parentElement, 'maison-cb-calendar-icon');
+            if (colouredIcon) {
+                mark(colouredIcon, 'maison-cb-calendar-icon');
+                // Cloudbeds can apply the green fill inline during re-renders.
+                // Set the Maison BE mobile colour directly on the actual coloured circle
+                // so only the icon background changes, never the surrounding search bar.
+                colouredIcon.style.setProperty('background-color', '#06112e', 'important');
+                colouredIcon.style.setProperty('background-image', 'none', 'important');
+                colouredIcon.style.setProperty('color', '#ffffff', 'important');
+            } else if (calendarIcon?.parentElement) {
+                mark(calendarIcon.parentElement, 'maison-cb-calendar-icon');
+            }
+            if (calendarIcon) {
+                calendarIcon.style.setProperty('color', '#ffffff', 'important');
+                all(calendarIcon, 'path').forEach(path => {
+                    path.style.setProperty('color', '#ffffff', 'important');
+                    path.style.setProperty('stroke', 'currentColor', 'important');
+                });
+            }
 
             // Some Cloudbeds builds render Filters as an icon-only button with no
             // visible text. Identify the compact control immediately beside the date
