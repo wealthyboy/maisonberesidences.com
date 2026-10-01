@@ -1193,27 +1193,18 @@
         }
     }
     @media (max-width: 760px) {
-        /* Mobile results use Maison BE navy instead of the pale booking canvas.
-           Keep checkout/payment screens on their existing neutral surface. */
-        body.cloudbeds-booking-page:not(.mb-cb-guest-checkout):not(.mb-cb-guest-transition),
-        body.cloudbeds-booking-page:not(.mb-cb-guest-checkout):not(.mb-cb-guest-transition) :is(#cb-bookingengine, .cb-bookingengine-root),
-        :host:not(.mb-cb-guest-checkout-host),
-        :host:not(.mb-cb-guest-checkout-host) :is(#cb-bookingengine, .cb-bookingengine-root) {
-            background: #06112e !important;
-        }
-        :host(.mb-cb-guest-checkout-host),
-        :host(.mb-cb-guest-checkout-host) :is(#cb-bookingengine, .cb-bookingengine-root) {
-            background: #f1eadc !important;
-        }
-        body.cloudbeds-booking-page:not(.mb-cb-guest-checkout):not(.mb-cb-guest-transition) .cloudbeds-results-heading :is(h2, p) {
-            color: #fff !important;
-        }
-        body.cloudbeds-booking-page:not(.mb-cb-guest-checkout):not(.mb-cb-guest-transition)
-        :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-currency-wrap,
-        body.cloudbeds-booking-page:not(.mb-cb-guest-checkout):not(.mb-cb-guest-transition)
-        :is(#cb-bookingengine, .cb-bookingengine-root) .maison-cb-currency-wrap :is(button, span, div, svg, path) {
+        /* Keep the original light mobile booking canvas.
+           Only the calendar icon is reversed to Maison BE navy/white. */
+        .maison-cb-calendar-icon,
+        .maison-cb-calendar-icon > * {
+            background-color: #06112e !important;
+            background-image: none !important;
             color: #fff !important;
             -webkit-text-fill-color: #fff !important;
+        }
+        .maison-cb-calendar-icon :is(svg, path) {
+            color: #fff !important;
+            stroke: currentColor !important;
         }
         :is(#cb-bookingengine, .cb-bookingengine-root) :is(.maison-cb-mobile-filter, .maison-cb-search-hidden, .maison-cb-hidden-control-wrap) {
             display: none !important;
