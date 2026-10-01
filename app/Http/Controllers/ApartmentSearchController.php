@@ -30,22 +30,14 @@ class ApartmentSearchController extends Controller
 
         $checkin = filled($filters['checkin'] ?? null) ? Carbon::parse($filters['checkin'])->startOfDay() : null;
         $checkout = filled($filters['checkout'] ?? null) ? Carbon::parse($filters['checkout'])->startOfDay() : null;
-        $hasStayDates = $checkin !== null && $checkout !== null;
-        $seasonalBlackout = StayRestrictions::overlapsSeasonalBlackout($checkin, $checkout);
         $currency = $request->attributes->get('currency');
 
+        // The local /apartments page is now a browse/catalogue page.
+        // Stay availability is authoritative in Cloudbeds, so dates selected here are
+        // forwarded to /book instead of filtering against Maison Be's local calendar.
         $apartments = Apartment::query()
             ->with(['images', 'property', 'attributes.parent'])
-            ->when($hasStayDates, fn ($query) => $query->publiclyAvailable()->availableFor($checkin, $checkout))
-            ->when($seasonalBlackout, fn ($query) => $query->whereRaw('1 = 0'))
-            ->when(
-                filled($filters['guests'] ?? null),
-                fn ($query) => $query->where('max_adults', '>=', $filters['guests'])
-            )
-            ->when(
-                filled($filters['rooms'] ?? null) && (int) $filters['rooms'] > 1,
-                fn ($query) => $query->where('no_of_rooms', '>=', $filters['rooms'])
-            )
+            ->publiclyAvailable()
             ->orderBy('sort_order')
             ->orderBy('id')
             ->paginate(10)

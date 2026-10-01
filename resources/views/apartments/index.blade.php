@@ -58,7 +58,9 @@
         </aside>
         <main class="results-main">
             <h1 class="u-mb-0">Select your apartment.</h1>
-            <form class="results-search" method="get" action="{{ route('apartments.index') }}" data-results-search>
+            <form class="results-search" id="apartment-availability" method="get" action="{{ route('booking.cloudbeds') }}" data-results-search>
+                <input type="hidden" name="currency" value="{{ strtoupper($currency['code'] ?? 'USD') }}">
+                <input type="hidden" name="utm_source" value="maisonbe_website">
                 <x-date-range-picker class="results-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" required />
                 <x-rooms-guests-selector class="results-rooms-guests" :guests="$filters['guests'] ?? 1" :rooms="$filters['rooms'] ?? 2" />
                 <button type="submit">Check availability</button>
@@ -122,93 +124,41 @@
                 });
 
                 const form = document.querySelector('[data-results-search]');
-                const region = document.querySelector('[data-results-async]');
-                const content = document.querySelector('[data-results-content]');
-                const loader = document.querySelector('[data-results-loader]');
-                if (!form || !region || !content || !loader) return;
+                if (!form) return;
 
-                let activeRequest = null;
+                // Apartment cards are browse-first. Their availability CTA brings the
+                // guest back to this date selector instead of starting a date-less booking.
+                document.addEventListener('click', (event) => {
+                    const availabilityLink = event.target.closest('a[href="#apartment-availability"]');
+                    if (!availabilityLink) return;
 
-                const buildUrl = () => {
-                    const url = new URL(window.location.href);
-                    url.searchParams.delete('page');
-                    new FormData(form).forEach((value, key) => {
-                        if (value === '') {
-                            url.searchParams.delete(key);
-                            return;
-                        }
-                        url.searchParams.set(key, value);
-                    });
-                    return url;
-                };
+                    event.preventDefault();
+                    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-                const setLoading = (loading) => {
-                    region.setAttribute('aria-busy', String(loading));
-                    region.classList.toggle('is-loading', loading);
-                    loader.hidden = !loading;
-                    form.querySelector('button[type="submit"]').disabled = loading;
-                };
+                    window.setTimeout(() => {
+                        const checkin = form.querySelector('[data-checkin-input]');
+                        const checkout = form.querySelector('[data-checkout-input]');
+                        const field = checkin?.value && !checkout?.value ? 'checkout' : 'checkin';
+                        const trigger = form.querySelector(`[data-date-trigger][data-date-field="${field}"]`);
+                        const picker = form.querySelector('[data-date-picker]');
 
-                const runInlineScripts = (root) => {
-                    root.querySelectorAll('script').forEach((script) => {
-                        const copy = document.createElement('script');
-                        [...script.attributes].forEach((attribute) => copy.setAttribute(attribute.name, attribute.value));
-                        copy.textContent = script.textContent;
-                        document.body.appendChild(copy);
-                        copy.remove();
-                    });
-                };
+                        if (picker?.hidden) trigger?.click();
+                    }, 260);
+                });
 
-                const loadResults = async (url, pushState = true) => {
-                    activeRequest?.abort();
-                    activeRequest = new AbortController();
-                    setLoading(true);
-
-                    try {
-                        const response = await fetch(url, {
-                            headers: { 'Accept': 'text/html', 'X-Requested-With': 'XMLHttpRequest' },
-                            signal: activeRequest.signal,
-                        });
-                        if (!response.ok) throw new Error('Search request failed');
-                        content.innerHTML = await response.text();
-                        runInlineScripts(content);
-                        window.initDateRangePickers?.();
-                        window.initRoomsGuests?.();
-                        if (pushState) window.history.pushState({}, '', url);
-                    } catch (error) {
-                        if (error.name !== 'AbortError') {
-                            content.innerHTML = '<p class="results-empty">We could not complete that search. Please try again.</p>';
-                        }
-                    } finally {
-                        setLoading(false);
-                    }
-                };
-
+                // With dates selected, submit normally to /book so Cloudbeds receives
+                // the exact same stay query used by the homepage booking bar.
                 form.addEventListener('submit', (event) => {
                     if (event.defaultPrevented) return;
+
                     const checkin = form.querySelector('[data-checkin-input]');
                     const checkout = form.querySelector('[data-checkout-input]');
-
-                    if (!checkin?.value || !checkout?.value) {
-                        event.preventDefault();
-                        const field = checkin?.value ? 'checkout' : 'checkin';
-                        form.querySelector(`[data-date-trigger][data-date-field="${field}"]`)?.click();
-                        return;
-                    }
+                    if (checkin?.value && checkout?.value) return;
 
                     event.preventDefault();
-                    loadResults(buildUrl());
+                    const field = checkin?.value ? 'checkout' : 'checkin';
+                    form.querySelector(`[data-date-trigger][data-date-field="${field}"]`)?.click();
                 });
-
-                content.addEventListener('click', (event) => {
-                    const link = event.target.closest('.results-pagination a');
-                    if (!link) return;
-                    event.preventDefault();
-                    loadResults(new URL(link.href));
-                    region.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                });
-
-                window.addEventListener('popstate', () => loadResults(new URL(window.location.href), false));
             })();
         </script>
     </body>
