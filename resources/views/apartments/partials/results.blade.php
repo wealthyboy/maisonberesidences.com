@@ -1,3 +1,17 @@
+@php
+    $cloudbedsQuery = [
+        'currency' => strtoupper($currency['code'] ?? 'USD'),
+        'utm_source' => 'maisonbe_website',
+        'adults' => max(1, (int) ($filters['guests'] ?? 1)),
+    ];
+
+    if (filled($filters['checkin'] ?? null) && filled($filters['checkout'] ?? null)) {
+        $cloudbedsQuery['checkin'] = $filters['checkin'];
+        $cloudbedsQuery['checkout'] = $filters['checkout'];
+    }
+
+    $cloudbedsAvailabilityUrl = route('booking.cloudbeds', $cloudbedsQuery);
+@endphp
 @if (filled($filters['checkin'] ?? null) && filled($filters['checkout'] ?? null))
     <p class="results-notice">We found {{ $apartments->total() }} {{ \Illuminate\Support\Str::plural('apartment', $apartments->total()) }} for your selected stay.</p>
 @endif
@@ -7,7 +21,14 @@
 @else
     <div class="results-grid residence-grid">
         @foreach ($apartments as $apartment)
-            <x-apartment-card :apartment="$apartment" :quote="$apartment->stay_quote" :filters="$filters" />
+            <x-apartment-card
+                :apartment="$apartment"
+                :quote="$apartment->stay_quote"
+                :filters="$filters"
+                :link-url="$cloudbedsAvailabilityUrl"
+                booking-label="Check availability"
+                :show-price="false"
+            />
         @endforeach
     </div>
     @if ($apartments->hasPages())

@@ -4,6 +4,7 @@
     'filters' => [],
     'linkUrl' => null,
     'bookingEnabled' => true,
+    'bookingLabel' => 'Book now',
     'showPrice' => true,
     'titleLink' => true,
 ])
@@ -193,7 +194,7 @@
                 </div>
             @endif
             @if ($apartment->allow && $bookingEnabled && $cardBookUrl)
-                <a class="residence-card-book" href="{{ $cardBookUrl }}">Book now</a>
+                <a class="residence-card-book" href="{{ $cardBookUrl }}">{{ $bookingLabel }}</a>
             @endif
         </div>
     </div>

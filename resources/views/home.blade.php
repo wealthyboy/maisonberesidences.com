@@ -16,7 +16,8 @@
     </head>
     <body>
 @php
-    $viewAllApartmentsUrl = route('booking.cloudbeds', [
+    $viewAllApartmentsUrl = route('apartments.index');
+    $homeAvailabilityUrl = route('booking.cloudbeds', [
         'currency' => 'NGN',
         'utm_source' => 'maisonbe_website',
         'adults' => 1,
@@ -151,7 +152,7 @@
                         <x-apartment-card
                             :apartment="$apartment"
                             :quote="$apartment->home_quote"
-                            :link-url="$viewAllApartmentsUrl"
+                            :link-url="$homeAvailabilityUrl"
                             :booking-enabled="true"
                             :show-price="false"
                             :title-link="false"
