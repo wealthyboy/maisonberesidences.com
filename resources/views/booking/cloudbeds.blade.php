@@ -126,6 +126,19 @@
                     </div>
                 </div>
 
+                <div class="cloudbeds-stage-empty" data-cloudbeds-empty hidden>
+                    <p class="eyebrow">No availability</p>
+                    <h2>No apartments available for your selected dates.</h2>
+                    <p>
+                        @if (filled($displayCheckin) && filled($displayCheckout))
+                            We could not find an available Maison Be residence from {{ $displayCheckin }} to {{ $displayCheckout }}. Please choose different dates and check again.
+                        @else
+                            We could not find an available Maison Be residence for this stay. Please choose different dates and check again.
+                        @endif
+                    </p>
+                    <a href="{{ url('/apartments') }}">Choose different dates</a>
+                </div>
+
                 <div class="cloudbeds-stage-error" data-cloudbeds-error hidden>
                     <p class="eyebrow">Secure booking</p>
                     <h2>We could not load availability here.</h2>

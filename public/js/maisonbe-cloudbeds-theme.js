@@ -5,7 +5,7 @@
 (() => {
     'use strict';
     if (window.MaisonBeCloudbedsTheme) return;
-    const VERSION = '20260927-three-plus-selection-21';
+    const VERSION = '20261001-stable-loader-empty-state-22';
     const ROOT = '#cb-bookingengine, .cb-bookingengine-root';
     const PAGE = '.cb-accommodations-page';
     const RATE = '.cb-rate-plan';
@@ -118,6 +118,15 @@
         }
         const style = getComputedStyle(el);
         return style.display !== 'none' && style.visibility !== 'hidden' && el.getClientRects().length > 0;
+    }
+    function hasNativeEmptyState(root) {
+        const emptyPattern = /(?:^|\b)(?:no|0)\s+(?:rooms?|accommodations?|apartments?|properties)\b.{0,90}(?:available|found)|(?:^|\b)no availability\b|(?:^|\b)nothing available\b|there (?:are|is) no (?:rooms?|accommodations?|apartments?|properties)\b/i;
+        return all(root, 'p, span, strong, h1, h2, h3, h4, div')
+            .filter(el => visible(el))
+            .some(el => {
+                const value = text(el);
+                return value.length > 0 && value.length <= 220 && emptyPattern.test(value);
+            });
     }
     function greenishBackground(el) {
         const match = getComputedStyle(el).backgroundColor.match(/[\d.]+/g);
@@ -785,9 +794,11 @@
         if (!document.body) return;
         if (document.body.dataset.cloudbedsState !== state) document.body.dataset.cloudbedsState = state;
         const loading = document.querySelector('[data-cloudbeds-loading]');
+        const empty = document.querySelector('[data-cloudbeds-empty]');
         const error = document.querySelector('[data-cloudbeds-error]');
         const stage = document.querySelector('[data-cloudbeds-stage]');
         if (loading) loading.hidden = state !== 'loading';
+        if (empty) empty.hidden = state !== 'empty';
         if (error) error.hidden = state !== 'error';
         stage?.setAttribute('aria-busy', state === 'loading' ? 'true' : 'false');
     }
@@ -946,7 +957,7 @@
                 rootPresent = true;
                 const content = text(root).toLowerCase();
                 if (content.includes('oops! something went wrong') && /property failed to load|page is currently not loading/.test(content)) failed = true;
-                if (/no (?:rooms?|accommodations?|properties) (?:are )?available|no availability|nothing available/.test(content)) nativeEmptyState = true;
+                if (hasNativeEmptyState(root)) nativeEmptyState = true;
                 all(root, 'button, [role="button"]').forEach(button => {
                     const value = text(button);
                     if (primaryText.test(value) && value.length < 50) mark(button, 'maison-cb-primary');
@@ -1017,7 +1028,11 @@
         }
 
         if (failed) setState('error');
-        else if (rootPresent && (presentationReady || nativeFlowReady)) {
+        else if (rootPresent && nativeEmptyState && hasStaySearch) {
+            ready = true;
+            presentationReady = true;
+            setState('empty');
+        } else if (rootPresent && (presentationReady || nativeFlowReady)) {
             ready = true;
             presentationReady = true;
             setState('ready');
@@ -1030,7 +1045,7 @@
             cards: grids.reduce((sum, item) => sum + item.count, 0),
             grids: grids.length,
             columns: grids.map(({ grid }) => getComputedStyle(grid).gridTemplateColumns.split(/\s+/).filter(Boolean).length),
-            mode: failed ? 'provider-error' : grids.length ? 'residence-grid' : rootPresent ? 'native-flow' : 'waiting',
+            mode: failed ? 'provider-error' : nativeEmptyState && hasStaySearch ? 'empty-results' : grids.length ? 'residence-grid' : rootPresent ? 'native-flow' : 'waiting',
         };
     }
     function schedule() {

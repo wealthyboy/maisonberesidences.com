@@ -11,11 +11,12 @@
         max-width: none;
     }
     .cloudbeds-booking-page .cloudbeds-immersive-stage {
+        position: relative;
         width: calc(100% - clamp(2rem, 4.4vw, 5rem));
         max-width: none;
         min-height: 560px;
         overflow: visible;
-        isolation: auto;
+        isolation: isolate;
         border: 0;
         border-radius: 0;
         box-shadow: none;
