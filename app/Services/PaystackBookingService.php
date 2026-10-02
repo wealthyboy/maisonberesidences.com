@@ -26,9 +26,10 @@ class PaystackBookingService
         $invoice = Invoice::query()->where('payment_reference', $reference)->first();
         $booking = $invoice ? null : $this->bookingFromPayment($payment, $event);
 
-        $expectedAmount = $invoice
-            ? (int) round((float) $invoice->total * 100)
-            : (int) round((float) data_get($booking, 'total') * 100);
+        $expectedPaymentTotal = $invoice
+            ? (float) data_get($invoice->payment_payload, 'booking.payment_total', $invoice->total)
+            : (float) data_get($booking, 'payment_total', data_get($booking, 'total'));
+        $expectedAmount = (int) round($expectedPaymentTotal * 100);
         $expectedCurrency = $invoice
             ? $invoice->currency_code
             : strtoupper((string) data_get($booking, 'currency'));
