@@ -58,11 +58,12 @@
         </aside>
         <main class="results-main">
             <h1 class="u-mb-0">Select your apartment.</h1>
-            <form class="results-search" id="apartment-availability" method="get" action="{{ route('booking.cloudbeds') }}" data-results-search>
+            <form class="results-search" id="apartment-availability" method="get" action="{{ route('apartments.index') }}" data-results-search>
                 <input type="hidden" name="currency" value="{{ strtoupper($currency['code'] ?? 'USD') }}">
+                <input type="hidden" name="search" value="1">
                 <input type="hidden" name="utm_source" value="maisonbe_website">
                 <x-date-range-picker class="results-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" required />
-                <x-rooms-guests-selector class="results-rooms-guests" :guests="$filters['guests'] ?? 1" :rooms="$filters['rooms'] ?? 2" />
+                <x-rooms-guests-selector class="results-rooms-guests" :guests="$filters['guests'] ?? 1" :rooms="1" :max-rooms="1" />
                 <button type="submit">Check availability</button>
             </form>
             <section class="results-async" data-results-async aria-live="polite" aria-busy="false">
@@ -146,8 +147,8 @@
                     }, 260);
                 });
 
-                // With dates selected, submit normally to /book so Cloudbeds receives
-                // the exact same stay query used by the homepage booking bar.
+                // With dates selected, submit to this page. The server checks live
+                // Cloudbeds inventory and returns only room types available for the stay.
                 form.addEventListener('submit', (event) => {
                     if (event.defaultPrevented) return;
 

@@ -24,6 +24,9 @@ return [
     'api' => [
         'key' => env('CLOUDBEDS_API_KEY'),
         'base_url' => env('CLOUDBEDS_API_BASE_URL', 'https://api.cloudbeds.com/api/v1.3'),
+        'property_id' => env('CLOUDBEDS_PROPERTY_ID'),
+        'source_id' => env('CLOUDBEDS_SOURCE_ID'),
+        'payment_method' => env('CLOUDBEDS_PAYMENT_METHOD', 'ebanking'),
         'cache_seconds' => env('CLOUDBEDS_API_CACHE_SECONDS', 300),
     ],
 ];

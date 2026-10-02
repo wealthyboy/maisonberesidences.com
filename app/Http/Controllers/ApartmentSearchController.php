@@ -56,7 +56,14 @@ class ApartmentSearchController extends Controller
         $residences = collect();
 
         try {
-            $roomTypes = collect($this->cloudbeds->roomTypes());
+            $roomTypes = $checkin && $checkout
+                ? collect($this->cloudbeds->availableRoomTypes(
+                    $checkin,
+                    $checkout,
+                    1,
+                    max(1, (int) ($filters['guests'] ?? 1)),
+                ))
+                : collect($this->cloudbeds->roomTypes());
             $residences = $this->combineCloudbedsWithLocalApartments($roomTypes, $localApartments);
         } catch (Throwable $exception) {
             Log::warning('Cloudbeds apartment inventory could not be loaded.', [
@@ -131,7 +138,28 @@ class ApartmentSearchController extends Controller
 
         $guestCount = (int) ($data['guests'] ?? 1);
         $hasGuestCapacity = $apartment->max_adults <= 0 || $apartment->max_adults >= $guestCount;
-        $available = $hasGuestCapacity && $apartment->isAvailableFor($checkin, $checkout);
+        $cloudbedsRoomType = null;
+
+        try {
+            $cloudbedsRoomType = $hasGuestCapacity
+                ? $this->cloudbeds->availableRoomTypeForApartment($apartment, $checkin, $checkout, $guestCount)
+                : null;
+        } catch (Throwable $exception) {
+            Log::warning('Cloudbeds availability check failed.', [
+                'apartment_id' => $apartment->id,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return response()->json([
+                'available' => false,
+                'message' => 'Live availability could not be confirmed. Please try again.',
+                'reserve_url' => null,
+            ], 503);
+        }
+
+        $available = $hasGuestCapacity
+            && $cloudbedsRoomType !== null
+            && $apartment->isAvailableFor($checkin, $checkout);
 
         return response()->json([
             'available' => $available,
@@ -181,6 +209,10 @@ class ApartmentSearchController extends Controller
 
                         return false;
                     });
+                }
+
+                if ($apartment && str_contains(strtolower((string) ($roomType['name'] ?? '')), 'penthouse')) {
+                    $apartment->setAttribute('name', (string) $roomType['name']);
                 }
 
                 return [

@@ -59,6 +59,7 @@
                     @csrf
                     <input type="hidden" name="checkin" value="{{ $stay['checkin']->toDateString() }}">
                     <input type="hidden" name="checkout" value="{{ $stay['checkout']->toDateString() }}">
+                    <input type="hidden" name="guests" value="{{ $stay['guests'] ?? 1 }}">
 
                     <section class="checkout-section checkout-contact">
                         <div class="checkout-section-heading">
