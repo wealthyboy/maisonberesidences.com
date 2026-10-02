@@ -74,51 +74,114 @@ class CloudbedsApiService
             'pageSize' => 100,
         ];
 
-        if (filled(config('cloudbeds.api.property_id'))) {
-            $query['propertyIDs'] = (string) config('cloudbeds.api.property_id');
+        $propertyIds = $this->propertyIdsForQuery();
+        if ($propertyIds !== '') {
+            $query['propertyIDs'] = $propertyIds;
         }
 
-        $response = $this->request()->get($this->baseUrl().'/getAvailableRoomTypes', $query);
-        $response->throw();
+        $availableResponse = null;
 
-        // getAvailableRoomTypes already returns the actual room types that are
-        // bookable for the requested stay. Normalise those records directly
-        // instead of reducing the response to IDs and trying to join it back
-        // to getRooms (which is a physical-room endpoint). That join can fail
-        // when Cloudbeds exposes different room labels/IDs in the two feeds.
-        $available = $this->normalizeAvailableRoomTypes($response->json());
+        try {
+            $availableResponse = $this->request()->get($this->baseUrl().'/getAvailableRoomTypes', $query);
+            $availableResponse->throw();
 
-        if ($available !== []) {
-            return $available;
+            $available = $this->normalizeAvailableRoomTypes($availableResponse->json());
+            if ($available !== []) {
+                return $available;
+            }
+
+            Log::warning('Cloudbeds getAvailableRoomTypes returned no normalized rooms.', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'rooms' => max(1, $rooms),
+                'adults' => max(1, $adults),
+                'property_ids' => $propertyIds,
+                'top_level_keys' => array_keys((array) $availableResponse->json()),
+            ]);
+        } catch (Throwable $exception) {
+            Log::warning('Cloudbeds getAvailableRoomTypes failed; trying rate-plan availability.', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'message' => $exception->getMessage(),
+            ]);
         }
 
-        // Defensive fallback for older/variant Cloudbeds response shapes that
-        // only expose roomTypeID values.
-        $availableIds = $this->extractRoomTypeIds($response->json());
-        if ($availableIds === []) {
-            return [];
+        // Cloudbeds documents getRatePlans(detailedRates=true) as an ARI source.
+        // roomsAvailable is the room-level availability for every date in the
+        // requested stay. This is a reliable fallback when the booking-engine
+        // availability endpoint returns a variant/empty response shape.
+        try {
+            $ratePlanAvailable = $this->availableRoomTypesFromRatePlans(
+                $startDate,
+                $endDate,
+                max(1, $adults),
+                max(0, $children),
+                $propertyIds,
+            );
+
+            if ($ratePlanAvailable !== []) {
+                return $ratePlanAvailable;
+            }
+        } catch (Throwable $exception) {
+            Log::warning('Cloudbeds getRatePlans availability fallback failed.', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'message' => $exception->getMessage(),
+            ]);
         }
 
-        return collect($this->roomTypes())
-            ->filter(function (array $roomType) use ($availableIds): bool {
-                return collect((array) ($roomType['room_type_ids'] ?? []))
-                    ->contains(fn ($id): bool => in_array((string) $id, $availableIds, true));
-            })
-            ->map(function (array $roomType) use ($availableIds): array {
-                $matchingId = collect((array) ($roomType['room_type_ids'] ?? []))
-                    ->map(fn ($id): string => (string) $id)
-                    ->first(fn (string $id): bool => in_array($id, $availableIds, true));
+        // Final compatibility fallback: getRooms with dates returns physical
+        // rooms that are unassigned for the period. Collapse them back to the
+        // public room types so the storefront does not disappear because one
+        // Cloudbeds endpoint changed response shape. This is used only after
+        // both availability-specific methods yielded nothing.
+        try {
+            $datedRooms = $this->availableRoomTypesFromDatedRooms(
+                $startDate,
+                $endDate,
+                $propertyIds,
+            );
 
-                if ($matchingId) {
-                    $roomType['id'] = $matchingId;
-                }
+            if ($datedRooms !== []) {
+                return $datedRooms;
+            }
+        } catch (Throwable $exception) {
+            Log::warning('Cloudbeds dated getRooms availability fallback failed.', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'message' => $exception->getMessage(),
+            ]);
+        }
 
-                $roomType['available'] = true;
+        // Older response variants may only expose roomTypeID values. Keep this
+        // narrow fallback for such responses before finally returning empty.
+        if ($availableResponse) {
+            $availableIds = $this->extractRoomTypeIds($availableResponse->json());
+            if ($availableIds !== []) {
+                return collect($this->roomTypes())
+                    ->filter(function (array $roomType) use ($availableIds): bool {
+                        return collect((array) ($roomType['room_type_ids'] ?? []))
+                            ->contains(fn ($id): bool => in_array((string) $id, $availableIds, true));
+                    })
+                    ->map(function (array $roomType) use ($availableIds): array {
+                        $matchingId = collect((array) ($roomType['room_type_ids'] ?? []))
+                            ->map(fn ($id): string => (string) $id)
+                            ->first(fn (string $id): bool => in_array($id, $availableIds, true));
 
-                return $roomType;
-            })
-            ->values()
-            ->all();
+                        if ($matchingId) {
+                            $roomType['id'] = $matchingId;
+                        }
+
+                        $roomType['available'] = true;
+
+                        return $roomType;
+                    })
+                    ->values()
+                    ->all();
+            }
+        }
+
+        return [];
     }
 
     public function availableRoomTypeForApartment(
@@ -318,6 +381,224 @@ class CloudbedsApiService
     private function baseUrl(): string
     {
         return rtrim((string) config('cloudbeds.api.base_url', 'https://api.cloudbeds.com/api/v1.3'), '/');
+    }
+
+    private function propertyIdsForQuery(): string
+    {
+        $configured = trim((string) config('cloudbeds.api.property_id'));
+        if ($configured !== '') {
+            return $configured;
+        }
+
+        try {
+            $ids = collect($this->roomTypes())
+                ->pluck('property_id')
+                ->filter(fn ($id): bool => is_scalar($id) && trim((string) $id) !== '')
+                ->map(fn ($id): string => trim((string) $id))
+                ->unique()
+                ->values();
+
+            return $ids->implode(',');
+        } catch (Throwable) {
+            return '';
+        }
+    }
+
+    private function availableRoomTypesFromRatePlans(
+        string $startDate,
+        string $endDate,
+        int $adults,
+        int $children,
+        string $propertyIds = '',
+    ): array {
+        $query = [
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'adults' => max(1, $adults),
+            'children' => max(0, $children),
+            'detailedRates' => 'true',
+        ];
+
+        if ($propertyIds !== '') {
+            $query['propertyIDs'] = $propertyIds;
+        }
+
+        $response = $this->request()->get($this->baseUrl().'/getRatePlans', $query);
+        $response->throw();
+
+        $available = $this->normalizeRatePlanAvailability($response->json());
+
+        if ($available === []) {
+            Log::warning('Cloudbeds getRatePlans returned no room types with roomsAvailable > 0.', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'property_ids' => $propertyIds,
+                'top_level_keys' => array_keys((array) $response->json()),
+            ]);
+        }
+
+        return $available;
+    }
+
+    private function availableRoomTypesFromDatedRooms(
+        string $startDate,
+        string $endDate,
+        string $propertyIds = '',
+    ): array {
+        $query = [
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'pageNumber' => 1,
+            'pageSize' => 100,
+            'sort' => 'sorting_position',
+        ];
+
+        if ($propertyIds !== '') {
+            $query['propertyIDs'] = $propertyIds;
+        }
+
+        $response = $this->request()->get($this->baseUrl().'/getRooms', $query);
+        $response->throw();
+
+        return collect($this->normalizeRoomTypes($response->json()))
+            ->map(function (array $roomType): array {
+                $roomType['available'] = true;
+                return $roomType;
+            })
+            ->values()
+            ->all();
+    }
+
+    private function normalizeRatePlanAvailability(mixed $payload): array
+    {
+        if (! is_array($payload)) {
+            return [];
+        }
+
+        $records = [];
+
+        $walk = function (mixed $value, ?string $propertyId = null) use (&$walk, &$records): void {
+            if (! is_array($value)) {
+                return;
+            }
+
+            $currentPropertyId = trim((string) (
+                $value['propertyID']
+                ?? $value['propertyId']
+                ?? $value['property_id']
+                ?? $propertyId
+                ?? ''
+            ));
+
+            $roomTypeId = trim((string) (
+                $value['roomTypeID']
+                ?? $value['roomTypeId']
+                ?? $value['room_type_id']
+                ?? ''
+            ));
+
+            if ($roomTypeId !== '') {
+                $availability = $this->collectRoomsAvailable($value);
+
+                if ($availability !== []) {
+                    $minimumAvailable = min($availability);
+
+                    if ($minimumAvailable > 0) {
+                        $fullName = trim((string) (
+                            $value['roomTypeName']
+                            ?? $value['roomTypeNamePublic']
+                            ?? $value['roomName']
+                            ?? $value['name']
+                            ?? ''
+                        ));
+                        $shortName = trim((string) (
+                            $value['roomTypeNameShort']
+                            ?? $value['roomTypeShortName']
+                            ?? ''
+                        ));
+
+                        $displayName = $this->displayRoomTypeName($fullName, $shortName);
+                        if ($displayName === '') {
+                            $displayName = $this->nameForRoomTypeId($roomTypeId);
+                        }
+
+                        $candidate = [
+                            'id' => $roomTypeId,
+                            'room_type_ids' => [$roomTypeId],
+                            'property_id' => $currentPropertyId,
+                            'name' => $displayName !== '' ? $displayName : ('Room '.$roomTypeId),
+                            'full_name' => $fullName,
+                            'short_name' => $shortName,
+                            'description' => trim((string) ($value['roomDescription'] ?? $value['description'] ?? '')),
+                            'max_guests' => max(0, (int) ($value['maxGuests'] ?? $value['max_guests'] ?? 0)),
+                            'units' => $minimumAvailable,
+                            'available' => true,
+                            'total_rate' => $value['totalRate'] ?? $value['roomRate'] ?? null,
+                        ];
+
+                        if (! isset($records[$roomTypeId])) {
+                            $records[$roomTypeId] = $candidate;
+                        } else {
+                            $existing = $records[$roomTypeId];
+                            $existing['units'] = min(
+                                max(1, (int) ($existing['units'] ?? 1)),
+                                max(1, $minimumAvailable),
+                            );
+
+                            foreach (['property_id', 'full_name', 'short_name', 'description'] as $field) {
+                                if (($existing[$field] ?? '') === '' && ($candidate[$field] ?? '') !== '') {
+                                    $existing[$field] = $candidate[$field];
+                                }
+                            }
+
+                            if (str_starts_with((string) ($existing['name'] ?? ''), 'Room ')
+                                && ! str_starts_with((string) ($candidate['name'] ?? ''), 'Room ')) {
+                                $existing['name'] = $candidate['name'];
+                            }
+
+                            $existing['total_rate'] ??= $candidate['total_rate'];
+                            $records[$roomTypeId] = $existing;
+                        }
+                    }
+                }
+            }
+
+            foreach ($value as $child) {
+                if (is_array($child)) {
+                    $walk($child, $currentPropertyId !== '' ? $currentPropertyId : $propertyId);
+                }
+            }
+        };
+
+        $walk($payload);
+
+        return array_values($records);
+    }
+
+    private function collectRoomsAvailable(array $value): array
+    {
+        $samples = [];
+        $walk = function (mixed $node) use (&$walk, &$samples): void {
+            if (! is_array($node)) {
+                return;
+            }
+
+            foreach (['roomsAvailable', 'rooms_available', 'availableRooms', 'available_rooms'] as $key) {
+                if (array_key_exists($key, $node) && is_numeric($node[$key])) {
+                    $samples[] = max(0, (int) $node[$key]);
+                }
+            }
+
+            foreach ($node as $child) {
+                if (is_array($child)) {
+                    $walk($child);
+                }
+            }
+        };
+
+        $walk($value);
+
+        return $samples;
     }
 
     private function normalizeRoomTypes(mixed $payload): array

@@ -60,7 +60,7 @@ class ApartmentSearchController extends Controller
                 ? collect($this->cloudbeds->availableRoomTypes(
                     $checkin,
                     $checkout,
-                    1,
+                    max(1, (int) ($filters['rooms'] ?? 1)),
                     max(1, (int) ($filters['guests'] ?? 1)),
                 ))
                 : collect($this->cloudbeds->roomTypes());
