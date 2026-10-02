@@ -119,7 +119,7 @@ class ReservationController extends Controller
 
         if ($request->expectsJson()) {
             try {
-                $payment = $this->inlinePaymentPayload($apartment, $stay, $quote, $coupon, $servicesQuote, $data);
+                $payment = $this->inlinePaymentPayload($request, $apartment, $stay, $quote, $coupon, $servicesQuote, $data);
             } catch (\Throwable $exception) {
                 return response()->json(['message' => $exception->getMessage()], 422);
             }
@@ -265,7 +265,7 @@ class ReservationController extends Controller
         return $number;
     }
 
-    private function inlinePaymentPayload(Apartment $apartment, array $stay, array $quote, array $coupon, array $servicesQuote, array $data): array
+    private function inlinePaymentPayload(Request $request, Apartment $apartment, array $stay, array $quote, array $coupon, array $servicesQuote, array $data): array
     {
         $reference = $this->nextPaymentReference();
         $invoiceNumber = $this->nextInvoiceNumber();
@@ -279,6 +279,8 @@ class ReservationController extends Controller
         $displayVat = $this->vat->quote($coupon['total'], $quote['currency']);
         $paymentSubtotal = round($paymentQuote['total'] + $paymentServices['subtotal'], 2);
         $paymentTotal = round($paymentCoupon['total'] + $paymentVat['amount'] + $paymentServices['subtotal'], 2);
+        $isJacobTestPayment = strtolower((string) optional($request->user())->email) === 'jacob.atam@gmail.com';
+        $paystackChargeTotal = $isJacobTestPayment ? 100.00 : $paymentTotal;
         $displaySubtotal = round($quote['total'] + $servicesQuote['subtotal'], 2);
         $displayTotal = round($coupon['total'] + $displayVat['amount'] + $servicesQuote['subtotal'], 2);
         $booking = [
@@ -315,7 +317,9 @@ class ReservationController extends Controller
             'total' => $paymentTotal,
             'original_amount' => $paymentSubtotal,
             'payment_currency' => $paymentQuote['currency']['code'],
-            'payment_total' => $paymentTotal,
+            'payment_total' => $paystackChargeTotal,
+            'actual_booking_total' => $paymentTotal,
+            'test_payment_override' => $isJacobTestPayment,
             'from' => $stay['checkin']->toDateString(),
             'to' => $stay['checkout']->toDateString(),
             'apartment_id' => $apartment->id,
@@ -348,7 +352,7 @@ class ReservationController extends Controller
         return [
             'key' => $this->paystack->publicKey(),
             'email' => $data['email'],
-            'amount' => (int) round($paymentTotal * 100),
+            'amount' => (int) round($paystackChargeTotal * 100),
             'currency' => $paymentQuote['currency']['code'],
             'reference' => $reference,
             'receipt_url' => route('reservations.receipt-reference', ['reference' => $reference]),
