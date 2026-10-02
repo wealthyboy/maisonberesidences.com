@@ -85,7 +85,7 @@
                     </div>
                 </div>
                 <div data-results-content>
-                    @include('apartments.partials.results', ['apartments' => $apartments, 'filters' => $filters, 'currency' => $currency])
+                    @include('apartments.partials.results', ['residences' => $residences, 'filters' => $filters, 'currency' => $currency, 'cloudbedsError' => $cloudbedsError])
                 </div>
             </section>
         </main>
