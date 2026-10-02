@@ -987,3 +987,10 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
     .cloudbeds-immersive-stage { width: 100%; min-height: 660px; border-right: 0; border-left: 0; border-radius: 0; }
     .cloudbeds-booking-embed, .cloudbeds-booking-embed cb-immersive-experience { min-height: 640px; }
 }
+
+/* Results cards: keep a single mobile/tablet result compact rather than
+   allowing its gallery to dominate the viewport. */
+@media (max-width: 760px) {
+    .results-grid .residence-card { height: auto; }
+    .results-grid .residence-gallery { aspect-ratio: 16 / 9; }
+}

@@ -211,8 +211,24 @@ class ApartmentSearchController extends Controller
                     });
                 }
 
-                if ($apartment && str_contains(strtolower((string) ($roomType['name'] ?? '')), 'penthouse')) {
-                    $apartment->setAttribute('name', (string) $roomType['name']);
+                // Cloudbeds exposes the penthouse inconsistently depending on the
+                // endpoint: sometimes as "Pen", sometimes as "Penthouse", and
+                // sometimes as "BELVEDERE - Penthouse". Its public Maison Be
+                // presentation data already lives on the local Belvedere record,
+                // so bind those Cloudbeds identities to that record explicitly.
+                if (! $apartment && $this->isPenthouseRoomType($roomType)) {
+                    $apartment = $localApartments->first(function (Apartment $local): bool {
+                        return collect($this->apartmentMatchKeys($local))->contains(function (string $key): bool {
+                            return str_contains($key, 'belvedere') || str_contains($key, 'penthouse');
+                        });
+                    });
+                }
+
+                if ($apartment && $this->isPenthouseRoomType($roomType)) {
+                    // Do not mutate the original collection model because another
+                    // Cloudbeds room type may also map to the same local record.
+                    $apartment = clone $apartment;
+                    $apartment->setAttribute('name', $this->penthouseDisplayName($roomType));
                 }
 
                 return [
@@ -221,6 +237,30 @@ class ApartmentSearchController extends Controller
                 ];
             })
             ->values();
+    }
+
+
+    private function isPenthouseRoomType(array $roomType): bool
+    {
+        $keys = collect($this->roomTypeMatchKeys($roomType));
+
+        return $keys->contains(function (string $key): bool {
+            return in_array($key, ['pen', 'penthouse', 'belvederepenthouse'], true)
+                || str_contains($key, 'penthouse');
+        });
+    }
+
+    private function penthouseDisplayName(array $roomType): string
+    {
+        foreach (['full_name', 'name', 'short_name'] as $field) {
+            $value = trim((string) ($roomType[$field] ?? ''));
+
+            if ($value !== '' && str_contains(strtolower($value), 'penthouse')) {
+                return $value;
+            }
+        }
+
+        return 'BELVEDERE - Penthouse';
     }
 
     private function roomTypeMatchKeys(array $roomType): array
