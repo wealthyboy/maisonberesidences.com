@@ -39,38 +39,48 @@ class ApartmentSearchController extends Controller
         $checkout = filled($filters['checkout'] ?? null) ? Carbon::parse($filters['checkout'])->startOfDay() : null;
         $currency = $request->attributes->get('currency');
 
-        // Cloudbeds is the inventory source. Maison Be's local apartment records are
-        // retained for the richer presentation layer (photos, amenities, descriptions).
-        $localApartments = Apartment::query()
-            ->with(['images', 'property', 'attributes.parent'])
-            ->publiclyAvailable()
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get();
-
-        $localApartments->each(function (Apartment $apartment) use ($checkin, $checkout, $currency): void {
-            $apartment->setAttribute('stay_quote', $this->quotes->quote($apartment, $checkin, $checkout, $currency));
-        });
+        // When a stay search arrives from the homepage, render the page shell first
+        // and let the existing card-frame loader show immediately. The browser then
+        // requests the live Cloudbeds inventory over AJAX, avoiding a slow full-page wait.
+        $deferResults = ! $request->ajax()
+            && $request->boolean('search')
+            && $checkin
+            && $checkout;
 
         $cloudbedsError = null;
         $residences = collect();
 
-        try {
-            $roomTypes = $checkin && $checkout
-                ? collect($this->cloudbeds->availableRoomTypes(
-                    $checkin,
-                    $checkout,
-                    max(1, (int) ($filters['rooms'] ?? 1)),
-                    max(1, (int) ($filters['guests'] ?? 1)),
-                ))
-                : collect($this->cloudbeds->roomTypes());
-            $residences = $this->combineCloudbedsWithLocalApartments($roomTypes, $localApartments);
-        } catch (Throwable $exception) {
-            Log::warning('Cloudbeds apartment inventory could not be loaded.', [
-                'message' => $exception->getMessage(),
-            ]);
+        if (! $deferResults || $request->ajax()) {
+            // Cloudbeds is the inventory source. Maison Be's local apartment records are
+            // retained for the richer presentation layer (photos, amenities, descriptions).
+            $localApartments = Apartment::query()
+                ->with(['images', 'property', 'attributes.parent'])
+                ->publiclyAvailable()
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get();
 
-            $cloudbedsError = 'Live apartment information is temporarily unavailable. Please refresh the page in a moment.';
+            $localApartments->each(function (Apartment $apartment) use ($checkin, $checkout, $currency): void {
+                $apartment->setAttribute('stay_quote', $this->quotes->quote($apartment, $checkin, $checkout, $currency));
+            });
+
+            try {
+                $roomTypes = $checkin && $checkout
+                    ? collect($this->cloudbeds->availableRoomTypes(
+                        $checkin,
+                        $checkout,
+                        max(1, (int) ($filters['rooms'] ?? 1)),
+                        max(1, (int) ($filters['guests'] ?? 1)),
+                    ))
+                    : collect($this->cloudbeds->roomTypes());
+                $residences = $this->combineCloudbedsWithLocalApartments($roomTypes, $localApartments);
+            } catch (Throwable $exception) {
+                Log::warning('Cloudbeds apartment inventory could not be loaded.', [
+                    'message' => $exception->getMessage(),
+                ]);
+
+                $cloudbedsError = 'Live apartment information is temporarily unavailable. Please refresh the page in a moment.';
+            }
         }
 
         if ($request->ajax()) {
@@ -85,7 +95,7 @@ class ApartmentSearchController extends Controller
             ->inRandomOrder()
             ->value('image');
 
-        return view('apartments.index', compact('residences', 'filters', 'currency', 'menuImage', 'cloudbedsError'));
+        return view('apartments.index', compact('residences', 'filters', 'currency', 'menuImage', 'cloudbedsError', 'deferResults'));
     }
 
     public function show(Request $request, Apartment $apartment): View

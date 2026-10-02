@@ -58,16 +58,16 @@
         </aside>
         <main class="results-main">
             <h1 class="u-mb-0">Select your apartment.</h1>
-            <form class="results-search" id="apartment-availability" method="get" action="{{ route('apartments.index') }}" data-results-search>
-                <input type="hidden" name="currency" value="{{ strtoupper($currency['code'] ?? 'USD') }}">
+            <form class="results-search" id="apartment-availability" method="get" action="{{ route('apartments.index') }}" data-results-search data-initial-load="{{ ($deferResults ?? false) ? 'true' : 'false' }}">
                 <input type="hidden" name="search" value="1">
+                <input type="hidden" name="currency" value="{{ strtoupper($currency['code'] ?? 'USD') }}">
                 <input type="hidden" name="utm_source" value="maisonbe_website">
                 <x-date-range-picker class="results-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" required />
-                <x-rooms-guests-selector class="results-rooms-guests" :guests="$filters['guests'] ?? 1" :rooms="1" :max-rooms="1" />
+                <x-rooms-guests-selector class="results-rooms-guests" :guests="$filters['guests'] ?? 1" :rooms="$filters['rooms'] ?? 2" />
                 <button type="submit">Check availability</button>
             </form>
             <section class="results-async" data-results-async aria-live="polite" aria-busy="false">
-                <div class="results-loader" hidden data-results-loader>
+                <div class="results-loader" @unless($deferResults ?? false) hidden @endunless data-results-loader>
                     <div class="results-grid residence-grid">
                         @for ($i = 0; $i < 6; $i++)
                             <article class="residence-card residence-card-skeleton" aria-hidden="true">
@@ -85,12 +85,15 @@
                         @endfor
                     </div>
                 </div>
-                <div data-results-content>
-                    @include('apartments.partials.results', ['residences' => $residences, 'filters' => $filters, 'currency' => $currency, 'cloudbedsError' => $cloudbedsError])
+                <div data-results-content @if($deferResults ?? false) hidden @endif>
+                    @unless($deferResults ?? false)
+                        @include('apartments.partials.results', ['residences' => $residences, 'filters' => $filters, 'currency' => $currency, 'cloudbedsError' => $cloudbedsError])
+                    @endunless
                 </div>
             </section>
         </main>
         <x-site-footer />
+        @include('components.apartment-card-handlers')
         <script>
             (() => {
                 const menu = document.getElementById('site-menu');
@@ -147,19 +150,101 @@
                     }, 260);
                 });
 
-                // With dates selected, submit to this page. The server checks live
-                // Cloudbeds inventory and returns only room types available for the stay.
-                form.addEventListener('submit', (event) => {
-                    if (event.defaultPrevented) return;
+                const asyncRegion = document.querySelector('[data-results-async]');
+                const loader = document.querySelector('[data-results-loader]');
+                const content = document.querySelector('[data-results-content]');
+                let activeRequest = null;
 
+                const setLoading = (loading) => {
+                    asyncRegion?.setAttribute('aria-busy', loading ? 'true' : 'false');
+                    if (loader) loader.hidden = !loading;
+                    if (content) content.hidden = loading;
+                    const submit = form.querySelector('button[type="submit"]');
+                    if (submit) submit.disabled = loading;
+                };
+
+                const showAjaxError = (message) => {
+                    if (!content) return;
+                    content.replaceChildren();
+                    const notice = document.createElement('p');
+                    notice.className = 'results-notice results-notice-error';
+                    notice.textContent = message;
+                    content.appendChild(notice);
+                    content.hidden = false;
+                };
+
+                const loadResults = async ({ updateUrl = true } = {}) => {
                     const checkin = form.querySelector('[data-checkin-input]');
                     const checkout = form.querySelector('[data-checkout-input]');
-                    if (checkin?.value && checkout?.value) return;
 
+                    if (!checkin?.value || !checkout?.value) {
+                        const field = checkin?.value ? 'checkout' : 'checkin';
+                        form.querySelector(`[data-date-trigger][data-date-field="${field}"]`)?.click();
+                        return;
+                    }
+
+                    if (!form.reportValidity()) return;
+
+                    if (activeRequest) activeRequest.abort();
+                    const requestController = new AbortController();
+                    activeRequest = requestController;
+
+                    const params = new URLSearchParams(new FormData(form));
+                    params.set('search', '1');
+                    const url = `${form.action}?${params.toString()}`;
+
+                    setLoading(true);
+
+                    try {
+                        const response = await fetch(url, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'text/html',
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                            signal: requestController.signal,
+                        });
+
+                        if (!response.ok) {
+                            let message = 'We could not load live availability. Please try again.';
+                            if (response.status === 422) {
+                                try {
+                                    const payload = await response.json();
+                                    const firstError = Object.values(payload.errors ?? {}).flat()[0];
+                                    if (firstError) message = firstError;
+                                } catch (_) {}
+                            }
+                            throw new Error(message);
+                        }
+
+                        const html = await response.text();
+                        if (content) {
+                            content.innerHTML = html;
+                            content.hidden = false;
+                        }
+
+                        if (updateUrl) {
+                            window.history.replaceState({ maisonbeAvailability: true }, '', url);
+                        }
+                    } catch (error) {
+                        if (error.name === 'AbortError') return;
+                        showAjaxError(error.message || 'We could not load live availability. Please try again.');
+                    } finally {
+                        if (activeRequest === requestController) {
+                            activeRequest = null;
+                            setLoading(false);
+                        }
+                    }
+                };
+
+                form.addEventListener('submit', (event) => {
                     event.preventDefault();
-                    const field = checkin?.value ? 'checkout' : 'checkin';
-                    form.querySelector(`[data-date-trigger][data-date-field="${field}"]`)?.click();
+                    loadResults();
                 });
+
+                if (form.dataset.initialLoad === 'true') {
+                    loadResults({ updateUrl: false });
+                }
             })();
         </script>
     </body>
