@@ -276,6 +276,16 @@ class ApartmentSearchController extends Controller
             $variants[] = $core;
         }
 
+        // Cloudbeds getRooms returns the Maison Be penthouse as the physical
+        // room label "Pen". Treat it as an alias of the public room type so
+        // it maps to the existing BELVEDERE - Penthouse apartment record.
+        $normalized = $this->normalizeName($withoutBrand);
+        if (in_array($normalized, ['pen', 'penthouse', 'belvederepenthouse'], true)) {
+            $variants[] = 'BELVEDERE - Penthouse';
+            $variants[] = 'Penthouse';
+            $variants[] = 'Pen';
+        }
+
         return array_values(array_unique($variants));
     }
 

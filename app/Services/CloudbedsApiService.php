@@ -81,6 +81,19 @@ class CloudbedsApiService
         $response = $this->request()->get($this->baseUrl().'/getAvailableRoomTypes', $query);
         $response->throw();
 
+        // getAvailableRoomTypes already returns the actual room types that are
+        // bookable for the requested stay. Normalise those records directly
+        // instead of reducing the response to IDs and trying to join it back
+        // to getRooms (which is a physical-room endpoint). That join can fail
+        // when Cloudbeds exposes different room labels/IDs in the two feeds.
+        $available = $this->normalizeAvailableRoomTypes($response->json());
+
+        if ($available !== []) {
+            return $available;
+        }
+
+        // Defensive fallback for older/variant Cloudbeds response shapes that
+        // only expose roomTypeID values.
         $availableIds = $this->extractRoomTypeIds($response->json());
         if ($availableIds === []) {
             return [];
@@ -425,6 +438,116 @@ class CloudbedsApiService
         return [];
     }
 
+    private function normalizeAvailableRoomTypes(mixed $payload): array
+    {
+        if (! is_array($payload)) {
+            return [];
+        }
+
+        $records = [];
+
+        $walk = function (mixed $value, ?string $propertyId = null) use (&$walk, &$records): void {
+            if (! is_array($value)) {
+                return;
+            }
+
+            $currentPropertyId = trim((string) (
+                $value['propertyID']
+                ?? $value['propertyId']
+                ?? $value['property_id']
+                ?? $propertyId
+                ?? ''
+            ));
+
+            $roomTypeId = trim((string) (
+                $value['roomTypeID']
+                ?? $value['roomTypeId']
+                ?? $value['room_type_id']
+                ?? ''
+            ));
+
+            if ($roomTypeId !== '') {
+                $fullName = trim((string) (
+                    $value['roomTypeName']
+                    ?? $value['roomTypeNamePublic']
+                    ?? $value['roomName']
+                    ?? $value['name']
+                    ?? ''
+                ));
+                $shortName = trim((string) (
+                    $value['roomTypeNameShort']
+                    ?? $value['roomTypeShortName']
+                    ?? ''
+                ));
+
+                $displayName = $this->displayRoomTypeName($fullName, $shortName);
+                if ($displayName === '') {
+                    $displayName = $this->nameForRoomTypeId($roomTypeId);
+                }
+
+                $candidate = [
+                    'id' => $roomTypeId,
+                    'room_type_ids' => [$roomTypeId],
+                    'property_id' => $currentPropertyId,
+                    'name' => $displayName !== '' ? $displayName : ('Room '.$roomTypeId),
+                    'full_name' => $fullName,
+                    'short_name' => $shortName,
+                    'description' => trim((string) ($value['roomDescription'] ?? $value['description'] ?? '')),
+                    'max_guests' => max(0, (int) ($value['maxGuests'] ?? $value['max_guests'] ?? 0)),
+                    'units' => max(1, (int) ($value['roomsAvailable'] ?? $value['availableRooms'] ?? 1)),
+                    'available' => true,
+                    'total_rate' => $value['totalRate'] ?? $value['roomRate'] ?? null,
+                ];
+
+                if (! isset($records[$roomTypeId])) {
+                    $records[$roomTypeId] = $candidate;
+                } else {
+                    $existing = $records[$roomTypeId];
+
+                    // Detailed-rate children can repeat roomTypeID without the
+                    // descriptive fields. Never let those overwrite the richer
+                    // propertyRooms record we already captured.
+                    foreach (['property_id', 'full_name', 'short_name', 'description'] as $field) {
+                        if (($existing[$field] ?? '') === '' && ($candidate[$field] ?? '') !== '') {
+                            $existing[$field] = $candidate[$field];
+                        }
+                    }
+
+                    if (str_starts_with((string) ($existing['name'] ?? ''), 'Room ')
+                        && ! str_starts_with((string) ($candidate['name'] ?? ''), 'Room ')) {
+                        $existing['name'] = $candidate['name'];
+                    }
+
+                    $existing['max_guests'] = max((int) ($existing['max_guests'] ?? 0), (int) ($candidate['max_guests'] ?? 0));
+                    $existing['units'] = max((int) ($existing['units'] ?? 1), (int) ($candidate['units'] ?? 1));
+                    $existing['total_rate'] ??= $candidate['total_rate'];
+                    $records[$roomTypeId] = $existing;
+                }
+            }
+
+            foreach ($value as $child) {
+                if (is_array($child)) {
+                    $walk($child, $currentPropertyId !== '' ? $currentPropertyId : $propertyId);
+                }
+            }
+        };
+
+        $walk($payload);
+
+        return array_values($records);
+    }
+
+    private function nameForRoomTypeId(string $roomTypeId): string
+    {
+        foreach ($this->roomTypes() as $roomType) {
+            if (in_array($roomTypeId, array_map('strval', (array) ($roomType['room_type_ids'] ?? [])), true)) {
+                return (string) ($roomType['name'] ?? '');
+            }
+        }
+
+        return '';
+    }
+
     private function extractRoomTypeIds(mixed $payload): array
     {
         $ids = [];
@@ -456,10 +579,18 @@ class CloudbedsApiService
         $fullName = $this->cleanRoomTypeName($fullName);
         $shortName = $this->cleanRoomTypeName($shortName);
 
-        // Cloudbeds exposes the Penthouse short name without its BELVEDERE prefix.
-        // Keep the complete public accommodation name for that one room type.
+        // Cloudbeds exposes Maison Be's penthouse physical-room label as
+        // "Pen" in getRooms. The public room type is BELVEDERE - Penthouse.
+        $fullKey = $this->normalizeName($fullName);
+        $shortKey = $this->normalizeName($shortName);
+
         if (str_contains(strtolower($fullName), 'penthouse') && $fullName !== '') {
             return $fullName;
+        }
+
+        if (in_array($fullKey, ['pen', 'penthouse', 'belvederepenthouse'], true)
+            || in_array($shortKey, ['pen', 'penthouse', 'belvederepenthouse'], true)) {
+            return 'BELVEDERE - Penthouse';
         }
 
         return $shortName !== '' ? $shortName : $fullName;
@@ -497,6 +628,12 @@ class CloudbedsApiService
                 $key = $this->canonicalRoomTypeName($variant);
                 if ($key !== '') {
                     $keys[] = $key;
+
+                    if (in_array($key, ['pen', 'penthouse', 'belvederepenthouse'], true)) {
+                        $keys[] = 'belvederepenthouse';
+                        $keys[] = 'penthouse';
+                        $keys[] = 'pen';
+                    }
                 }
             }
         }
