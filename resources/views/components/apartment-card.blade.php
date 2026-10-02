@@ -29,7 +29,7 @@
 
     if ($images->isEmpty()) {
         $images->push([
-            'url' => $resolveApartmentImage($apartment->image) ?: asset('media/maisonbe-hero-source.jpg'),
+            'url' => $resolveApartmentImage($apartment->image) ?: asset('media/maisonbe-listing-exterior.jpg'),
             'caption' => '',
         ]);
     }
@@ -129,7 +129,7 @@
     <div class="residence-gallery" data-card-gallery>
         @foreach ($cardSlides as $index => $image)
             <button class="residence-gallery-slide {{ $index === 0 ? 'is-active' : '' }}" type="button" style="--slide-image: url('{{ $image['url'] }}');" data-card-slide data-caption="{{ $image['caption'] }}" data-card-modal-open aria-controls="{{ $modalId }}" aria-label="View {{ $apartment->name }} photos">
-                <img src="{{ $image['url'] }}" alt="{{ $image['caption'] ?: $apartment->name.' at Maison Be' }}" loading="{{ $index === 0 ? 'eager' : 'lazy' }}" decoding="async" onerror="this.onerror=null;this.src='{{ asset('media/maisonbe-hero-source.jpg') }}';">
+                <img src="{{ $image['url'] }}" alt="{{ $image['caption'] ?: $apartment->name.' at Maison Be' }}" loading="{{ $index === 0 ? 'eager' : 'lazy' }}" decoding="async" onerror="this.onerror=null;this.src='{{ asset('media/maisonbe-listing-exterior.jpg') }}';">
             </button>
         @endforeach
         @if ($cardSlides->count() > 1)
@@ -207,7 +207,7 @@
         <div class="apartment-card-modal-slider" data-modal-slider>
             @foreach ($modalSlides as $index => $image)
                 <figure class="apartment-card-modal-slide {{ $index === 0 ? 'is-active' : '' }}" data-modal-slide>
-                    <img src="{{ $image['url'] }}" alt="{{ $image['caption'] ?: $apartment->name.' at Maison Be' }}" loading="{{ $index === 0 ? 'eager' : 'lazy' }}" decoding="async" onerror="this.onerror=null;this.src='{{ asset('media/maisonbe-hero-source.jpg') }}';">
+                    <img src="{{ $image['url'] }}" alt="{{ $image['caption'] ?: $apartment->name.' at Maison Be' }}" loading="{{ $index === 0 ? 'eager' : 'lazy' }}" decoding="async" onerror="this.onerror=null;this.src='{{ asset('media/maisonbe-listing-exterior.jpg') }}';">
                 </figure>
             @endforeach
             @if ($modalSlides->count() > 1)

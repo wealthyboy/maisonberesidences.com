@@ -19,8 +19,11 @@ class CloudbedsApiService
         }
 
         $cacheSeconds = max(60, (int) config('cloudbeds.api.cache_seconds', 300));
-        $cacheKey = 'cloudbeds.room_types.current';
-        $staleKey = 'cloudbeds.room_types.last_success';
+
+        // Version the cache key whenever normalization changes so an older response
+        // cannot keep duplicate physical rooms on the apartments page.
+        $cacheKey = 'cloudbeds.room_types.v2.current';
+        $staleKey = 'cloudbeds.room_types.v2.last_success';
 
         $cached = Cache::get($cacheKey);
         if (is_array($cached) && $cached !== []) {
@@ -76,28 +79,56 @@ class CloudbedsApiService
                 continue;
             }
 
-            $name = trim((string) ($room['roomTypeNameShort'] ?? $room['roomTypeName'] ?? $room['roomName'] ?? $room['name'] ?? ''));
-            $id = trim((string) ($room['roomTypeID'] ?? $room['roomTypeId'] ?? $room['room_type_id'] ?? ''));
+            $fullName = trim((string) ($room['roomTypeName'] ?? $room['roomName'] ?? $room['name'] ?? ''));
+            $shortName = trim((string) ($room['roomTypeNameShort'] ?? ''));
+            $rawName = $shortName !== '' ? $shortName : $fullName;
 
-            if ($name === '') {
+            if ($rawName === '') {
                 continue;
             }
 
-            $identity = $id !== '' ? 'id:'.$id : 'name:'.$this->normalizeName($name);
+            $displayName = $this->cleanRoomTypeName($rawName);
+            $canonicalName = $this->canonicalRoomTypeName($displayName !== '' ? $displayName : $rawName);
+            $id = trim((string) ($room['roomTypeID'] ?? $room['roomTypeId'] ?? $room['room_type_id'] ?? ''));
+
+            // The getRooms response is physical-room based. Some Cloudbeds setups
+            // can expose more than one roomTypeID with the same public short name.
+            // The website should still show one accommodation card per public type.
+            $identity = $canonicalName !== ''
+                ? 'name:'.$canonicalName
+                : ($id !== '' ? 'id:'.$id : 'raw:'.$this->normalizeName($rawName));
+
             $maxGuests = max(0, (int) ($room['maxGuests'] ?? $room['max_guests'] ?? 0));
+            $description = trim((string) ($room['roomDescription'] ?? $room['description'] ?? ''));
 
             if (! isset($types[$identity])) {
                 $types[$identity] = [
                     'id' => $id,
-                    'name' => $name,
-                    'short_name' => trim((string) ($room['roomTypeNameShort'] ?? '')),
-                    'description' => trim((string) ($room['roomDescription'] ?? $room['description'] ?? '')),
+                    'room_type_ids' => $id !== '' ? [$id] : [],
+                    'name' => $displayName !== '' ? $displayName : $rawName,
+                    'full_name' => $fullName,
+                    'short_name' => $shortName,
+                    'description' => $description,
                     'max_guests' => $maxGuests,
+                    'units' => 1,
                 ];
                 continue;
             }
 
+            if ($id !== '' && ! in_array($id, $types[$identity]['room_type_ids'], true)) {
+                $types[$identity]['room_type_ids'][] = $id;
+            }
+
+            if ($types[$identity]['id'] === '' && $id !== '') {
+                $types[$identity]['id'] = $id;
+            }
+
+            if ($types[$identity]['description'] === '' && $description !== '') {
+                $types[$identity]['description'] = $description;
+            }
+
             $types[$identity]['max_guests'] = max($types[$identity]['max_guests'], $maxGuests);
+            $types[$identity]['units']++;
         }
 
         return array_values($types);
@@ -119,6 +150,7 @@ class CloudbedsApiService
                     continue;
                 }
 
+                // v1.3 getRooms commonly wraps physical rooms by property.
                 if (isset($item['rooms']) && is_array($item['rooms'])) {
                     array_push($rooms, ...$item['rooms']);
                     continue;
@@ -135,6 +167,26 @@ class CloudbedsApiService
         }
 
         return [];
+    }
+
+    private function cleanRoomTypeName(string $value): string
+    {
+        $value = trim($value);
+
+        $value = preg_replace('/\s+(?:at|@)\s+maison\s*be(?:\s+residences?)?\s*$/i', '', $value) ?? $value;
+        $value = preg_replace('/\s*[-|:]\s*maison\s*be(?:\s+residences?)?\s*$/i', '', $value) ?? $value;
+        $value = preg_replace('/^maison\s*be(?:\s+residences?)?\s*[-|:]\s*/i', '', $value) ?? $value;
+
+        return trim($value);
+    }
+
+    private function canonicalRoomTypeName(string $value): string
+    {
+        $tokens = preg_split('/[^a-z0-9]+/i', strtolower($value)) ?: [];
+        $ignored = ['at', 'maison', 'be', 'residence', 'residences', 'apartment', 'apartments', 'suite', 'suites', 'room', 'rooms'];
+        $tokens = array_values(array_filter($tokens, fn (string $token): bool => $token !== '' && ! in_array($token, $ignored, true)));
+
+        return implode('', $tokens);
     }
 
     private function normalizeName(string $value): string

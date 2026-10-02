@@ -1,12 +1,13 @@
 @php
     $roomName = trim((string) ($roomType['name'] ?? 'Maison Be Residence'));
     $maxGuests = (int) ($roomType['max_guests'] ?? 0);
+    $fallbackImage = asset('media/maisonbe-listing-exterior.jpg');
 @endphp
 
 <article class="residence-card" data-apartment-card data-cloudbeds-room-type="{{ $roomType['id'] ?? '' }}">
     <div class="residence-gallery">
-        <div class="residence-gallery-slide is-active" style="--slide-image: url('{{ asset('media/maisonbe-hero-source.jpg') }}');">
-            <img src="{{ asset('media/maisonbe-hero-source.jpg') }}" alt="{{ $roomName }} at Maison Be" loading="lazy" decoding="async">
+        <div class="residence-gallery-slide is-active" style="--slide-image: url('{{ $fallbackImage }}');">
+            <img src="{{ $fallbackImage }}" alt="{{ $roomName }} at Maison Be" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ asset('brand/maison-be-logo.png') }}';">
         </div>
     </div>
     <div class="residence-card-copy">

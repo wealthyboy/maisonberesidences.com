@@ -142,35 +142,44 @@ class ApartmentSearchController extends Controller
 
     private function combineCloudbedsWithLocalApartments(Collection $roomTypes, Collection $localApartments): Collection
     {
-        $localByName = $localApartments->keyBy(fn (Apartment $apartment): string => $this->normalizeName($apartment->name));
+        $localIndex = [];
+
+        foreach ($localApartments as $apartment) {
+            foreach ($this->apartmentMatchKeys($apartment) as $key) {
+                if ($key !== '' && ! isset($localIndex[$key])) {
+                    $localIndex[$key] = $apartment;
+                }
+            }
+        }
 
         return $roomTypes
-            ->map(function (array $roomType) use ($localApartments, $localByName): array {
-                $candidateNames = collect([
-                    $roomType['name'] ?? null,
-                    $roomType['short_name'] ?? null,
-                ])->filter()->map(fn (string $name): string => $this->normalizeName($name))->filter()->unique();
-
+            ->unique(fn (array $roomType): string => $this->roomTypeIdentity($roomType))
+            ->map(function (array $roomType) use ($localApartments, $localIndex): array {
+                $candidateKeys = $this->roomTypeMatchKeys($roomType);
                 $apartment = null;
 
-                foreach ($candidateNames as $candidate) {
-                    $apartment = $localByName->get($candidate);
-                    if ($apartment) {
+                foreach ($candidateKeys as $candidate) {
+                    if (isset($localIndex[$candidate])) {
+                        $apartment = $localIndex[$candidate];
                         break;
                     }
                 }
 
                 if (! $apartment) {
-                    $apartment = $localApartments->first(function (Apartment $local) use ($candidateNames): bool {
-                        $localName = $this->normalizeName($local->name);
+                    $apartment = $localApartments->first(function (Apartment $local) use ($candidateKeys): bool {
+                        foreach ($this->apartmentMatchKeys($local) as $localKey) {
+                            foreach ($candidateKeys as $candidate) {
+                                if (strlen($candidate) < 4 || strlen($localKey) < 4) {
+                                    continue;
+                                }
 
-                        return $candidateNames->contains(function (string $candidate) use ($localName): bool {
-                            if (strlen($candidate) < 4 || strlen($localName) < 4) {
-                                return false;
+                                if (str_contains($localKey, $candidate) || str_contains($candidate, $localKey)) {
+                                    return true;
+                                }
                             }
+                        }
 
-                            return str_contains($localName, $candidate) || str_contains($candidate, $localName);
-                        });
+                        return false;
                     });
                 }
 
@@ -180,6 +189,69 @@ class ApartmentSearchController extends Controller
                 ];
             })
             ->values();
+    }
+
+    private function roomTypeMatchKeys(array $roomType): array
+    {
+        return collect([
+            $roomType['name'] ?? null,
+            $roomType['full_name'] ?? null,
+            $roomType['short_name'] ?? null,
+        ])
+            ->filter(fn ($value): bool => is_string($value) && trim($value) !== '')
+            ->flatMap(fn (string $value): array => $this->nameVariants($value))
+            ->map(fn (string $value): string => $this->normalizeName($value))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function apartmentMatchKeys(Apartment $apartment): array
+    {
+        return collect([
+            $apartment->name,
+            $apartment->slug,
+            $apartment->apartment_id,
+        ])
+            ->filter(fn ($value): bool => is_string($value) && trim($value) !== '')
+            ->flatMap(fn (string $value): array => $this->nameVariants($value))
+            ->map(fn (string $value): string => $this->normalizeName($value))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function nameVariants(string $value): array
+    {
+        $value = trim($value);
+        $variants = [$value];
+
+        $withoutBrand = preg_replace('/\s+(?:at|@)\s+maison\s*be(?:\s+residences?)?\s*$/i', '', $value) ?? $value;
+        $withoutBrand = preg_replace('/\s*[-|:]\s*maison\s*be(?:\s+residences?)?\s*$/i', '', $withoutBrand) ?? $withoutBrand;
+        $withoutBrand = preg_replace('/^maison\s*be(?:\s+residences?)?\s*[-|:]\s*/i', '', $withoutBrand) ?? $withoutBrand;
+
+        if (trim($withoutBrand) !== '') {
+            $variants[] = trim($withoutBrand);
+        }
+
+        $tokens = preg_split('/[^a-z0-9]+/i', strtolower($withoutBrand)) ?: [];
+        $ignored = ['at', 'maison', 'be', 'residence', 'residences', 'apartment', 'apartments', 'suite', 'suites', 'room', 'rooms'];
+        $core = implode('', array_filter($tokens, fn (string $token): bool => $token !== '' && ! in_array($token, $ignored, true)));
+
+        if ($core !== '') {
+            $variants[] = $core;
+        }
+
+        return array_values(array_unique($variants));
+    }
+
+    private function roomTypeIdentity(array $roomType): string
+    {
+        $keys = $this->roomTypeMatchKeys($roomType);
+
+        return $keys[0] ?? ('id:'.(string) ($roomType['id'] ?? ''));
     }
 
     private function normalizeName(string $value): string
