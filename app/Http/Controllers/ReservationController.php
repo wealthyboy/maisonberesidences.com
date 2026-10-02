@@ -9,11 +9,9 @@ use App\Services\AdditionalServiceQuoteService;
 use App\Services\ApartmentQuoteService;
 use App\Services\CouponService;
 use App\Services\CurrencyService;
-use App\Services\CloudbedsApiService;
 use App\Services\PaystackBookingService;
 use App\Services\PaystackService;
 use App\Services\VatService;
-use App\Support\StayRestrictions;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -28,7 +26,6 @@ class ReservationController extends Controller
         private readonly PaystackService $paystack,
         private readonly CouponService $coupons,
         private readonly CurrencyService $currencies,
-        private readonly CloudbedsApiService $cloudbeds,
         private readonly PaystackBookingService $paystackBookings,
         private readonly VatService $vat,
     ) {}
@@ -46,41 +43,11 @@ class ReservationController extends Controller
             return redirect()->route('apartments.index')->with('booking_error', 'Choose check-in and check-out dates before reserving a residence.');
         }
 
-        if (StayRestrictions::overlapsSeasonalBlackout($stay['checkin'], $stay['checkout'])) {
-            return redirect()->route('apartments.index', [
-                'checkin' => $stay['checkin']->toDateString(),
-                'checkout' => $stay['checkout']->toDateString(),
-            ])->with('booking_error', StayRestrictions::SEASONAL_BLACKOUT_MESSAGE);
-        }
-
         if (! $apartment->isAvailableFor($stay['checkin'], $stay['checkout'])) {
             return redirect()->route('apartments.index', [
                 'checkin' => $stay['checkin']->toDateString(),
                 'checkout' => $stay['checkout']->toDateString(),
             ])->with('booking_error', 'This apartment is not available for the selected stay.');
-        }
-
-        try {
-            $cloudbedsRoomType = $this->cloudbeds->availableRoomTypeForApartment(
-                $apartment,
-                $stay['checkin'],
-                $stay['checkout'],
-                $stay['guests'],
-            );
-        } catch (\Throwable $exception) {
-            return redirect()->route('apartments.index', [
-                'checkin' => $stay['checkin']->toDateString(),
-                'checkout' => $stay['checkout']->toDateString(),
-                'guests' => $stay['guests'],
-            ])->with('booking_error', 'Live availability could not be confirmed. Please try again.');
-        }
-
-        if (! $cloudbedsRoomType) {
-            return redirect()->route('apartments.index', [
-                'checkin' => $stay['checkin']->toDateString(),
-                'checkout' => $stay['checkout']->toDateString(),
-                'guests' => $stay['guests'],
-            ])->with('booking_error', 'This apartment is no longer available in Cloudbeds for the selected stay.');
         }
 
         $quote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $request->attributes->get('currency'));
@@ -112,17 +79,6 @@ class ReservationController extends Controller
             return back()->withErrors(['stay' => 'Choose valid check-in and check-out dates.'])->withInput();
         }
 
-        if (StayRestrictions::overlapsSeasonalBlackout($stay['checkin'], $stay['checkout'])) {
-            if ($request->expectsJson()) {
-                return response()->json(['message' => StayRestrictions::SEASONAL_BLACKOUT_MESSAGE], 422);
-            }
-
-            return redirect()->route('apartments.index', [
-                'checkin' => $stay['checkin']->toDateString(),
-                'checkout' => $stay['checkout']->toDateString(),
-            ])->with('booking_error', StayRestrictions::SEASONAL_BLACKOUT_MESSAGE);
-        }
-
         $data = $request->validate([
             'first_name' => ['required', 'string', 'max:60'],
             'last_name' => ['required', 'string', 'max:60'],
@@ -148,30 +104,6 @@ class ReservationController extends Controller
                 ->with('booking_error', 'That residence was just reserved for part of your selected stay. Please choose another residence.');
         }
 
-        try {
-            $cloudbedsRoomType = $this->cloudbeds->availableRoomTypeForApartment(
-                $apartment,
-                $stay['checkin'],
-                $stay['checkout'],
-                $stay['guests'],
-            );
-        } catch (\Throwable $exception) {
-            if ($request->expectsJson()) {
-                return response()->json(['message' => 'Live Cloudbeds availability could not be confirmed. Please try again.'], 503);
-            }
-
-            return back()->withErrors(['stay' => 'Live Cloudbeds availability could not be confirmed. Please try again.'])->withInput();
-        }
-
-        if (! $cloudbedsRoomType) {
-            if ($request->expectsJson()) {
-                return response()->json(['message' => 'That residence is no longer available in Cloudbeds for the selected stay.'], 422);
-            }
-
-            return redirect()->route('apartments.index', $request->only('checkin', 'checkout', 'guests'))
-                ->with('booking_error', 'That residence is no longer available in Cloudbeds for the selected stay.');
-        }
-
         $quote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $request->attributes->get('currency'));
         $servicesQuote = $this->serviceQuotes->quoteSelection($apartment, $data['services'] ?? [], $quote['currency']);
 
@@ -187,7 +119,7 @@ class ReservationController extends Controller
 
         if ($request->expectsJson()) {
             try {
-                $payment = $this->inlinePaymentPayload($request, $apartment, $stay, $quote, $coupon, $servicesQuote, $data, $cloudbedsRoomType);
+                $payment = $this->inlinePaymentPayload($apartment, $stay, $quote, $coupon, $servicesQuote, $data);
             } catch (\Throwable $exception) {
                 return response()->json(['message' => $exception->getMessage()], 422);
             }
@@ -214,20 +146,8 @@ class ReservationController extends Controller
             return response()->json(['message' => 'Choose valid check-in and check-out dates first.'], 422);
         }
 
-        if (StayRestrictions::overlapsSeasonalBlackout($stay['checkin'], $stay['checkout'])) {
-            return response()->json(['message' => StayRestrictions::SEASONAL_BLACKOUT_MESSAGE], 422);
-        }
-
         if (! $apartment->isAvailableFor($stay['checkin'], $stay['checkout'])) {
             return response()->json(['message' => 'This apartment is not available for the selected stay.'], 422);
-        }
-
-        try {
-            if (! $this->cloudbeds->availableRoomTypeForApartment($apartment, $stay['checkin'], $stay['checkout'], $stay['guests'])) {
-                return response()->json(['message' => 'This apartment is no longer available in Cloudbeds for the selected stay.'], 422);
-            }
-        } catch (\Throwable $exception) {
-            return response()->json(['message' => 'Live Cloudbeds availability could not be confirmed. Please try again.'], 503);
         }
 
         $data = $request->validate([
@@ -324,7 +244,6 @@ class ReservationController extends Controller
         $validated = $request->validate([
             'checkin' => ['nullable', 'date', 'after_or_equal:today'],
             'checkout' => ['nullable', 'date', 'after:checkin', new MinimumStay($request->input('checkin'))],
-            'guests' => ['nullable', 'integer', 'min:1', 'max:20'],
         ]);
 
         if (! filled($validated['checkin'] ?? null) || ! filled($validated['checkout'] ?? null)) {
@@ -334,7 +253,6 @@ class ReservationController extends Controller
         return [
             'checkin' => Carbon::parse($validated['checkin'])->startOfDay(),
             'checkout' => Carbon::parse($validated['checkout'])->startOfDay(),
-            'guests' => max(1, (int) ($validated['guests'] ?? 1)),
         ];
     }
 
@@ -347,7 +265,7 @@ class ReservationController extends Controller
         return $number;
     }
 
-    private function inlinePaymentPayload(Request $request, Apartment $apartment, array $stay, array $quote, array $coupon, array $servicesQuote, array $data, array $cloudbedsRoomType): array
+    private function inlinePaymentPayload(Apartment $apartment, array $stay, array $quote, array $coupon, array $servicesQuote, array $data): array
     {
         $reference = $this->nextPaymentReference();
         $invoiceNumber = $this->nextInvoiceNumber();
@@ -361,8 +279,6 @@ class ReservationController extends Controller
         $displayVat = $this->vat->quote($coupon['total'], $quote['currency']);
         $paymentSubtotal = round($paymentQuote['total'] + $paymentServices['subtotal'], 2);
         $paymentTotal = round($paymentCoupon['total'] + $paymentVat['amount'] + $paymentServices['subtotal'], 2);
-        $isJacobTestPayment = strtolower((string) optional($request->user())->email) === 'jacob.atam@gmail.com';
-        $paystackChargeTotal = $isJacobTestPayment ? 100.00 : $paymentTotal;
         $displaySubtotal = round($quote['total'] + $servicesQuote['subtotal'], 2);
         $displayTotal = round($coupon['total'] + $displayVat['amount'] + $servicesQuote['subtotal'], 2);
         $booking = [
@@ -399,16 +315,11 @@ class ReservationController extends Controller
             'total' => $paymentTotal,
             'original_amount' => $paymentSubtotal,
             'payment_currency' => $paymentQuote['currency']['code'],
-            'payment_total' => $paystackChargeTotal,
-            'actual_booking_total' => $paymentTotal,
-            'test_payment_override' => $isJacobTestPayment,
+            'payment_total' => $paymentTotal,
             'from' => $stay['checkin']->toDateString(),
             'to' => $stay['checkout']->toDateString(),
             'apartment_id' => $apartment->id,
             'apartment_name' => $apartment->name,
-            'guests' => $stay['guests'],
-            'cloudbeds_room_type_id' => (string) ($cloudbedsRoomType['id'] ?? ''),
-            'cloudbeds_room_type_name' => (string) ($cloudbedsRoomType['name'] ?? $apartment->name),
             'services' => $paymentServices['items'],
             'page_url' => url()->previous() ?: route('reservations.create', [
                 'apartment' => $apartment,
@@ -437,7 +348,7 @@ class ReservationController extends Controller
         return [
             'key' => $this->paystack->publicKey(),
             'email' => $data['email'],
-            'amount' => (int) round($paystackChargeTotal * 100),
+            'amount' => (int) round($paymentTotal * 100),
             'currency' => $paymentQuote['currency']['code'],
             'reference' => $reference,
             'receipt_url' => route('reservations.receipt-reference', ['reference' => $reference]),

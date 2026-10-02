@@ -7,7 +7,6 @@ use App\Models\Image;
 use App\Rules\MinimumStay;
 use App\Services\ApartmentQuoteService;
 use App\Services\CloudbedsApiService;
-use App\Support\StayRestrictions;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -137,14 +136,6 @@ class ApartmentSearchController extends Controller
         ]);
         $checkin = Carbon::parse($data['checkin'])->startOfDay();
         $checkout = Carbon::parse($data['checkout'])->startOfDay();
-
-        if (StayRestrictions::overlapsSeasonalBlackout($checkin, $checkout)) {
-            return response()->json([
-                'available' => false,
-                'message' => StayRestrictions::SEASONAL_BLACKOUT_MESSAGE,
-                'reserve_url' => null,
-            ]);
-        }
 
         $guestCount = (int) ($data['guests'] ?? 1);
         $hasGuestCapacity = $apartment->max_adults <= 0 || $apartment->max_adults >= $guestCount;
