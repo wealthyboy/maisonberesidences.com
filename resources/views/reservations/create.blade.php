@@ -23,6 +23,8 @@
         <x-brand-head />
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=cormorant-garamond:400,500,600|instrument-sans:400,500,600" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.5.6/build/css/intlTelInput.css">
+        <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.5.6/build/js/intlTelInput.min.js"></script>
         <script src="https://js.paystack.co/v2/inline.js" async data-payment-library onload="this.dataset.loaded='true'" onerror="this.dataset.failed='true'"></script>
         @vite(['resources/css/app.css'])
     </head>
@@ -83,21 +85,19 @@
                                 Email address
                                 <input type="email" name="email" value="{{ old('email') }}" autocomplete="email" required>
                             </label>
-                            <label>
-                                Country code
-                                <select name="country_code" autocomplete="tel-country-code" required>
-                                    @foreach (['+234' => 'Nigeria +234', '+1' => 'USA/Canada +1', '+44' => 'United Kingdom +44', '+233' => 'Ghana +233', '+27' => 'South Africa +27', '+971' => 'UAE +971'] as $code => $label)
-                                        <option value="{{ $code }}" @selected(old('country_code', $quote['currency']['code'] === 'NGN' ? '+234' : '+1') === $code)>{{ $label }}</option>
-                                    @endforeach
-                                </select>
-                            </label>
-                            <label>
+                            <label class="checkout-field-wide checkout-phone-field">
                                 Phone number
-                                <input name="phone" value="{{ old('phone') }}" inputmode="tel" autocomplete="tel-national" placeholder="801 234 5678" required>
-                            </label>
-                            <label class="checkout-field-wide">
-                                Country
-                                <input name="country" value="{{ old('country', $quote['currency']['country'] ?: 'Nigeria') }}" autocomplete="country-name">
+                                <input
+                                    id="guest-phone"
+                                    name="phone"
+                                    value="{{ old('phone') }}"
+                                    inputmode="tel"
+                                    autocomplete="tel"
+                                    placeholder="+234 801 234 5678"
+                                    data-phone-input
+                                    required
+                                >
+                                <input type="hidden" name="country" value="{{ old('country', $quote['currency']['country'] ?: 'Nigeria') }}" data-phone-country>
                             </label>
                         </div>
                     </section>
@@ -192,10 +192,6 @@
                             <span>Coupon discount<small data-discount-code></small></span>
                             <strong>-<span data-discount-amount>{{ $quote['currency']['symbol'] }}0</span></strong>
                         </div>
-                        <div class="checkout-price-line checkout-vat-line">
-                            <span>VAT<small>{{ number_format($vat['rate'], 1) }}% of apartment total</small></span>
-                            <strong data-vat-amount>{{ $vat['display_amount'] }}</strong>
-                        </div>
                         @if($quote['peak_nights'])
                             <p class="checkout-peak">{{ $quote['peak_nights'] }} nights include peak-period pricing.</p>
                         @endif
@@ -237,6 +233,44 @@
         </main>
 
         <x-site-footer />
+        <script>
+            (() => {
+                const form = document.querySelector('.checkout-form');
+                const phoneInput = document.querySelector('[data-phone-input]');
+                const countryInput = document.querySelector('[data-phone-country]');
+
+                if (!form || !phoneInput || typeof window.intlTelInput !== 'function') return;
+
+                const iti = window.intlTelInput(phoneInput, {
+                    initialCountry: @json($quote['currency']['code'] === 'NGN' ? 'ng' : 'us'),
+                    preferredCountries: ['ng', 'us', 'gb', 'ca', 'gh', 'za', 'ae'],
+                    autoPlaceholder: 'aggressive',
+                    nationalMode: false,
+                    formatOnDisplay: true,
+                    utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@18.5.6/build/js/utils.js',
+                });
+
+                const syncCountry = () => {
+                    if (!countryInput) return;
+                    const selected = iti.getSelectedCountryData();
+                    countryInput.value = selected && selected.name ? selected.name : (countryInput.value || '');
+                };
+
+                const syncPhone = () => {
+                    const formatted = iti.getNumber();
+                    if (formatted) phoneInput.value = formatted;
+                    syncCountry();
+                };
+
+                if ((phoneInput.value || '').trim().startsWith('+')) {
+                    iti.setNumber(phoneInput.value.trim());
+                }
+
+                syncCountry();
+                phoneInput.addEventListener('countrychange', syncCountry);
+                form.addEventListener('submit', syncPhone, true);
+            })();
+        </script>
         <script>
             (() => {
                 const input = document.querySelector('[data-coupon-input]');

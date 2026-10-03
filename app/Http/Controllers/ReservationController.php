@@ -52,8 +52,12 @@ class ReservationController extends Controller
 
         $quote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $request->attributes->get('currency'));
         $additionalServices = $this->serviceQuotes->availableFor($apartment, $quote['currency']);
-        $vat = $this->vat->quote($quote['total'], $quote['currency']);
-        $displayCheckoutTotal = $this->currencies->format($quote['total'] + $vat['amount'], $quote['currency']);
+        $vat = [
+            'rate' => 0.0,
+            'amount' => 0.0,
+            'display_amount' => $this->currencies->format(0, $quote['currency']),
+        ];
+        $displayCheckoutTotal = $this->currencies->format($quote['total'], $quote['currency']);
 
         return view('reservations.create', compact('apartment', 'stay', 'quote', 'additionalServices', 'vat', 'displayCheckoutTotal'));
     }
@@ -83,7 +87,6 @@ class ReservationController extends Controller
             'first_name' => ['required', 'string', 'max:60'],
             'last_name' => ['required', 'string', 'max:60'],
             'email' => ['required', 'email', 'max:190'],
-            'country_code' => ['required', 'string', 'max:8'],
             'phone' => ['required', 'string', 'max:40'],
             'country' => ['nullable', 'string', 'max:100'],
             'coupon_code' => ['nullable', 'string', 'max:40'],
@@ -91,7 +94,7 @@ class ReservationController extends Controller
             'services.*' => ['nullable', 'integer', 'min:0', 'max:20'],
         ]);
 
-        $data['phone'] = trim($data['country_code'].' '.ltrim($data['phone'], '0 '));
+        $data['phone'] = trim((string) $data['phone']);
 
         $isUnavailable = ! $apartment->isAvailableFor($stay['checkin'], $stay['checkout']);
 
@@ -160,7 +163,11 @@ class ReservationController extends Controller
             $quote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $request->attributes->get('currency'));
             $coupon = $this->coupons->apply($data['coupon_code'] ?? null, $quote['total'], $quote['currency']);
             $servicesQuote = $this->serviceQuotes->quoteSelection($apartment, $data['services'] ?? [], $quote['currency']);
-            $vat = $this->vat->quote($coupon['total'], $quote['currency']);
+            $vat = [
+                'rate' => 0.0,
+                'amount' => 0.0,
+                'display_amount' => $this->currencies->format(0, $quote['currency']),
+            ];
         } catch (\Throwable $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
         }
@@ -275,8 +282,16 @@ class ReservationController extends Controller
             ->mapWithKeys(fn (array $item) => [$item['additional_service_id'] => $item['quantity']])
             ->all();
         $paymentServices = $this->serviceQuotes->quoteSelection($apartment, $serviceQuantities, $paymentQuote['currency']);
-        $paymentVat = $this->vat->quote($paymentCoupon['total'], $paymentQuote['currency']);
-        $displayVat = $this->vat->quote($coupon['total'], $quote['currency']);
+        $paymentVat = [
+            'rate' => 0.0,
+            'amount' => 0.0,
+            'display_amount' => $this->currencies->format(0, $paymentQuote['currency']),
+        ];
+        $displayVat = [
+            'rate' => 0.0,
+            'amount' => 0.0,
+            'display_amount' => $this->currencies->format(0, $quote['currency']),
+        ];
         $paymentSubtotal = round($paymentQuote['total'] + $paymentServices['subtotal'], 2);
         $paymentTotal = round($paymentCoupon['total'] + $paymentVat['amount'] + $paymentServices['subtotal'], 2);
         $isJacobTestPayment = strtolower((string) optional($request->user())->email) === 'jacob.atam@gmail.com';
