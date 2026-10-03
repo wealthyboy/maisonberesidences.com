@@ -11,6 +11,56 @@
 
     $checkoutImage = $apartment->images->map(fn ($image) => $resolveApartmentImage($image->image))->filter()->first()
         ?: ($resolveApartmentImage($apartment->image) ?: asset('media/maisonbe-hero-source.jpg'));
+
+    $phoneCountries = [
+        'NG' => ['flag' => '🇳🇬', 'dial' => '+234', 'name' => 'Nigeria'],
+        'US' => ['flag' => '🇺🇸', 'dial' => '+1', 'name' => 'United States'],
+        'CA' => ['flag' => '🇨🇦', 'dial' => '+1', 'name' => 'Canada'],
+        'GB' => ['flag' => '🇬🇧', 'dial' => '+44', 'name' => 'United Kingdom'],
+        'GH' => ['flag' => '🇬🇭', 'dial' => '+233', 'name' => 'Ghana'],
+        'ZA' => ['flag' => '🇿🇦', 'dial' => '+27', 'name' => 'South Africa'],
+        'AE' => ['flag' => '🇦🇪', 'dial' => '+971', 'name' => 'UAE'],
+        'KE' => ['flag' => '🇰🇪', 'dial' => '+254', 'name' => 'Kenya'],
+        'UG' => ['flag' => '🇺🇬', 'dial' => '+256', 'name' => 'Uganda'],
+        'TZ' => ['flag' => '🇹🇿', 'dial' => '+255', 'name' => 'Tanzania'],
+        'RW' => ['flag' => '🇷🇼', 'dial' => '+250', 'name' => 'Rwanda'],
+        'ET' => ['flag' => '🇪🇹', 'dial' => '+251', 'name' => 'Ethiopia'],
+        'EG' => ['flag' => '🇪🇬', 'dial' => '+20', 'name' => 'Egypt'],
+        'MA' => ['flag' => '🇲🇦', 'dial' => '+212', 'name' => 'Morocco'],
+        'FR' => ['flag' => '🇫🇷', 'dial' => '+33', 'name' => 'France'],
+        'DE' => ['flag' => '🇩🇪', 'dial' => '+49', 'name' => 'Germany'],
+        'IT' => ['flag' => '🇮🇹', 'dial' => '+39', 'name' => 'Italy'],
+        'ES' => ['flag' => '🇪🇸', 'dial' => '+34', 'name' => 'Spain'],
+        'PT' => ['flag' => '🇵🇹', 'dial' => '+351', 'name' => 'Portugal'],
+        'NL' => ['flag' => '🇳🇱', 'dial' => '+31', 'name' => 'Netherlands'],
+        'BE' => ['flag' => '🇧🇪', 'dial' => '+32', 'name' => 'Belgium'],
+        'CH' => ['flag' => '🇨🇭', 'dial' => '+41', 'name' => 'Switzerland'],
+        'IE' => ['flag' => '🇮🇪', 'dial' => '+353', 'name' => 'Ireland'],
+        'AT' => ['flag' => '🇦🇹', 'dial' => '+43', 'name' => 'Austria'],
+        'SE' => ['flag' => '🇸🇪', 'dial' => '+46', 'name' => 'Sweden'],
+        'NO' => ['flag' => '🇳🇴', 'dial' => '+47', 'name' => 'Norway'],
+        'DK' => ['flag' => '🇩🇰', 'dial' => '+45', 'name' => 'Denmark'],
+        'FI' => ['flag' => '🇫🇮', 'dial' => '+358', 'name' => 'Finland'],
+        'PL' => ['flag' => '🇵🇱', 'dial' => '+48', 'name' => 'Poland'],
+        'TR' => ['flag' => '🇹🇷', 'dial' => '+90', 'name' => 'Turkey'],
+        'SA' => ['flag' => '🇸🇦', 'dial' => '+966', 'name' => 'Saudi Arabia'],
+        'QA' => ['flag' => '🇶🇦', 'dial' => '+974', 'name' => 'Qatar'],
+        'KW' => ['flag' => '🇰🇼', 'dial' => '+965', 'name' => 'Kuwait'],
+        'BH' => ['flag' => '🇧🇭', 'dial' => '+973', 'name' => 'Bahrain'],
+        'OM' => ['flag' => '🇴🇲', 'dial' => '+968', 'name' => 'Oman'],
+        'IN' => ['flag' => '🇮🇳', 'dial' => '+91', 'name' => 'India'],
+        'CN' => ['flag' => '🇨🇳', 'dial' => '+86', 'name' => 'China'],
+        'JP' => ['flag' => '🇯🇵', 'dial' => '+81', 'name' => 'Japan'],
+        'KR' => ['flag' => '🇰🇷', 'dial' => '+82', 'name' => 'South Korea'],
+        'SG' => ['flag' => '🇸🇬', 'dial' => '+65', 'name' => 'Singapore'],
+        'MY' => ['flag' => '🇲🇾', 'dial' => '+60', 'name' => 'Malaysia'],
+        'ID' => ['flag' => '🇮🇩', 'dial' => '+62', 'name' => 'Indonesia'],
+        'AU' => ['flag' => '🇦🇺', 'dial' => '+61', 'name' => 'Australia'],
+        'NZ' => ['flag' => '🇳🇿', 'dial' => '+64', 'name' => 'New Zealand'],
+        'BR' => ['flag' => '🇧🇷', 'dial' => '+55', 'name' => 'Brazil'],
+        'MX' => ['flag' => '🇲🇽', 'dial' => '+52', 'name' => 'Mexico'],
+    ];
+    $defaultPhoneCountry = old('phone_country', $quote['currency']['code'] === 'NGN' ? 'NG' : 'US');
 @endphp
 
 <!DOCTYPE html>
@@ -23,8 +73,6 @@
         <x-brand-head />
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=cormorant-garamond:400,500,600|instrument-sans:400,500,600" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.5.6/build/css/intlTelInput.css">
-        <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.5.6/build/js/intlTelInput.min.js"></script>
         <script src="https://js.paystack.co/v2/inline.js" async data-payment-library onload="this.dataset.loaded='true'" onerror="this.dataset.failed='true'"></script>
         @vite(['resources/css/app.css'])
     </head>
@@ -87,17 +135,24 @@
                             </label>
                             <label class="checkout-field-wide checkout-phone-field">
                                 Phone number
-                                <input
-                                    id="guest-phone"
-                                    name="phone"
-                                    value="{{ old('phone') }}"
-                                    inputmode="tel"
-                                    autocomplete="tel"
-                                    placeholder="+234 801 234 5678"
-                                    data-phone-input
-                                    required
-                                >
-                                <input type="hidden" name="country" value="{{ old('country', $quote['currency']['country'] ?: 'Nigeria') }}" data-phone-country>
+                                <span class="checkout-phone-control">
+                                    <select name="phone_country" aria-label="Country calling code" required>
+                                        @foreach ($phoneCountries as $iso => $phoneCountry)
+                                            <option value="{{ $iso }}" @selected($defaultPhoneCountry === $iso)>
+                                                {{ $phoneCountry['flag'] }} {{ $phoneCountry['dial'] }} — {{ $phoneCountry['name'] }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <input
+                                        id="guest-phone"
+                                        name="phone"
+                                        value="{{ old('phone') }}"
+                                        inputmode="tel"
+                                        autocomplete="tel-national"
+                                        placeholder="801 234 5678"
+                                        required
+                                    >
+                                </span>
                             </label>
                         </div>
                     </section>
@@ -233,44 +288,6 @@
         </main>
 
         <x-site-footer />
-        <script>
-            (() => {
-                const form = document.querySelector('.checkout-form');
-                const phoneInput = document.querySelector('[data-phone-input]');
-                const countryInput = document.querySelector('[data-phone-country]');
-
-                if (!form || !phoneInput || typeof window.intlTelInput !== 'function') return;
-
-                const iti = window.intlTelInput(phoneInput, {
-                    initialCountry: @json($quote['currency']['code'] === 'NGN' ? 'ng' : 'us'),
-                    preferredCountries: ['ng', 'us', 'gb', 'ca', 'gh', 'za', 'ae'],
-                    autoPlaceholder: 'aggressive',
-                    nationalMode: false,
-                    formatOnDisplay: true,
-                    utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@18.5.6/build/js/utils.js',
-                });
-
-                const syncCountry = () => {
-                    if (!countryInput) return;
-                    const selected = iti.getSelectedCountryData();
-                    countryInput.value = selected && selected.name ? selected.name : (countryInput.value || '');
-                };
-
-                const syncPhone = () => {
-                    const formatted = iti.getNumber();
-                    if (formatted) phoneInput.value = formatted;
-                    syncCountry();
-                };
-
-                if ((phoneInput.value || '').trim().startsWith('+')) {
-                    iti.setNumber(phoneInput.value.trim());
-                }
-
-                syncCountry();
-                phoneInput.addEventListener('countrychange', syncCountry);
-                form.addEventListener('submit', syncPhone, true);
-            })();
-        </script>
         <script>
             (() => {
                 const input = document.querySelector('[data-coupon-input]');

@@ -413,11 +413,11 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .checkout-fields label { display: grid; min-width: 0; color: #687086; gap: .42rem; font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .checkout-fields input, .checkout-fields select { min-height: 48px; width: 100%; padding: .72rem .82rem; border: 1px solid #d7c9a7; border-radius: 8px; color: var(--ink); background: #fff; font: inherit; font-size: .92rem; outline: none; }
 .checkout-fields input:focus, .checkout-fields select:focus { border-color: var(--deep); box-shadow: 0 0 0 3px rgba(24,38,74,.1); }
-.checkout-phone-field .iti { width: 100%; }
-.checkout-phone-field .iti__selected-flag { min-height: 48px; padding: 0 .85rem 0 .8rem; border-right: 1px solid #e6dcc4; border-radius: 8px 0 0 8px; background: #faf7f1; }
-.checkout-phone-field .iti input { padding-left: 6rem !important; }
-.checkout-phone-field .iti__country-list { z-index: 160; max-width: min(380px, calc(100vw - 2rem)); border: 1px solid #d7c9a7; border-radius: 10px; box-shadow: 0 20px 50px rgba(24,38,74,.14); }
-.checkout-phone-field .iti__country-name, .checkout-phone-field .iti__dial-code { color: var(--ink); font-family: "Instrument Sans", Arial, sans-serif; font-size: .9rem; }
+.checkout-phone-control { display: grid; grid-template-columns: minmax(185px, .34fr) minmax(0, 1fr); min-height: 48px; border: 1px solid #d7c9a7; border-radius: 8px; background: #fff; overflow: hidden; transition: border-color .18s ease, box-shadow .18s ease; }
+.checkout-phone-control:focus-within { border-color: var(--deep); box-shadow: 0 0 0 3px rgba(24,38,74,.1); }
+.checkout-phone-control select, .checkout-phone-control input { width: 100%; min-height: 48px; margin: 0; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: transparent; }
+.checkout-phone-control select { padding: .72rem 2.15rem .72rem .82rem; border-right: 1px solid #e6dcc4 !important; background: #faf7f1; font-weight: 700; cursor: pointer; }
+.checkout-phone-control input { padding: .72rem .9rem; }
 .checkout-field-wide { grid-column: 1 / -1; }
 .checkout-service-list { display: grid; gap: .75rem; }
 .checkout-service-option { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1rem; align-items: center; padding: 1rem; border: 1px solid #e2d8bd; border-radius: 10px; background: #fffdf8; transition: border-color .2s ease, background .2s ease; }
@@ -1001,3 +1001,5 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
     .results-grid .residence-card { height: auto; }
     .results-grid .residence-gallery { aspect-ratio: 16 / 9; }
 }
+
+@media (max-width: 560px) { .checkout-phone-control { grid-template-columns: minmax(145px, .46fr) minmax(0, 1fr); } .checkout-phone-control select { padding-left: .65rem; font-size: .82rem; } .checkout-phone-control input { padding-right: .65rem; padding-left: .65rem; } }

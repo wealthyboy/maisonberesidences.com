@@ -87,14 +87,37 @@ class ReservationController extends Controller
             'first_name' => ['required', 'string', 'max:60'],
             'last_name' => ['required', 'string', 'max:60'],
             'email' => ['required', 'email', 'max:190'],
+            'phone_country' => ['required', 'string', 'size:2'],
             'phone' => ['required', 'string', 'max:40'],
-            'country' => ['nullable', 'string', 'max:100'],
             'coupon_code' => ['nullable', 'string', 'max:40'],
             'services' => ['nullable', 'array'],
             'services.*' => ['nullable', 'integer', 'min:0', 'max:20'],
         ]);
 
-        $data['phone'] = trim((string) $data['phone']);
+        $phoneCountries = $this->phoneCountries();
+        $phoneCountry = strtoupper((string) $data['phone_country']);
+
+        if (! isset($phoneCountries[$phoneCountry])) {
+            return response()->json(['message' => 'Choose a valid phone country code.'], 422);
+        }
+
+        $dialCode = $phoneCountries[$phoneCountry]['dial'];
+        $dialDigits = ltrim($dialCode, '+');
+        $phoneDigits = preg_replace('/\D+/', '', (string) $data['phone']) ?? '';
+
+        // Accept either a local number or a number that already contains the selected dial code.
+        if (str_starts_with($phoneDigits, $dialDigits)) {
+            $phoneDigits = substr($phoneDigits, strlen($dialDigits));
+        }
+
+        $phoneDigits = ltrim($phoneDigits, '0');
+
+        if ($phoneDigits === '') {
+            return response()->json(['message' => 'Enter a valid phone number.'], 422);
+        }
+
+        $data['phone'] = $dialCode.$phoneDigits;
+        $data['country'] = $phoneCountries[$phoneCountry]['country'];
 
         $isUnavailable = ! $apartment->isAvailableFor($stay['checkin'], $stay['checkout']);
 
@@ -374,6 +397,58 @@ class ReservationController extends Controller
             'first_name' => $data['first_name'],
             'last_name' => $data['last_name'],
             'metadata' => $metadata,
+        ];
+    }
+
+    private function phoneCountries(): array
+    {
+        return [
+            'NG' => ['dial' => '+234', 'country' => 'Nigeria'],
+            'US' => ['dial' => '+1', 'country' => 'United States'],
+            'CA' => ['dial' => '+1', 'country' => 'Canada'],
+            'GB' => ['dial' => '+44', 'country' => 'United Kingdom'],
+            'GH' => ['dial' => '+233', 'country' => 'Ghana'],
+            'ZA' => ['dial' => '+27', 'country' => 'South Africa'],
+            'AE' => ['dial' => '+971', 'country' => 'United Arab Emirates'],
+            'KE' => ['dial' => '+254', 'country' => 'Kenya'],
+            'UG' => ['dial' => '+256', 'country' => 'Uganda'],
+            'TZ' => ['dial' => '+255', 'country' => 'Tanzania'],
+            'RW' => ['dial' => '+250', 'country' => 'Rwanda'],
+            'ET' => ['dial' => '+251', 'country' => 'Ethiopia'],
+            'EG' => ['dial' => '+20', 'country' => 'Egypt'],
+            'MA' => ['dial' => '+212', 'country' => 'Morocco'],
+            'FR' => ['dial' => '+33', 'country' => 'France'],
+            'DE' => ['dial' => '+49', 'country' => 'Germany'],
+            'IT' => ['dial' => '+39', 'country' => 'Italy'],
+            'ES' => ['dial' => '+34', 'country' => 'Spain'],
+            'PT' => ['dial' => '+351', 'country' => 'Portugal'],
+            'NL' => ['dial' => '+31', 'country' => 'Netherlands'],
+            'BE' => ['dial' => '+32', 'country' => 'Belgium'],
+            'CH' => ['dial' => '+41', 'country' => 'Switzerland'],
+            'IE' => ['dial' => '+353', 'country' => 'Ireland'],
+            'AT' => ['dial' => '+43', 'country' => 'Austria'],
+            'SE' => ['dial' => '+46', 'country' => 'Sweden'],
+            'NO' => ['dial' => '+47', 'country' => 'Norway'],
+            'DK' => ['dial' => '+45', 'country' => 'Denmark'],
+            'FI' => ['dial' => '+358', 'country' => 'Finland'],
+            'PL' => ['dial' => '+48', 'country' => 'Poland'],
+            'TR' => ['dial' => '+90', 'country' => 'Turkey'],
+            'SA' => ['dial' => '+966', 'country' => 'Saudi Arabia'],
+            'QA' => ['dial' => '+974', 'country' => 'Qatar'],
+            'KW' => ['dial' => '+965', 'country' => 'Kuwait'],
+            'BH' => ['dial' => '+973', 'country' => 'Bahrain'],
+            'OM' => ['dial' => '+968', 'country' => 'Oman'],
+            'IN' => ['dial' => '+91', 'country' => 'India'],
+            'CN' => ['dial' => '+86', 'country' => 'China'],
+            'JP' => ['dial' => '+81', 'country' => 'Japan'],
+            'KR' => ['dial' => '+82', 'country' => 'South Korea'],
+            'SG' => ['dial' => '+65', 'country' => 'Singapore'],
+            'MY' => ['dial' => '+60', 'country' => 'Malaysia'],
+            'ID' => ['dial' => '+62', 'country' => 'Indonesia'],
+            'AU' => ['dial' => '+61', 'country' => 'Australia'],
+            'NZ' => ['dial' => '+64', 'country' => 'New Zealand'],
+            'BR' => ['dial' => '+55', 'country' => 'Brazil'],
+            'MX' => ['dial' => '+52', 'country' => 'Mexico'],
         ];
     }
 
