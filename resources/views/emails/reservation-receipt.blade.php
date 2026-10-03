@@ -35,6 +35,45 @@
     $couponLabel = filled($invoice->coupon_code) ? 'Coupon '.$invoice->coupon_code : 'Coupon';
     $couponAmount = (float) $invoice->discount > 0 ? '-'.$money($invoice->discount) : $money(0);
     $selfCheckInUrl = \Illuminate\Support\Facades\URL::signedRoute('reservations.self-check-in', $invoice);
+    $formatGuestPhone = function (?string $value, ?string $country): string {
+        $raw = trim((string) $value);
+        if ($raw === '') return '';
+
+        $digits = preg_replace('/\D+/', '', $raw) ?: '';
+        $dialByCountry = [
+            'Nigeria' => '+234', 'United States' => '+1', 'Canada' => '+1', 'United Kingdom' => '+44',
+            'Ghana' => '+233', 'South Africa' => '+27', 'United Arab Emirates' => '+971', 'UAE' => '+971',
+            'Kenya' => '+254', 'Uganda' => '+256', 'Tanzania' => '+255', 'Rwanda' => '+250',
+            'Ethiopia' => '+251', 'Egypt' => '+20', 'Morocco' => '+212', 'France' => '+33',
+            'Germany' => '+49', 'Italy' => '+39', 'Spain' => '+34', 'Portugal' => '+351',
+            'Netherlands' => '+31', 'Belgium' => '+32', 'Switzerland' => '+41', 'Ireland' => '+353',
+            'Austria' => '+43', 'Sweden' => '+46', 'Norway' => '+47', 'Denmark' => '+45',
+            'Finland' => '+358', 'Poland' => '+48', 'Turkey' => '+90', 'Saudi Arabia' => '+966',
+            'Qatar' => '+974', 'Kuwait' => '+965', 'Bahrain' => '+973', 'Oman' => '+968',
+            'India' => '+91', 'China' => '+86', 'Japan' => '+81', 'South Korea' => '+82',
+            'Singapore' => '+65', 'Malaysia' => '+60', 'Indonesia' => '+62', 'Australia' => '+61',
+            'New Zealand' => '+64', 'Brazil' => '+55', 'Mexico' => '+52',
+        ];
+
+        $dial = $dialByCountry[trim((string) $country)] ?? null;
+        if ($dial) {
+            $dialDigits = ltrim($dial, '+');
+            if (str_starts_with($digits, $dialDigits)) {
+                $national = substr($digits, strlen($dialDigits));
+                $groups = match (strlen($national)) {
+                    10 => [substr($national, 0, 3), substr($national, 3, 3), substr($national, 6, 4)],
+                    9 => [substr($national, 0, 3), substr($national, 3, 3), substr($national, 6, 3)],
+                    8 => [substr($national, 0, 4), substr($national, 4, 4)],
+                    default => str_split($national, 3),
+                };
+
+                return trim($dial.' '.implode(' ', array_filter($groups, fn ($part) => $part !== '')));
+            }
+        }
+
+        return $raw;
+    };
+    $guestPhone = $formatGuestPhone($invoice->phone, $invoice->country);
 @endphp
 
 <!DOCTYPE html>
@@ -74,8 +113,11 @@
                                             @endif
                                             <p style="margin:0;"><strong style="font-size:15px;">Check-in Time:</strong> {{ $checkInTime }}</p>
                                             <p style="margin:3px 0 0;"><strong style="font-size:15px;">Check-out Time:</strong> {{ $checkOutTime }}</p>
+                                            @if (filled($invoice->country))
+                                                <p style="margin:8px 0 0;color:#425065;">Country: <strong>{{ $invoice->country }}</strong></p>
+                                            @endif
                                             @if (filled($invoice->phone))
-                                                <p style="margin:8px 0 0;color:#425065;">Phone number: <strong>{{ $invoice->phone }}</strong></p>
+                                                <p style="margin:3px 0 0;color:#425065;">Phone number: <strong>{{ $guestPhone }}</strong></p>
                                             @endif
                                         </td>
                                     </tr>
