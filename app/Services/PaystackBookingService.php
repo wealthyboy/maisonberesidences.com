@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
+use App\Jobs\SyncReservationToCloudbeds;
 use App\Mail\ReservationReceiptMail;
 use App\Models\AdditionalService;
 use App\Models\Apartment;
 use App\Models\Invoice;
 use App\Models\Voucher;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -17,7 +17,6 @@ class PaystackBookingService
 {
     public function __construct(
         private readonly PaystackService $paystack,
-        private readonly CloudbedsApiService $cloudbeds,
     ) {}
 
     public function processReference(string $reference, array $event = []): Invoice
@@ -164,38 +163,37 @@ class PaystackBookingService
             return $invoice;
         });
 
-        $bookingForCloudbeds = $booking ?: (array) data_get($invoice->payment_payload, 'booking', []);
-
-        try {
-            Cache::lock('cloudbeds-paid-reservation-'.$invoice->id, 30)->block(5, function () use ($invoice, $bookingForCloudbeds): void {
-                $invoice->refresh();
-
-                if (filled(data_get($invoice->payment_payload, 'cloudbeds.reservation.reservation_id'))) {
-                    return;
-                }
-
-                $roomTypeId = (string) data_get($bookingForCloudbeds, 'cloudbeds_room_type_id');
-                $roomType = null;
-
-                if ($roomTypeId !== '') {
-                    $roomType = collect($this->cloudbeds->roomTypes())->first(function (array $candidate) use ($roomTypeId): bool {
-                        return in_array($roomTypeId, array_map('strval', (array) ($candidate['room_type_ids'] ?? [])), true);
-                    });
-
-                    if (is_array($roomType)) {
-                        $roomType['id'] = $roomTypeId;
-                    }
-                }
-
-                $this->cloudbeds->createReservation($invoice, $bookingForCloudbeds, $roomType);
-            });
-        } catch (\Throwable $exception) {
-            $this->cloudbeds->recordSyncFailure($invoice->fresh(), $exception);
-        }
-
+        $this->queueCloudbedsSync($invoice);
         $this->sendReceipt($invoice);
 
         return $invoice->fresh(['invoiceItems.apartment.property', 'serviceItems']);
+    }
+
+    private function queueCloudbedsSync(Invoice $invoice): void
+    {
+        $invoice->refresh();
+        $payload = $invoice->payment_payload ?? [];
+
+        if (filled(data_get($payload, 'cloudbeds.reservation.reservation_id'))) {
+            return;
+        }
+
+        $cloudbeds = (array) data_get($payload, 'cloudbeds', []);
+        $cloudbeds['status'] = 'queued';
+        $cloudbeds['queued_at'] = now()->toIso8601String();
+
+        $payload['cloudbeds'] = $cloudbeds;
+        $invoice->forceFill(['payment_payload' => $payload])->save();
+
+        SyncReservationToCloudbeds::dispatch($invoice->id)
+            ->onConnection('database')
+            ->afterCommit();
+
+        Log::info('Paid Maison Be reservation queued for Cloudbeds sync.', [
+            'invoice_id' => $invoice->id,
+            'invoice' => $invoice->invoice,
+            'reference' => $invoice->payment_reference,
+        ]);
     }
 
     private function sendReceipt(Invoice $invoice): void
