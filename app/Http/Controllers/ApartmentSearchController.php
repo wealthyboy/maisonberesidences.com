@@ -237,6 +237,36 @@ class ApartmentSearchController extends Controller
                     'apartment' => $apartment,
                 ];
             })
+            // Cloudbeds decides which room types are available, but the public
+            // Maison Be card order must always follow the order configured in
+            // the local Apartments admin. Matched local apartments therefore
+            // sort by sort_order (then id as a deterministic tie-breaker).
+            // Any Cloudbeds room without a local Maison Be match is kept after
+            // the locally configured apartments.
+            ->sort(function (array $left, array $right): int {
+                $leftApartment = $left['apartment'] ?? null;
+                $rightApartment = $right['apartment'] ?? null;
+
+                if ($leftApartment && $rightApartment) {
+                    $sortOrder = ((int) $leftApartment->sort_order) <=> ((int) $rightApartment->sort_order);
+
+                    if ($sortOrder !== 0) {
+                        return $sortOrder;
+                    }
+
+                    return ((int) $leftApartment->id) <=> ((int) $rightApartment->id);
+                }
+
+                if ($leftApartment) {
+                    return -1;
+                }
+
+                if ($rightApartment) {
+                    return 1;
+                }
+
+                return 0;
+            })
             ->values();
     }
 
