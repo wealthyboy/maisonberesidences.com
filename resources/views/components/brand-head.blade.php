@@ -9,3 +9,14 @@
 <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('brand/maison-be-favicon-16.png') }}">
 <link rel="shortcut icon" href="{{ asset('brand/maison-be-favicon.ico') }}">
 <link rel="manifest" href="{{ asset('favicon_io/site.webmanifest') }}">
+
+@if (! request()->routeIs('admin.*'))
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18492876092"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'AW-18492876092');
+    </script>
+@endif
