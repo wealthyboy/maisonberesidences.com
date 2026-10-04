@@ -654,7 +654,22 @@
                                                             <button type="submit" class="font-semibold text-amber-700 hover:text-amber-800">Cancel</button>
                                                         </form>
                                                     @else
+                                                        @php
+                                                            $cloudbedsStatus = (string) data_get($recordItem->payment_payload, 'cloudbeds.status');
+                                                            $cloudbedsReservationId = trim((string) data_get($recordItem->payment_payload, 'cloudbeds.reservation.reservation_id'));
+                                                            $cloudbedsCancellationConfirmed = $cloudbedsStatus === 'canceled';
+                                                        @endphp
+
                                                         <span class="font-semibold text-red-600">Cancelled</span>
+
+                                                        @if (! $cloudbedsCancellationConfirmed && $cloudbedsReservationId !== '')
+                                                            <form method="post" action="{{ route('admin.reservations.cancel', $recordItem->id) }}" onsubmit="return confirm('Retry cancellation in Cloudbeds for this reservation? Payment will NOT be refunded automatically.');">
+                                                                @csrf
+                                                                <button type="submit" class="font-semibold text-amber-700 hover:text-amber-800">Retry Cloudbeds cancel</button>
+                                                            </form>
+                                                        @elseif ($cloudbedsStatus === 'canceled_local')
+                                                            <span class="text-xs font-semibold text-zinc-500">Local only</span>
+                                                        @endif
                                                     @endif
                                                 @endif
                                                 @if ($isApartments)
