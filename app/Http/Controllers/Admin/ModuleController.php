@@ -17,6 +17,7 @@ use App\Models\InvoiceItem;
 use App\Models\PeakPeriod;
 use App\Models\Property;
 use App\Models\Voucher;
+use App\Services\CloudbedsApiService;
 use App\Services\VideoUploader\VideoUploader;
 use App\Support\AdminModules;
 use Carbon\Carbon;
@@ -24,61 +25,148 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Throwable;
 
 class ModuleController extends Controller
 {
-    public function cancelReservation(int $record): RedirectResponse
+    public function cancelReservation(CloudbedsApiService $cloudbeds, int $record): RedirectResponse
     {
         $invoice = Invoice::query()
             ->with('invoiceItems.apartment')
             ->findOrFail($record);
 
-        if ($invoice->reservation_status === 'canceled') {
-            return back()->with('status', 'This reservation is already canceled.');
+        $initialCloudbedsStatus = (string) data_get($invoice->payment_payload, 'cloudbeds.status');
+        $initialReservationId = trim((string) data_get($invoice->payment_payload, 'cloudbeds.reservation.reservation_id'));
+
+        if (
+            $invoice->reservation_status === 'canceled'
+            && ($initialReservationId === '' || in_array($initialCloudbedsStatus, ['canceled', 'canceled_local'], true))
+        ) {
+            return back()->with('status', 'This reservation is already canceled and there is no outstanding Cloudbeds cancellation.');
         }
 
-        DB::transaction(function () use ($invoice): void {
+        $retryQueued = false;
+        $cloudbedsCanceled = false;
+        $localOnly = false;
+        $failureMessage = null;
+
+        try {
+            Cache::lock('cloudbeds-paid-reservation-'.$invoice->id, 120)->block(10, function () use (
+                $cloudbeds,
+                $invoice,
+                &$retryQueued,
+                &$cloudbedsCanceled,
+                &$localOnly,
+                &$failureMessage,
+            ): void {
+                $invoice->refresh()->loadMissing('invoiceItems.apartment');
+
+                DB::transaction(function () use ($invoice): void {
+                    $payload = $invoice->payment_payload ?? [];
+                    $cloudbedsPayload = (array) data_get($payload, 'cloudbeds', []);
+                    $cloudbedsPayload['cancellation'] = array_merge(
+                        (array) ($cloudbedsPayload['cancellation'] ?? []),
+                        [
+                            'status' => 'processing',
+                            'requested_at' => now()->toIso8601String(),
+                            'requested_from' => 'admin',
+                        ],
+                    );
+                    $payload['cloudbeds'] = $cloudbedsPayload;
+
+                    $updates = ['payment_payload' => $payload];
+
+                    if ($invoice->reservation_status !== 'canceled') {
+                        $updates['reservation_status'] = 'canceled';
+                        $updates['canceled_at'] = now();
+                    }
+
+                    $invoice->forceFill($updates)->save();
+                });
+
+                $invoice->refresh();
+                $reservationId = trim((string) data_get(
+                    $invoice->payment_payload,
+                    'cloudbeds.reservation.reservation_id',
+                ));
+
+                // If the reservation never reached Cloudbeds there is nothing
+                // remote to cancel. Marking it canceled locally immediately
+                // releases the Maison Be side and prevents a queued sync job
+                // from creating it later.
+                if ($reservationId === '') {
+                    $cloudbeds->recordLocalCancellation($invoice);
+                    $localOnly = true;
+
+                    return;
+                }
+
+                // Cancellation is an admin action, so do the Cloudbeds status
+                // update immediately. This makes the room available to the next
+                // live availability search instead of waiting for the queue.
+                try {
+                    $cloudbeds->cancelReservation($invoice);
+                    $cloudbedsCanceled = true;
+                } catch (Throwable $exception) {
+                    $cloudbeds->recordCancellationFailure($invoice->fresh(), $exception);
+                    $failureMessage = $exception->getMessage();
+                    $retryQueued = true;
+                }
+            });
+        } catch (Throwable $exception) {
+            // If the lock/API path cannot finish during this admin request,
+            // preserve the cancellation locally and let the background retry
+            // job complete the Cloudbeds side.
             $invoice->refresh();
 
-            if ($invoice->reservation_status === 'canceled') {
-                return;
+            if ($invoice->reservation_status !== 'canceled') {
+                $invoice->forceFill([
+                    'reservation_status' => 'canceled',
+                    'canceled_at' => now(),
+                ])->save();
             }
 
-            $payload = $invoice->payment_payload ?? [];
-            $cloudbeds = (array) data_get($payload, 'cloudbeds', []);
-            $cloudbeds['cancellation'] = array_merge(
-                (array) ($cloudbeds['cancellation'] ?? []),
-                [
-                    'status' => 'queued',
-                    'requested_at' => now()->toIso8601String(),
-                    'requested_from' => 'admin',
-                ],
-            );
-            $payload['cloudbeds'] = $cloudbeds;
+            $failureMessage = $exception->getMessage();
+            $retryQueued = true;
+        }
 
-            $invoice->forceFill([
-                'reservation_status' => 'canceled',
-                'canceled_at' => now(),
-                'payment_payload' => $payload,
-            ])->save();
-        });
+        if ($retryQueued) {
+            CancelReservationOnCloudbeds::dispatch($invoice->id);
+        }
 
-        CancelReservationOnCloudbeds::dispatch($invoice->id);
-
-        Log::info('Admin canceled Maison Be reservation and queued Cloudbeds cancellation.', [
+        Log::info('Admin canceled Maison Be reservation.', [
             'invoice_id' => $invoice->id,
             'invoice' => $invoice->invoice,
             'cloudbeds_reservation_id' => data_get($invoice->fresh()->payment_payload, 'cloudbeds.reservation.reservation_id'),
+            'cloudbeds_canceled' => $cloudbedsCanceled,
+            'local_only' => $localOnly,
+            'retry_queued' => $retryQueued,
+            'failure_message' => $failureMessage,
         ]);
+
+        if ($retryQueued) {
+            return back()->with(
+                'status',
+                'Reservation canceled locally. Cloudbeds could not confirm the cancellation immediately, so an automatic retry has been queued. Payment was not refunded.',
+            );
+        }
+
+        if ($cloudbedsCanceled) {
+            return back()->with(
+                'status',
+                'Reservation canceled in Maison Be and Cloudbeds. The dates are available again. Payment was not refunded.',
+            );
+        }
 
         return back()->with(
             'status',
-            'Reservation canceled. The dates have been released locally and Cloudbeds cancellation has been queued. Payment was not refunded.',
+            'Reservation canceled. It had not been created in Cloudbeds, so the dates were released locally. Payment was not refunded.',
         );
     }
 

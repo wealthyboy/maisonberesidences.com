@@ -649,12 +649,25 @@
                                                             @csrf
                                                             <button type="submit" class="font-semibold text-emerald-700 hover:text-emerald-800">Resend check-in link</button>
                                                         </form>
-                                                        <form method="post" action="{{ route('admin.reservations.cancel', $recordItem->id) }}" onsubmit="return confirm('Cancel this reservation? The stay will be released and Cloudbeds cancellation will be queued. Payment will NOT be refunded automatically.');">
+                                                        <form method="post" action="{{ route('admin.reservations.cancel', $recordItem->id) }}" onsubmit="return confirm('Cancel this reservation? Maison Be will cancel it in Cloudbeds immediately when possible. Payment will NOT be refunded automatically.');">
                                                             @csrf
                                                             <button type="submit" class="font-semibold text-amber-700 hover:text-amber-800">Cancel</button>
                                                         </form>
                                                     @else
-                                                        <span class="font-semibold text-red-600">Cancelled</span>
+                                                        @php
+                                                            $cloudbedsReservationId = trim((string) data_get($recordItem->payment_payload, 'cloudbeds.reservation.reservation_id'));
+                                                            $cloudbedsStatus = (string) data_get($recordItem->payment_payload, 'cloudbeds.status');
+                                                            $needsCloudbedsCancelRetry = $cloudbedsReservationId !== '' && $cloudbedsStatus !== 'canceled';
+                                                        @endphp
+
+                                                        @if ($needsCloudbedsCancelRetry)
+                                                            <form method="post" action="{{ route('admin.reservations.cancel', $recordItem->id) }}" onsubmit="return confirm('Retry the Cloudbeds cancellation now? Payment will NOT be refunded automatically.');">
+                                                                @csrf
+                                                                <button type="submit" class="font-semibold text-amber-700 hover:text-amber-800">Retry Cloudbeds cancel</button>
+                                                            </form>
+                                                        @else
+                                                            <span class="font-semibold text-red-600">Cancelled</span>
+                                                        @endif
                                                     @endif
                                                 @endif
                                                 @if ($isApartments)
