@@ -620,6 +620,9 @@
                                             </span>
                                         @elseif ($isReservations)
                                             {{ $recordItem->currency.number_format((float) $recordItem->total, 2) }}
+                                            @if ($recordItem->reservation_status === 'canceled')
+                                                <div class="mt-1"><span class="rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-red-700">Cancelled</span></div>
+                                            @endif
                                         @elseif ($isVouchers)
                                             {{ $recordItem->used_count }}{{ $recordItem->limits ? ' / '.$recordItem->limits : '' }}
                                         @elseif ($isPeakPeriods)
@@ -641,10 +644,18 @@
                                                 <a href="{{ route('admin.modules.record.show', [$module['slug'], $recordItem->id]) }}" class="font-semibold text-zinc-600 hover:text-zinc-950">View</a>
                                                 <a href="{{ route('admin.modules.record.edit', [$module['slug'], $recordItem->id]) }}" class="font-semibold text-[#222052] hover:text-[#d9b44a]">Edit</a>
                                                 @if ($isReservations)
-                                                    <form method="post" action="{{ route('admin.reservations.resend-self-check-in', $recordItem->id) }}" onsubmit="return confirm('Send a fresh self check-in link to {{ addslashes($recordItem->email) }}?');">
-                                                        @csrf
-                                                        <button type="submit" class="font-semibold text-emerald-700 hover:text-emerald-800">Resend check-in link</button>
-                                                    </form>
+                                                    @if ($recordItem->reservation_status !== 'canceled')
+                                                        <form method="post" action="{{ route('admin.reservations.resend-self-check-in', $recordItem->id) }}" onsubmit="return confirm('Send a fresh self check-in link to {{ addslashes($recordItem->email) }}?');">
+                                                            @csrf
+                                                            <button type="submit" class="font-semibold text-emerald-700 hover:text-emerald-800">Resend check-in link</button>
+                                                        </form>
+                                                        <form method="post" action="{{ route('admin.reservations.cancel', $recordItem->id) }}" onsubmit="return confirm('Cancel this reservation? The stay will be released and Cloudbeds cancellation will be queued. Payment will NOT be refunded automatically.');">
+                                                            @csrf
+                                                            <button type="submit" class="font-semibold text-amber-700 hover:text-amber-800">Cancel</button>
+                                                        </form>
+                                                    @else
+                                                        <span class="font-semibold text-red-600">Cancelled</span>
+                                                    @endif
                                                 @endif
                                                 @if ($isApartments)
                                                     <form method="post" action="{{ route('admin.apartments.duplicate', $recordItem->id) }}">

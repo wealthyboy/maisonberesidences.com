@@ -91,6 +91,7 @@ class DashboardController extends Controller
 
         return Invoice::query()
             ->where('payment_status', 'paid')
+            ->where('reservation_status', '!=', 'canceled')
             ->when($from, fn ($query) => $query->where('created_at', '>=', $from))
             ->when($to, fn ($query) => $query->where('created_at', '<=', $to))
             ->count();
@@ -106,7 +107,9 @@ class DashboardController extends Controller
             ->when($from, fn ($query) => $query->whereDate('checkin', '>=', $from->toDateString()))
             ->when($to, fn ($query) => $query->whereDate('checkin', '<=', $to->toDateString()))
             ->unless($from || $to, fn ($query) => $query->whereDate('checkin', '>=', today()))
-            ->whereHas('invoice', fn ($invoice) => $invoice->where('payment_status', 'paid'))
+            ->whereHas('invoice', fn ($invoice) => $invoice
+                ->where('payment_status', 'paid')
+                ->where('reservation_status', '!=', 'canceled'))
             ->distinct('invoice_id')
             ->count('invoice_id');
     }

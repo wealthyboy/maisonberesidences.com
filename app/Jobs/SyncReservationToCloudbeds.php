@@ -58,8 +58,27 @@ class SyncReservationToCloudbeds implements ShouldQueue
             return;
         }
 
+        if ($invoice->reservation_status === 'canceled') {
+            Log::info('Cloudbeds queue sync skipped because reservation was canceled locally.', [
+                'invoice_id' => $invoice->id,
+                'invoice' => $invoice->invoice,
+            ]);
+
+            return;
+        }
+
         Cache::lock('cloudbeds-paid-reservation-'.$invoice->id, 120)->block(10, function () use ($cloudbeds, $invoice): void {
             $invoice->refresh()->loadMissing('invoiceItems.apartment');
+
+            if ($invoice->reservation_status === 'canceled') {
+                Log::info('Cloudbeds queue sync stopped because reservation was canceled before the API call.', [
+                    'invoice_id' => $invoice->id,
+                    'invoice' => $invoice->invoice,
+                ]);
+
+                return;
+            }
+
             $payload = $invoice->payment_payload ?? [];
 
             if (filled(data_get($payload, 'cloudbeds.reservation.reservation_id'))) {

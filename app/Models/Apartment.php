@@ -98,7 +98,9 @@ class Apartment extends Model
         return $query
             ->whereDoesntHave('invoiceItems', function (Builder $invoiceItems) use ($checkin, $checkout): void {
                 $invoiceItems
-                    ->whereHas('invoice', fn (Builder $invoice) => $invoice->where('payment_status', 'paid'))
+                    ->whereHas('invoice', fn (Builder $invoice) => $invoice
+                        ->where('payment_status', 'paid')
+                        ->where('reservation_status', '!=', 'canceled'))
                     ->whereNotNull('checkin')
                     ->whereNotNull('checkout')
                     ->where('checkin', '<', $checkout)

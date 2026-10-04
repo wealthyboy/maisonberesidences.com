@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\CancelReservationOnCloudbeds;
 use App\Jobs\EncodeVideo;
 use App\Mail\SelfCheckInLinkMail;
 use App\Models\AdditionalService;
@@ -31,11 +32,65 @@ use Illuminate\View\View;
 
 class ModuleController extends Controller
 {
+    public function cancelReservation(int $record): RedirectResponse
+    {
+        $invoice = Invoice::query()
+            ->with('invoiceItems.apartment')
+            ->findOrFail($record);
+
+        if ($invoice->reservation_status === 'canceled') {
+            return back()->with('status', 'This reservation is already canceled.');
+        }
+
+        DB::transaction(function () use ($invoice): void {
+            $invoice->refresh();
+
+            if ($invoice->reservation_status === 'canceled') {
+                return;
+            }
+
+            $payload = $invoice->payment_payload ?? [];
+            $cloudbeds = (array) data_get($payload, 'cloudbeds', []);
+            $cloudbeds['cancellation'] = array_merge(
+                (array) ($cloudbeds['cancellation'] ?? []),
+                [
+                    'status' => 'queued',
+                    'requested_at' => now()->toIso8601String(),
+                    'requested_from' => 'admin',
+                ],
+            );
+            $payload['cloudbeds'] = $cloudbeds;
+
+            $invoice->forceFill([
+                'reservation_status' => 'canceled',
+                'canceled_at' => now(),
+                'payment_payload' => $payload,
+            ])->save();
+        });
+
+        CancelReservationOnCloudbeds::dispatch($invoice->id);
+
+        Log::info('Admin canceled Maison Be reservation and queued Cloudbeds cancellation.', [
+            'invoice_id' => $invoice->id,
+            'invoice' => $invoice->invoice,
+            'cloudbeds_reservation_id' => data_get($invoice->fresh()->payment_payload, 'cloudbeds.reservation.reservation_id'),
+        ]);
+
+        return back()->with(
+            'status',
+            'Reservation canceled. The dates have been released locally and Cloudbeds cancellation has been queued. Payment was not refunded.',
+        );
+    }
+
     public function resendSelfCheckInLink(int $record): RedirectResponse
     {
         $invoice = Invoice::query()
             ->with('invoiceItems.apartment')
             ->findOrFail($record);
+
+        if ($invoice->reservation_status === 'canceled') {
+            return back()->with('status', 'The self check-in link was not sent because this reservation has been canceled.');
+        }
 
         if (! filled($invoice->email)) {
             return back()->with('status', 'The self check-in link was not sent because this reservation has no guest email address.');
@@ -646,6 +701,7 @@ class ModuleController extends Controller
         $endDate = Carbon::parse($data['checkout'])->startOfDay();
 
         $booked = InvoiceItem::where('apartment_id', $data['apartment_id'])
+            ->whereHas('invoice', fn ($invoice) => $invoice->where('reservation_status', '!=', 'canceled'))
             ->whereNotNull('checkin')
             ->whereNotNull('checkout')
             ->when($data['invoice_id'] ?? null, fn ($query, $invoiceId) => $query->where('invoice_id', '!=', $invoiceId))

@@ -346,6 +346,109 @@ class CloudbedsApiService
         return $reservation;
     }
 
+    public function cancelReservation(Invoice $invoice): array
+    {
+        $payload = $invoice->payment_payload ?? [];
+        $reservationId = trim((string) data_get($payload, 'cloudbeds.reservation.reservation_id'));
+
+        if ($reservationId === '') {
+            throw new RuntimeException('Cloudbeds cancellation could not find a reservation ID.');
+        }
+
+        if ((string) data_get($payload, 'cloudbeds.status') === 'canceled') {
+            return (array) data_get($payload, 'cloudbeds.cancellation', []);
+        }
+
+        $form = [
+            'reservationID' => $reservationId,
+            'status' => 'canceled',
+            'sendStatusChangeEmail' => false,
+            'canceledByGuest' => false,
+        ];
+
+        $propertyId = trim((string) config('cloudbeds.api.property_id'));
+        if ($propertyId !== '') {
+            $form['propertyID'] = $propertyId;
+        }
+
+        $response = $this->request()
+            ->asForm()
+            ->put($this->baseUrl().'/putReservation', $form);
+
+        $response->throw();
+        $body = $response->json();
+
+        if (data_get($body, 'success') === false) {
+            throw new RuntimeException((string) (data_get($body, 'message') ?: 'Cloudbeds did not accept the reservation cancellation.'));
+        }
+
+        $cancellation = [
+            'status' => 'canceled',
+            'reservation_id' => $reservationId,
+            'canceled_at' => now()->toIso8601String(),
+            'response' => $body,
+        ];
+
+        $cloudbeds = (array) data_get($payload, 'cloudbeds', []);
+        $cloudbeds['status'] = 'canceled';
+        $cloudbeds['cancellation'] = $cancellation;
+        $payload['cloudbeds'] = $cloudbeds;
+
+        $invoice->forceFill(['payment_payload' => $payload])->save();
+
+        Log::info('Maison Be reservation canceled in Cloudbeds.', [
+            'invoice_id' => $invoice->id,
+            'invoice' => $invoice->invoice,
+            'reservation_id' => $reservationId,
+        ]);
+
+        return $cancellation;
+    }
+
+    public function recordLocalCancellation(Invoice $invoice): void
+    {
+        $payload = $invoice->payment_payload ?? [];
+        $cloudbeds = (array) data_get($payload, 'cloudbeds', []);
+
+        $cloudbeds['status'] = 'canceled_local';
+        $cloudbeds['cancellation'] = [
+            'status' => 'not_required',
+            'canceled_at' => now()->toIso8601String(),
+            'message' => 'The reservation was canceled before a Cloudbeds reservation ID was created.',
+        ];
+
+        $payload['cloudbeds'] = $cloudbeds;
+        $invoice->forceFill(['payment_payload' => $payload])->save();
+
+        Log::info('Maison Be reservation canceled locally before Cloudbeds sync.', [
+            'invoice_id' => $invoice->id,
+            'invoice' => $invoice->invoice,
+        ]);
+    }
+
+    public function recordCancellationFailure(Invoice $invoice, Throwable $exception): void
+    {
+        $payload = $invoice->payment_payload ?? [];
+        $cloudbeds = (array) data_get($payload, 'cloudbeds', []);
+
+        $cloudbeds['status'] = 'cancel_failed';
+        $cloudbeds['cancellation'] = [
+            'status' => 'failed',
+            'failed_at' => now()->toIso8601String(),
+            'message' => $exception->getMessage(),
+        ];
+
+        $payload['cloudbeds'] = $cloudbeds;
+        $invoice->forceFill(['payment_payload' => $payload])->save();
+
+        Log::error('Maison Be reservation could not be canceled in Cloudbeds.', [
+            'invoice_id' => $invoice->id,
+            'invoice' => $invoice->invoice,
+            'reservation_id' => data_get($payload, 'cloudbeds.reservation.reservation_id'),
+            'message' => $exception->getMessage(),
+        ]);
+    }
+
     public function recordSyncFailure(Invoice $invoice, Throwable $exception): void
     {
         $payload = $invoice->payment_payload ?? [];

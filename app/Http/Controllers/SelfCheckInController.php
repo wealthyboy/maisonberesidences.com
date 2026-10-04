@@ -22,6 +22,8 @@ class SelfCheckInController extends Controller
 
     public function show(Invoice $invoice): View
     {
+        abort_if($invoice->reservation_status === 'canceled', 410, 'This reservation has been canceled.');
+
         $invoice->load(['invoiceItems.apartment', 'guestCheckIn']);
 
         return view('reservations.self-check-in', [
@@ -33,6 +35,8 @@ class SelfCheckInController extends Controller
 
     public function store(Request $request, Invoice $invoice): RedirectResponse
     {
+        abort_if($invoice->reservation_status === 'canceled', 410, 'This reservation has been canceled.');
+
         if ($invoice->guestCheckIn()->exists()) {
             return back()->with('checkin_success', 'Your self check-in has already been submitted.');
         }
@@ -82,6 +86,8 @@ class SelfCheckInController extends Controller
 
     public function resend(Invoice $invoice): RedirectResponse
     {
+        abort_if($invoice->reservation_status === 'canceled', 410, 'This reservation has been canceled.');
+
         $checkIn = $invoice->guestCheckIn()->firstOrFail();
         $checkIn->setRelation('invoice', $invoice->loadMissing('invoiceItems.apartment'));
 

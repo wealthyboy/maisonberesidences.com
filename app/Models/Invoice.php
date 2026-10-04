@@ -29,9 +29,11 @@ class Invoice extends Model
         'total',
         'payment_info',
         'payment_status',
+        'reservation_status',
         'payment_reference',
         'payment_payload',
         'paid_at',
+        'canceled_at',
         'description',
         'sent',
     ];
@@ -49,6 +51,7 @@ class Invoice extends Model
             'sent' => 'boolean',
             'payment_payload' => 'array',
             'paid_at' => 'datetime',
+            'canceled_at' => 'datetime',
         ];
     }
 

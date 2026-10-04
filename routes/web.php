@@ -66,6 +66,7 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     Route::delete('date-blocks/{dateBlock}', [ApartmentDateBlockController::class, 'destroy'])->name('date-blocks.destroy');
     Route::post('banners/{record}/reencode', [ModuleController::class, 'reencodeBannerVideo'])->name('banners.reencode');
     Route::post('reservations/{record}/resend-self-check-in', [ModuleController::class, 'resendSelfCheckInLink'])->name('reservations.resend-self-check-in');
+    Route::post('reservations/{record}/cancel', [ModuleController::class, 'cancelReservation'])->name('reservations.cancel');
 
     Route::get('currency-rates', [CurrencyRateController::class, 'index'])->name('currency-rates.index');
     Route::post('currency-rates/adjustment', [CurrencyRateController::class, 'update'])->name('currency-rates.update');
