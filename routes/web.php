@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ApartmentDateBlockController;
 use App\Http\Controllers\Admin\CurrencyRateController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ModuleController;
+use App\Http\Controllers\Admin\QueueTestController;
 use App\Http\Controllers\Admin\UploadController;
 use App\Http\Controllers\ApartmentSearchController;
 use App\Http\Controllers\Auth\LoginController;
@@ -54,6 +55,7 @@ Route::redirect('admin/login', '/login');
 Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('logout', [LoginController::class, 'destroy'])->name('logout');
+    Route::post('queue-test/email', QueueTestController::class)->name('queue-test.email');
 
     Route::post('upload/image', [UploadController::class, 'image'])->name('upload.image');
     Route::post('apartments/check-availability', [ModuleController::class, 'checkApartmentAvailability'])->name('apartments.check-availability');

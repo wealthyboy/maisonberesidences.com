@@ -4,13 +4,27 @@
 @section('heading', 'Admin dashboard')
 
 @section('header-actions')
-    <a href="{{ route('admin.modules.show', 'reservations') }}" class="rounded-md bg-[#222052] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d9b44a] hover:text-[#222052]">
-        Reservations
-    </a>
+    <div class="flex flex-wrap items-center gap-2">
+        <form method="post" action="{{ route('admin.queue-test.email') }}">
+            @csrf
+            <button type="submit" class="rounded-md border border-[#222052] px-4 py-2 text-sm font-semibold text-[#222052] transition hover:bg-[#222052] hover:text-white">
+                Send queue test email
+            </button>
+        </form>
+
+        <a href="{{ route('admin.modules.show', 'reservations') }}" class="rounded-md bg-[#222052] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d9b44a] hover:text-[#222052]">
+            Reservations
+        </a>
+    </div>
 @endsection
 
 @section('content')
     <div class="space-y-7">
+        @if (session('queue_test_success'))
+            <div class="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+                {{ session('queue_test_success') }}
+            </div>
+        @endif
         <section class="rounded-md border border-zinc-200 bg-white p-5 shadow-sm">
             <form method="get" action="{{ route('admin.dashboard') }}" class="grid gap-4 lg:grid-cols-[1fr_180px_180px_auto_auto] lg:items-end">
                 <div>
