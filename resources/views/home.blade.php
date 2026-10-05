@@ -54,7 +54,7 @@
                     </button>
                     <a class="hero-wordmark" href="/" aria-label="Maison Be Residences home"><x-brand-logo tone="light" /></a>
                     <div class="hero-actions">
-                        <a class="reserve-link" href="{{ route('booking.cloudbeds') }}">Reserve</a>
+                        <a class="reserve-link" href="{{ route('apartments.index') }}">Reserve</a>
                     </div>
                 </header>
 
@@ -83,7 +83,7 @@
                 <header class="menu-header">
                     <button class="menu-close" type="button" aria-label="Close navigation" id="menu-close"><span></span><span></span></button>
                     <a class="menu-wordmark" href="/" aria-label="Maison Be Residences home"><x-brand-logo /></a>
-                    <a class="menu-reserve" href="{{ route('booking.cloudbeds') }}">Reserve</a>
+                    <a class="menu-reserve" href="{{ route('apartments.index') }}">Reserve</a>
                 </header>
                 <div class="menu-content">
                     <nav class="menu-nav" aria-label="Main navigation">
