@@ -68,6 +68,30 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .hero-title-wrap { position: absolute; top: 50%; left: 50%; z-index: 1; width: min(90%, 900px); transform: translate(-50%, -45%); text-align: center; }
 .hero h1, .introduction h2, .residences h2, .enquire h2 { margin: 0; font-family: "Cormorant Garamond", Georgia, serif; font-weight: 400; letter-spacing: 0; }
 .hero h1 { font-size: clamp(3.1rem, 5.7vw, 6.4rem); line-height: .82; }
+.hero-promo-text {
+    width: fit-content;
+    max-width: min(92vw, 720px);
+    margin: 1.35rem auto 0;
+    border: 1px solid rgba(217, 180, 74, .7);
+    border-radius: 999px;
+    background: rgba(21, 19, 59, .88);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, .24);
+    color: #fff;
+    font-family: "Instrument Sans", Arial, sans-serif;
+    font-size: clamp(.78rem, 1.25vw, 1rem);
+    font-weight: 700;
+    letter-spacing: .015em;
+    line-height: 1.3;
+    padding: .72rem 1.2rem;
+    text-wrap: balance;
+    animation: maison-hero-promo-hop 2.4s ease-in-out infinite;
+}
+@keyframes maison-hero-promo-hop {
+    0%, 72%, 100% { transform: translateY(0); }
+    80% { transform: translateY(-7px); }
+    88% { transform: translateY(0); }
+    94% { transform: translateY(-3px); }
+}
 
 .booking-bar { position: absolute; right: 2rem; bottom: clamp(1.5rem, 5vw, 4.3rem); left: 2rem; z-index: 5; display: grid; width: min(calc(100% - 4rem), 920px); margin: auto; border: 1px solid rgba(255,255,255,.52); border-radius: 18px; background: transparent; cursor: default; grid-template-columns: 1.25fr .78fr 1.1fr; transition: background 180ms ease, border-color 180ms ease; }
 .booking-bar:hover, .booking-bar:focus-within { border-color: rgba(29,45,83,.34); background: var(--paper); }
@@ -780,7 +804,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 @media (max-width: 800px) { .hero-actions .currency-selector { margin-right: .35rem; } .currency-selector select { min-height: 34px; padding: .42rem 1.55rem .42rem .58rem; font-size: .61rem; } .currency-selector::after { right: .58rem; } .hero-header { height: 72px; } .menu-button { width: 72px; height: 72px; padding: 0 22px; } .reserve-link { width: 96px; height: 72px; font-size: .68rem; } .hero-wordmark, .menu-wordmark { font-size: 1.55rem; } .hero-wordmark small, .menu-wordmark small { font-size: .34rem; } .menu-header { height: 72px; } .menu-close { width: 72px; height: 72px; } .menu-close span { left: 22px; width: 28px; } .menu-reserve { width: 96px; height: 72px; font-size: .68rem; } .menu-content { min-height: calc(100svh - 72px); } .booking-bar { grid-template-columns: 1.15fr .8fr 1fr; } .availability-button { min-height: 58px; } .introduction, .residences-heading { grid-template-columns: 1fr; gap: 1.5rem; } .residences-heading-summary { align-items: flex-start; flex-direction: column; } .residences-heading-summary p { white-space: normal; } .residence-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .residence-card:last-child { grid-column: auto; } .residence-story { min-height: auto; grid-template-columns: 1fr; } .residence-story.is-reversed .residence-story-copy, .residence-story.is-reversed .residence-story-slider { order: initial; } .residence-story-copy { padding: 4.5rem 2rem; } .residence-story-slider { min-height: 430px; } .results-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .reservation-layout { grid-template-columns: 1fr; } }
 @media (max-width: 800px) { .residence-story .residence-story-slider, .residence-story.is-reversed .residence-story-slider { order: 1; } .residence-story .residence-story-copy, .residence-story.is-reversed .residence-story-copy { order: 2; } }
 @media (max-width: 700px) { .checkout-coupon-row { grid-template-columns: 1fr; } .checkout-coupon-row button { width: 100%; } }
-@media (max-width: 560px) { .construction-copy { min-height: 100svh; } .construction-content { padding: 4.5rem 0; } .construction-eyebrow { align-items: flex-start; line-height: 1.5; } .construction-eyebrow::before { margin-top: .5rem; flex: 0 0 1.75rem; } .construction-content h1 { font-size: clamp(3.1rem, 15vw, 4.7rem); } .construction-footer { flex-direction: column; } .construction-visual { min-height: 52svh; } .hero { min-height: 650px; } .hero-title-wrap { transform: translate(-50%, -52%); } .hero h1 { font-size: clamp(3.8rem, 16vw, 5.5rem); } .hero-scroll { display: none; } .menu-content { display: block; padding: 2.5rem 1.5rem; } .menu-nav { max-width: none; } .menu-image { min-height: 280px; margin-top: 3rem; } .booking-bar { right: 1rem; bottom: 1rem; left: 1rem; width: calc(100% - 2rem); display: block; } .booking-location, .booking-dates, .booking-guests { padding: 1rem 1.15rem; border-right: 0; border-bottom: 1px solid var(--line); } .availability-button { width: 100%; min-height: 54px; } .date-picker, .guest-picker { width: calc(100vw - 2rem); } .calendar-months { grid-template-columns: 1fr; } .calendar-month:nth-child(2) { display: none; } .introduction, .residences { padding: 4.5rem 1rem; } .residence-grid, .results-grid { grid-template-columns: 1fr; } .residence-card:last-child { grid-column: auto; } .results-header, .results-main, .reservation-main, .receipt-main, .information-page { width: auto; padding-right: 1.5rem; padding-left: 1.5rem; } .results-actions { gap: .8rem; } .currency-switch { padding: .48rem .55rem; } .results-back { font-size: .6rem; } .gallery-modal { padding: .65rem; } .gallery-modal-dialog { --gallery-modal-padding: 1rem; max-height: 94svh; padding: var(--gallery-modal-padding); } .gallery-modal-stage img { height: min(48svh, 430px); } .gallery-modal-control.is-previous { left: .55rem; } .gallery-modal-control.is-next { right: .55rem; } .gallery-modal-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } .site-footer { padding: 2rem 1.5rem 4.7rem; } .site-footer-links { gap: 1rem; } .site-footer p { line-height: 1.55; } .site-footer-whatsapp { right: .85rem; bottom: 1rem; padding: .68rem .72rem; } .site-footer-whatsapp-label { display: none; } .site-footer-whatsapp-icon { width: 2.35rem; height: 2.35rem; flex-basis: 2.35rem; } }
+@media (max-width: 560px) { .construction-copy { min-height: 100svh; } .construction-content { padding: 4.5rem 0; } .construction-eyebrow { align-items: flex-start; line-height: 1.5; } .construction-eyebrow::before { margin-top: .5rem; flex: 0 0 1.75rem; } .construction-content h1 { font-size: clamp(3.1rem, 15vw, 4.7rem); } .construction-footer { flex-direction: column; } .construction-visual { min-height: 52svh; } .hero { min-height: 650px; } .hero-title-wrap { transform: translate(-50%, -52%); } .hero h1 { font-size: clamp(3.8rem, 16vw, 5.5rem); } .hero-promo-text { max-width: min(88vw, 520px); margin-top: 1rem; padding: .62rem .9rem; font-size: .76rem; } .hero-scroll { display: none; } .menu-content { display: block; padding: 2.5rem 1.5rem; } .menu-nav { max-width: none; } .menu-image { min-height: 280px; margin-top: 3rem; } .booking-bar { right: 1rem; bottom: 1rem; left: 1rem; width: calc(100% - 2rem); display: block; } .booking-location, .booking-dates, .booking-guests { padding: 1rem 1.15rem; border-right: 0; border-bottom: 1px solid var(--line); } .availability-button { width: 100%; min-height: 54px; } .date-picker, .guest-picker { width: calc(100vw - 2rem); } .calendar-months { grid-template-columns: 1fr; } .calendar-month:nth-child(2) { display: none; } .introduction, .residences { padding: 4.5rem 1rem; } .residence-grid, .results-grid { grid-template-columns: 1fr; } .residence-card:last-child { grid-column: auto; } .results-header, .results-main, .reservation-main, .receipt-main, .information-page { width: auto; padding-right: 1.5rem; padding-left: 1.5rem; } .results-actions { gap: .8rem; } .currency-switch { padding: .48rem .55rem; } .results-back { font-size: .6rem; } .gallery-modal { padding: .65rem; } .gallery-modal-dialog { --gallery-modal-padding: 1rem; max-height: 94svh; padding: var(--gallery-modal-padding); } .gallery-modal-stage img { height: min(48svh, 430px); } .gallery-modal-control.is-previous { left: .55rem; } .gallery-modal-control.is-next { right: .55rem; } .gallery-modal-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } .site-footer { padding: 2rem 1.5rem 4.7rem; } .site-footer-links { gap: 1rem; } .site-footer p { line-height: 1.55; } .site-footer-whatsapp { right: .85rem; bottom: 1rem; padding: .68rem .72rem; } .site-footer-whatsapp-label { display: none; } .site-footer-whatsapp-icon { width: 2.35rem; height: 2.35rem; flex-basis: 2.35rem; } }
 @media (max-width: 900px) {
     .contact-main { grid-template-columns: 1fr; }
     .contact-details { grid-column: auto; }
@@ -1036,7 +1060,6 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
     box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
 }
 
-.residence-promo-text,
 .apartment-show-promo-text {
     display: inline-flex;
     border-radius: .65rem;
@@ -1148,13 +1171,10 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
         max-width: calc(100% - 4.5rem);
     }
 
-    .residence-promo-text {
-        font-size: .7rem;
-    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .residence-promo-text,
+    .hero-promo-text,
     .apartment-show-promo-text {
         animation: none;
     }

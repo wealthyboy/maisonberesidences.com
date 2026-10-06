@@ -60,6 +60,9 @@
 
                 <div class="hero-title-wrap">
                     <h1 id="hero-title">Live Beautifully</h1>
+                    @if (filled($heroPromotion?->promo_text))
+                        <div class="hero-promo-text" role="status">{{ $heroPromotion->promo_text }}</div>
+                    @endif
                 </div>
 
                 <form class="booking-bar" id="stay-search" action="{{ route('apartments.index') }}" method="get">

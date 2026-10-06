@@ -6,6 +6,7 @@ use App\Models\AdminModuleRecord;
 use App\Models\Apartment;
 use App\Models\Image;
 use App\Models\Information;
+use App\Models\Promotion;
 use App\Models\SystemSetting;
 use App\Services\ApartmentQuoteService;
 use Illuminate\Http\Request;
@@ -23,6 +24,16 @@ class HomeController extends Controller
             ? Information::query()->orderBy('sort_order')->orderBy('title')->get()
             : collect();
         $settings = Schema::hasTable('system_settings') ? SystemSetting::query()->first() : null;
+        $heroPromotion = Schema::hasTable('promotions')
+            ? Promotion::query()
+                ->where('is_active', true)
+                ->where('scope', 'global')
+                ->whereNotNull('promo_text')
+                ->where('promo_text', '!=', '')
+                ->orderByDesc('updated_at')
+                ->latest('id')
+                ->first()
+            : null;
         $heroBanner = Schema::hasTable('admin_module_records') && Schema::hasTable('videos')
             ? AdminModuleRecord::query()
                 ->with('video')
@@ -90,7 +101,7 @@ class HomeController extends Controller
             : collect();
 
         if (! Schema::hasTable('apartments')) {
-            return view('home', compact('information', 'settings', 'currency', 'bedroomImages', 'heroBanner', 'heroImages') + ['apartments' => collect()]);
+            return view('home', compact('information', 'settings', 'currency', 'bedroomImages', 'heroBanner', 'heroImages', 'heroPromotion') + ['apartments' => collect()]);
         }
 
         $apartments = Apartment::query()
@@ -104,6 +115,6 @@ class HomeController extends Controller
             $apartment->setAttribute('home_quote', $this->quotes->quote($apartment, null, null, $currency));
         });
 
-        return view('home', compact('apartments', 'information', 'settings', 'currency', 'bedroomImages', 'heroBanner', 'heroImages'));
+        return view('home', compact('apartments', 'information', 'settings', 'currency', 'bedroomImages', 'heroBanner', 'heroImages', 'heroPromotion'));
     }
 }

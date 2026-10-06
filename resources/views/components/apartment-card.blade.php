@@ -131,9 +131,6 @@
         @if ($promotion)
             <div class="residence-promo-stack" aria-label="{{ $promotion['percentage'] }} percent discount">
                 <span class="residence-promo-percent">Save {{ $promotion['percentage'] }}%</span>
-                @if (filled($promotion['promo_text'] ?? null))
-                    <span class="residence-promo-text">{{ $promotion['promo_text'] }}</span>
-                @endif
             </div>
         @endif
         @foreach ($cardSlides as $index => $image)
