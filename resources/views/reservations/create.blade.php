@@ -232,9 +232,25 @@
                             </div>
                         </div>
                         <p class="eyebrow">Price details</p>
-                        <div class="checkout-price-line">
-                            <span>{{ $quote['display_nightly'] }} × {{ $quote['nights'] }} {{ \Illuminate\Support\Str::plural('night', $quote['nights']) }}<small>per night</small></span>
-                            <strong>{{ $quote['display_total'] }}</strong>
+                        @if (data_get($quote, 'has_promotion'))
+                            <div class="checkout-promotion-banner">
+                                <span class="checkout-promotion-percent">Save {{ data_get($quote, 'promotion.percentage') }}%</span>
+                                <strong>{{ data_get($quote, 'promotion.promo_text') ?: data_get($quote, 'promotion.name') }}</strong>
+                            </div>
+                        @endif
+                        <div class="checkout-price-line {{ data_get($quote, 'has_promotion') ? 'has-promotion' : '' }}">
+                            <span>
+                                @if (data_get($quote, 'has_promotion'))
+                                    <del>{{ $quote['display_original_nightly'] }}</del>
+                                @endif
+                                {{ $quote['display_nightly'] }} × {{ $quote['nights'] }} {{ \Illuminate\Support\Str::plural('night', $quote['nights']) }}<small>per night</small>
+                            </span>
+                            <strong>
+                                @if (data_get($quote, 'has_promotion'))
+                                    <del>{{ $quote['display_original_total'] }}</del>
+                                @endif
+                                {{ $quote['display_total'] }}
+                            </strong>
                         </div>
                         @foreach ($additionalServices as $service)
                             @php($selectedQuantity = (int) old('services.'.$service['id'], 0))
@@ -274,7 +290,12 @@
                             <div>
                                 <p class="eyebrow">Your stay</p>
                                 <h2>{{ $apartment->name }}</h2>
-                                <p class="checkout-stay-nightly">{{ $quote['display_nightly'] }} <span>per night</span></p>
+                                <p class="checkout-stay-nightly {{ data_get($quote, 'has_promotion') ? 'has-promotion' : '' }}">
+                                    @if (data_get($quote, 'has_promotion'))
+                                        <del>{{ $quote['display_original_nightly'] }}</del>
+                                    @endif
+                                    {{ $quote['display_nightly'] }} <span>per night</span>
+                                </p>
                             </div>
                         </div>
                         <dl>

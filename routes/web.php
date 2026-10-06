@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ApartmentDateBlockController;
 use App\Http\Controllers\Admin\CurrencyRateController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ModuleController;
+use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\QueueTestController;
 use App\Http\Controllers\Admin\UploadController;
 use App\Http\Controllers\ApartmentSearchController;
@@ -71,6 +72,13 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     Route::get('currency-rates', [CurrencyRateController::class, 'index'])->name('currency-rates.index');
     Route::post('currency-rates/adjustment', [CurrencyRateController::class, 'update'])->name('currency-rates.update');
     Route::post('currency-rates/refresh', [CurrencyRateController::class, 'refresh'])->name('currency-rates.refresh');
+
+    Route::get('discounts', [PromotionController::class, 'index'])->name('promotions.index');
+    Route::get('discounts/create', [PromotionController::class, 'create'])->name('promotions.create');
+    Route::post('discounts', [PromotionController::class, 'store'])->name('promotions.store');
+    Route::get('discounts/{promotion}/edit', [PromotionController::class, 'edit'])->name('promotions.edit');
+    Route::put('discounts/{promotion}', [PromotionController::class, 'update'])->name('promotions.update');
+    Route::delete('discounts/{promotion}', [PromotionController::class, 'destroy'])->name('promotions.destroy');
 
     Route::get('{module}', [ModuleController::class, 'index'])
         ->where('module', AdminModules::allowedSlugs())

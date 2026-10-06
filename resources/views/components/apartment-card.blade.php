@@ -123,10 +123,19 @@
     $refundability = 'Partial Refund';
     $cancellationPolicyUrl = route('information.show', ['information' => 'cancellation-refund-policy']);
     $modalId = 'apartment-card-modal-'.$apartment->id;
+    $promotion = data_get($quote, 'has_promotion') ? data_get($quote, 'promotion') : null;
 @endphp
 
 <article class="residence-card" data-apartment-card>
     <div class="residence-gallery" data-card-gallery>
+        @if ($promotion)
+            <div class="residence-promo-stack" aria-label="{{ $promotion['percentage'] }} percent discount">
+                <span class="residence-promo-percent">Save {{ $promotion['percentage'] }}%</span>
+                @if (filled($promotion['promo_text'] ?? null))
+                    <span class="residence-promo-text">{{ $promotion['promo_text'] }}</span>
+                @endif
+            </div>
+        @endif
         @foreach ($cardSlides as $index => $image)
             <button class="residence-gallery-slide {{ $index === 0 ? 'is-active' : '' }}" type="button" style="--slide-image: url('{{ $image['url'] }}');" data-card-slide data-caption="{{ $image['caption'] }}" data-card-modal-open aria-controls="{{ $modalId }}" aria-label="View {{ $apartment->name }} photos">
                 <img src="{{ $image['url'] }}" alt="{{ $image['caption'] ?: $apartment->name.' at Maison Be' }}" loading="{{ $index === 0 ? 'eager' : 'lazy' }}" decoding="async" onerror="this.onerror=null;this.src='{{ asset('media/maisonbe-listing-exterior.jpg') }}';">
@@ -187,7 +196,10 @@
         <div class="residence-card-footer">
             @if ($showPrice)
                 <div class="residence-card-rate">
-                    <span class="residence-card-price">
+                    <span class="residence-card-price {{ $promotion ? 'has-sale' : '' }}">
+                        @if ($promotion)
+                            <del>{{ $quote['display_original_nightly'] }}</del>
+                        @endif
                         <strong>{{ $quote['display_nightly'] }}</strong>
                         <small>per night</small>
                     </span>

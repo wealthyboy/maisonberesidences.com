@@ -10,11 +10,15 @@ use Illuminate\Support\Facades\Schema;
 
 class ApartmentQuoteService
 {
-    public function __construct(private readonly CurrencyService $currencies) {}
+    public function __construct(
+        private readonly CurrencyService $currencies,
+        private readonly PromotionService $promotions,
+    ) {}
 
     public function quote(Apartment $apartment, ?Carbon $checkin, ?Carbon $checkout, array $currency): array
     {
-        $baseNightlyUsd = $this->baseNightlyUsd($apartment);
+        $promotion = $this->promotions->activeFor($apartment);
+        $baseNightlyUsd = $this->baseNightlyUsd($apartment, $promotion === null);
         $nights = $checkin && $checkout ? max($checkin->diffInDays($checkout), 1) : 1;
         $peakNights = 0;
         $peakExtraUsd = 0.0;
@@ -47,7 +51,7 @@ class ApartmentQuoteService
         $nightly = $this->currencies->convertFromUsd($baseNightlyUsd, $currency);
         $total = $this->currencies->convertFromUsd($totalUsd, $currency);
 
-        return [
+        $quote = [
             'currency' => $currency,
             'nights' => $nights,
             'peak_nights' => $peakNights,
@@ -57,14 +61,22 @@ class ApartmentQuoteService
             'display_nightly' => $this->currencies->format($nightly, $currency),
             'display_total' => $this->currencies->format($total, $currency),
         ];
+
+        return $this->promotions->applyToQuote($apartment, $quote, $promotion);
     }
 
-    private function baseNightlyUsd(Apartment $apartment): float
+    private function baseNightlyUsd(Apartment $apartment, bool $allowLegacySale = true): float
     {
-        $saleIsValid = $apartment->sale_price !== null
-            && (float) $apartment->sale_price > 0
-            && ($apartment->sale_price_expires === null || $apartment->sale_price_expires->isFuture());
+        if ($allowLegacySale) {
+            $saleIsValid = $apartment->sale_price !== null
+                && (float) $apartment->sale_price > 0
+                && ($apartment->sale_price_expires === null || $apartment->sale_price_expires->isFuture());
 
-        return (float) ($saleIsValid ? $apartment->sale_price : $apartment->price);
+            if ($saleIsValid) {
+                return (float) $apartment->sale_price;
+            }
+        }
+
+        return (float) $apartment->price;
     }
 }

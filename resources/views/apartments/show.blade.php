@@ -79,7 +79,20 @@
                 </article>
                 <aside class="apartment-booking-panel">
                     <p class="eyebrow">Reserve {{ $apartment->name }}</p>
-                    <strong>{{ $apartment->stay_quote['display_nightly'] }} <small>/ night</small></strong>
+                    @if (data_get($apartment->stay_quote, 'has_promotion'))
+                        <div class="apartment-show-promo">
+                            <span class="apartment-show-promo-percent">Save {{ data_get($apartment->stay_quote, 'promotion.percentage') }}%</span>
+                            @if (filled(data_get($apartment->stay_quote, 'promotion.promo_text')))
+                                <span class="apartment-show-promo-text">{{ data_get($apartment->stay_quote, 'promotion.promo_text') }}</span>
+                            @endif
+                        </div>
+                        <div class="apartment-show-sale-price">
+                            <del>{{ $apartment->stay_quote['display_original_nightly'] }}</del>
+                            <strong>{{ $apartment->stay_quote['display_nightly'] }} <small>/ night</small></strong>
+                        </div>
+                    @else
+                        <strong>{{ $apartment->stay_quote['display_nightly'] }} <small>/ night</small></strong>
+                    @endif
                     @if ($apartment->allow)
                         <form action="{{ route('apartments.availability', $apartment) }}" class="apartment-availability-form" data-availability-form>
                             <x-date-range-picker class="availability-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" required />
