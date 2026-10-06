@@ -122,6 +122,10 @@ class PromotionService
 
         return $this->activePromotions = Promotion::query()
             ->where('is_active', true)
+            ->where(function ($query): void {
+                $query->whereNull('ends_on')
+                    ->orWhereDate('ends_on', '>=', now()->toDateString());
+            })
             ->orderByDesc('updated_at')
             ->orderByDesc('id')
             ->get();

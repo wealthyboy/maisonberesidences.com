@@ -48,6 +48,7 @@
                             <th class="px-5 py-3">Applies to</th>
                             <th class="px-5 py-3">Pricing</th>
                             <th class="px-5 py-3">Promo text</th>
+                            <th class="px-5 py-3">Ends</th>
                             <th class="px-5 py-3">Status</th>
                             <th class="px-5 py-3 text-right">Actions</th>
                         </tr>
@@ -72,8 +73,13 @@
                                     @endif
                                 </td>
                                 <td class="max-w-xs px-5 py-4 text-zinc-600">{{ $promotion->promo_text ?: '—' }}</td>
+                                <td class="px-5 py-4 text-zinc-600">
+                                    {{ $promotion->ends_on?->format('M j, Y') ?? 'No end date' }}
+                                </td>
                                 <td class="px-5 py-4">
-                                    @if ($promotion->is_active)
+                                    @if ($promotion->ends_on && $promotion->ends_on->lt(now()->startOfDay()))
+                                        <span class="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.1em] text-amber-800">Expired</span>
+                                    @elseif ($promotion->is_active)
                                         <span class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.1em] text-emerald-800">Active</span>
                                     @else
                                         <span class="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.1em] text-zinc-600">Inactive</span>
@@ -92,7 +98,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-5 py-10 text-center text-sm text-zinc-500">No discount rules yet.</td>
+                                <td colspan="7" class="px-5 py-10 text-center text-sm text-zinc-500">No discount rules yet.</td>
                             </tr>
                         @endforelse
                     </tbody>

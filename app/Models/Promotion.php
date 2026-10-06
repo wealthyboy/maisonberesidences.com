@@ -17,6 +17,7 @@ class Promotion extends Model
         'discount_type',
         'discount_value',
         'promo_text',
+        'ends_on',
         'is_active',
     ];
 
@@ -24,6 +25,7 @@ class Promotion extends Model
     {
         return [
             'discount_value' => 'decimal:2',
+            'ends_on' => 'date',
             'is_active' => 'boolean',
         ];
     }

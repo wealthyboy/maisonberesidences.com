@@ -82,6 +82,7 @@ class PromotionController extends Controller
             'discount_type' => ['required', 'in:percent,fixed_price'],
             'discount_value' => ['required', 'numeric', 'min:0.01'],
             'promo_text' => ['nullable', 'string', 'max:160'],
+            'ends_on' => ['nullable', 'date'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
@@ -98,6 +99,7 @@ class PromotionController extends Controller
             'discount_type' => $data['discount_type'],
             'discount_value' => (float) $data['discount_value'],
             'promo_text' => filled($data['promo_text'] ?? null) ? trim($data['promo_text']) : null,
+            'ends_on' => filled($data['ends_on'] ?? null) ? $data['ends_on'] : null,
             'is_active' => $request->boolean('is_active'),
         ];
     }

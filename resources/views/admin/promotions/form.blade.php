@@ -59,8 +59,14 @@
 
             <label class="block lg:col-span-2">
                 <span class="text-sm font-semibold text-zinc-700">Promo text</span>
-                <input type="text" name="promo_text" maxlength="160" value="{{ old('promo_text', $promotion->promo_text) }}" placeholder="Limited time: stay beautifully for less" class="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-[#d9b44a] focus:ring-2 focus:ring-[#d9b44a]/20">
-                <span class="mt-1 block text-xs text-zinc-500">This appears as the lively promo message on apartment cards.</span>
+                <input type="text" name="promo_text" maxlength="160" value="{{ old('promo_text', $promotion->promo_text) }}" placeholder="Hurry! Book now & save 17%" class="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-[#d9b44a] focus:ring-2 focus:ring-[#d9b44a]/20">
+                <span class="mt-1 block text-xs text-zinc-500">This appears as the animated promo message under “Live Beautifully” on the homepage.</span>
+            </label>
+
+            <label class="block lg:col-span-2">
+                <span class="text-sm font-semibold text-zinc-700">Sale ends on</span>
+                <input type="date" name="ends_on" value="{{ old('ends_on', $promotion->ends_on?->format('Y-m-d')) }}" class="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-[#d9b44a] focus:ring-2 focus:ring-[#d9b44a]/20">
+                <span class="mt-1 block text-xs text-zinc-500">Optional. The promotion remains active through this date and automatically stops the following day.</span>
             </label>
 
             <label class="flex items-start gap-3 rounded-md border border-zinc-200 p-4 lg:col-span-2">
