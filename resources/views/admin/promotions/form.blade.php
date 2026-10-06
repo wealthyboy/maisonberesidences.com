@@ -102,9 +102,9 @@
 
         const fixed = type?.value === 'fixed_price';
         if (label) label.textContent = fixed ? 'Fixed sale price per night' : 'Discount percentage';
-        if (unit) unit.textContent = fixed ? 'USD' : '%';
+        if (unit) unit.textContent = fixed ? '₦' : '%';
         if (help) help.textContent = fixed
-            ? 'Enter the final nightly sale price in USD. The frontend still calculates and displays the true percentage saved.'
+            ? 'Enter the final nightly sale price in NGN. The frontend converts it for the visitor and still displays the true percentage saved.'
             : 'Maison Be calculates the sale price from the current accommodation rate.';
         if (value) value.max = fixed ? '' : '99.99';
     };

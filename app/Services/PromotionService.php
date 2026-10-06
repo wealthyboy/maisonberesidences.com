@@ -11,6 +11,10 @@ class PromotionService
 {
     private ?Collection $activePromotions = null;
 
+    public function __construct(
+        private readonly CurrencyService $currencies,
+    ) {}
+
     public function activeFor(Apartment $apartment): ?Promotion
     {
         if (! Schema::hasTable('promotions')) {
@@ -66,11 +70,17 @@ class PromotionService
             $saleTotal = round($originalTotal * $factor, 2);
             $saleTotalUsd = round($originalTotalUsd * $factor, 2);
         } else {
-            // Fixed promotions are a final per-night sale price in Maison Be's
-            // base USD pricing currency. Convert only at display/payment time.
-            $fixedNightlyUsd = max(0.0, (float) $promotion->discount_value);
-            $currencyRate = max(0.000001, (float) data_get($quote, 'currency.rate', 1));
-            $saleNightly = round($fixedNightlyUsd * $currencyRate, 2);
+            // Fixed promotions are entered by Maison Be staff in NGN. Convert
+            // that final nightly sale price into the visitor/payment currency
+            // at quote time so one rule works for both NGN and USD visitors.
+            $fixedNightlyNgn = max(0.0, (float) $promotion->discount_value);
+            $usdToNgnRate = max(0.000001, (float) data_get($this->currencies->paystackCurrency(), 'rate', 1));
+            $fixedNightlyUsd = round($fixedNightlyNgn / $usdToNgnRate, 6);
+
+            $saleNightly = round(
+                $this->currencies->convertFromUsd($fixedNightlyUsd, $quote['currency']),
+                2
+            );
             $saleTotal = round($saleNightly * $nights, 2);
             $saleTotalUsd = round($fixedNightlyUsd * $nights, 2);
         }
@@ -96,6 +106,7 @@ class PromotionService
             'scope' => $promotion->scope,
             'type' => $promotion->discount_type,
             'value' => (float) $promotion->discount_value,
+            'fixed_price_currency' => $promotion->discount_type === 'fixed_price' ? 'NGN' : null,
             'percentage' => $percentage,
             'promo_text' => trim((string) $promotion->promo_text),
         ];

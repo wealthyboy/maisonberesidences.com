@@ -67,8 +67,8 @@
                                     @if ($promotion->discount_type === 'percent')
                                         <strong>{{ rtrim(rtrim(number_format((float) $promotion->discount_value, 2), '0'), '.') }}% off</strong>
                                     @else
-                                        <strong>${{ number_format((float) $promotion->discount_value, 2) }}</strong>
-                                        <span class="block text-xs text-zinc-500">fixed sale price / night</span>
+                                        <strong>₦{{ number_format((float) $promotion->discount_value, 2) }}</strong>
+                                        <span class="block text-xs text-zinc-500">fixed sale price / night (NGN)</span>
                                     @endif
                                 </td>
                                 <td class="max-w-xs px-5 py-4 text-zinc-600">{{ $promotion->promo_text ?: '—' }}</td>
