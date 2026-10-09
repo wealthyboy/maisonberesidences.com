@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\QueueTestController;
 use App\Http\Controllers\Admin\UploadController;
 use App\Http\Controllers\ApartmentSearchController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\CloudbedsAvailabilityWebhookController;
 use App\Http\Controllers\CloudbedsBookingController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InformationController;
@@ -47,6 +48,7 @@ Route::post('reservations/{invoice}/self-check-in/resend', [SelfCheckInControlle
     ->name('reservations.self-check-in.resend');
 Route::post('webhook/payment', PaymentWebhookController::class)->name('webhooks.paystack');
 Route::post('webhooks/paystack', PaymentWebhookController::class);
+Route::post('webhooks/cloudbeds/availability', CloudbedsAvailabilityWebhookController::class)->name('webhooks.cloudbeds-availability');
 
 Route::get('login', [LoginController::class, 'create'])->name('login');
 Route::post('login', [LoginController::class, 'store'])->name('login.store');
@@ -64,6 +66,7 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     Route::post('apartments/{record}/duplicate', [ModuleController::class, 'duplicateApartment'])->name('apartments.duplicate');
     Route::get('date-blocks', [ApartmentDateBlockController::class, 'index'])->name('date-blocks.index');
     Route::post('date-blocks', [ApartmentDateBlockController::class, 'store'])->name('date-blocks.store');
+    Route::post('date-blocks/cloudbeds/sync', [ApartmentDateBlockController::class, 'syncCloudbeds'])->name('date-blocks.cloudbeds.sync');
     Route::delete('date-blocks/{dateBlock}', [ApartmentDateBlockController::class, 'destroy'])->name('date-blocks.destroy');
     Route::post('banners/{record}/reencode', [ModuleController::class, 'reencodeBannerVideo'])->name('banners.reencode');
     Route::post('reservations/{record}/resend-self-check-in', [ModuleController::class, 'resendSelfCheckInLink'])->name('reservations.resend-self-check-in');

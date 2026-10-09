@@ -73,6 +73,21 @@ class ApartmentSearchController extends Controller
                     ))
                     : collect($this->cloudbeds->roomTypes());
                 $residences = $this->combineCloudbedsWithLocalApartments($roomTypes, $localApartments);
+
+                // Cloudbeds remains the live inventory authority, but Maison Be's
+                // own Date Blocks must also be honoured. This makes manual blocks
+                // useful again and lets mirrored Cloudbeds room-block webhooks
+                // remove blocked residences from the search results immediately.
+                if ($checkin && $checkout) {
+                    $residences = $residences
+                        ->reject(function (array $residence) use ($checkin, $checkout): bool {
+                            $apartment = $residence['apartment'] ?? null;
+
+                            return $apartment instanceof Apartment
+                                && $apartment->isBlockedFor($checkin, $checkout);
+                        })
+                        ->values();
+                }
             } catch (Throwable $exception) {
                 Log::warning('Cloudbeds apartment inventory could not be loaded.', [
                     'message' => $exception->getMessage(),

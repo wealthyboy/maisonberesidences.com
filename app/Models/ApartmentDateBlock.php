@@ -16,6 +16,11 @@ class ApartmentDateBlock extends Model
         'starts_on',
         'ends_on',
         'reason',
+        'source',
+        'external_id',
+        'external_type',
+        'external_payload',
+        'synced_at',
         'created_by',
     ];
 
@@ -24,6 +29,8 @@ class ApartmentDateBlock extends Model
         return [
             'starts_on' => 'date',
             'ends_on' => 'date',
+            'external_payload' => 'array',
+            'synced_at' => 'datetime',
         ];
     }
 
@@ -35,6 +42,12 @@ class ApartmentDateBlock extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+
+    public function isCloudbedsManaged(): bool
+    {
+        return $this->source === 'cloudbeds';
     }
 
     public function scopeOverlapping(Builder $query, CarbonInterface $checkin, CarbonInterface $checkout): Builder

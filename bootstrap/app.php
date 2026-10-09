@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'webhook/payment',
             'webhooks/paystack',
+            'webhooks/cloudbeds/availability',
         ]);
 
         $middleware->web(append: [

@@ -17,6 +17,23 @@
             </div>
         @endif
 
+        <section class="rounded-md border border-[#222052]/15 bg-[#222052]/[0.035] p-5 shadow-sm">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div class="max-w-3xl">
+                    <p class="text-sm font-semibold uppercase tracking-[0.14em] text-[#b28b2f]">Cloudbeds availability sync</p>
+                    <h2 class="mt-2 text-xl font-semibold text-zinc-950">Mirror Cloudbeds blocks into Maison Be</h2>
+                    <p class="mt-2 text-sm leading-6 text-zinc-600">Connect Cloudbeds room-block notifications and reconcile the next 500 days. Blocked Dates, Out of Service and base-rate accommodation closeouts are stored as Cloudbeds-managed Date Blocks — not fake reservations.</p>
+                    <p class="mt-2 text-xs text-zinc-500">Webhook: {{ route('webhooks.cloudbeds-availability') }}</p>
+                </div>
+                <form method="post" action="{{ route('admin.date-blocks.cloudbeds.sync') }}" class="shrink-0">
+                    @csrf
+                    <button type="submit" class="rounded-md bg-[#222052] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d9b44a] hover:text-[#222052]">
+                        Connect + sync Cloudbeds blocks
+                    </button>
+                </form>
+            </div>
+        </section>
+
         <section class="rounded-md border border-zinc-200 bg-white p-5 shadow-sm">
             <div class="max-w-3xl">
                 <p class="text-sm font-semibold uppercase tracking-[0.14em] text-[#b28b2f]">Manual availability control</p>
@@ -76,7 +93,7 @@
         <section class="overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm">
             <div class="border-b border-zinc-200 px-5 py-4">
                 <h2 class="text-lg font-semibold text-zinc-950">Current and previous blocks</h2>
-                <p class="mt-1 text-sm text-zinc-500">Remove a block whenever the apartments should become searchable again.</p>
+                <p class="mt-1 text-sm text-zinc-500">Manual blocks can be removed here. Cloudbeds-managed blocks update automatically when they are changed or removed in Cloudbeds.</p>
             </div>
 
             <div class="overflow-x-auto">
@@ -87,16 +104,36 @@
                     <tbody class="divide-y divide-zinc-100">
                         @forelse ($dateBlocks as $block)
                             <tr class="align-top">
-                                <td class="px-5 py-4"><strong class="block text-zinc-950">{{ $block->title }}</strong><span class="mt-1 block text-xs text-zinc-500">{{ $block->creator?->name ? 'By '.$block->creator->name : 'Admin block' }}</span></td>
+                                <td class="px-5 py-4">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <strong class="text-zinc-950">{{ $block->title }}</strong>
+                                        @if ($block->isCloudbedsManaged())
+                                            <span class="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-sky-800">Cloudbeds</span>
+                                        @else
+                                            <span class="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-zinc-600">Manual</span>
+                                        @endif
+                                    </div>
+                                    <span class="mt-1 block text-xs text-zinc-500">
+                                        @if ($block->isCloudbedsManaged())
+                                            {{ $block->synced_at ? 'Synced '.$block->synced_at->diffForHumans() : 'Managed by Cloudbeds' }}
+                                        @else
+                                            {{ $block->creator?->name ? 'By '.$block->creator->name : 'Admin block' }}
+                                        @endif
+                                    </span>
+                                </td>
                                 <td class="whitespace-nowrap px-5 py-4"><strong>{{ $block->starts_on->format('d M Y') }}</strong><span class="block text-xs text-zinc-500">Available {{ $block->ends_on->format('d M Y') }}</span></td>
                                 <td class="px-5 py-4"><div class="flex max-w-md flex-wrap gap-1.5">@foreach ($block->apartments as $apartment)<span class="rounded-full bg-[#222052]/10 px-2.5 py-1 text-xs font-semibold text-[#222052]">{{ $apartment->name }}</span>@endforeach</div></td>
                                 <td class="max-w-sm px-5 py-4 text-zinc-600">{{ $block->reason ?: '—' }}</td>
                                 <td class="px-5 py-4 text-right">
-                                    <form method="post" action="{{ route('admin.date-blocks.destroy', $block) }}" onsubmit="return confirm('Remove this date block?')">
-                                        @csrf
-                                        @method('delete')
-                                        <button type="submit" class="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50">Remove</button>
-                                    </form>
+                                    @if ($block->isCloudbedsManaged())
+                                        <span class="inline-flex rounded-md border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-800">Manage in Cloudbeds</span>
+                                    @else
+                                        <form method="post" action="{{ route('admin.date-blocks.destroy', $block) }}" onsubmit="return confirm('Remove this date block?')">
+                                            @csrf
+                                            @method('delete')
+                                            <button type="submit" class="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50">Remove</button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

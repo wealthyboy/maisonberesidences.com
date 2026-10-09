@@ -8,6 +8,7 @@ use App\Rules\MinimumStay;
 use App\Services\AdditionalServiceQuoteService;
 use App\Services\ApartmentQuoteService;
 use App\Services\CouponService;
+use App\Services\CloudbedsApiService;
 use App\Services\CurrencyService;
 use App\Services\PaystackBookingService;
 use App\Services\PaystackService;
@@ -27,6 +28,7 @@ class ReservationController extends Controller
         private readonly CouponService $coupons,
         private readonly CurrencyService $currencies,
         private readonly PaystackBookingService $paystackBookings,
+        private readonly CloudbedsApiService $cloudbeds,
         private readonly VatService $vat,
     ) {}
 
@@ -123,11 +125,38 @@ class ReservationController extends Controller
 
         if ($isUnavailable) {
             if ($request->expectsJson()) {
-                return response()->json(['message' => 'That residence was just reserved for part of your selected stay. Please choose another residence.'], 422);
+                return response()->json(['message' => 'That residence was just reserved or blocked for part of your selected stay. Please choose another residence.'], 422);
             }
 
             return redirect()->route('apartments.index', $request->only('checkin', 'checkout'))
-                ->with('booking_error', 'That residence was just reserved for part of your selected stay. Please choose another residence.');
+                ->with('booking_error', 'That residence was just reserved or blocked for part of your selected stay. Please choose another residence.');
+        }
+
+        // Final Cloudbeds check immediately before opening payment. This closes
+        // the race where a front-desk block or external booking is created
+        // after the search page loaded but before the guest clicks Pay.
+        try {
+            $cloudbedsAvailable = $this->cloudbeds->availableRoomTypeForApartment(
+                $apartment,
+                $stay['checkin'],
+                $stay['checkout'],
+                min(max(1, (int) $request->input('guests', 1)), max(1, (int) ($apartment->max_adults ?: 1))),
+            ) !== null;
+        } catch (\Throwable $exception) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Live availability could not be confirmed. Please try again.'], 503);
+            }
+
+            return back()->withErrors(['stay' => 'Live availability could not be confirmed. Please try again.'])->withInput();
+        }
+
+        if (! $cloudbedsAvailable) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'That residence is no longer available in Cloudbeds for the selected stay. Please choose another residence.'], 422);
+            }
+
+            return redirect()->route('apartments.index', $request->only('checkin', 'checkout'))
+                ->with('booking_error', 'That residence is no longer available for the selected stay.');
         }
 
         $quote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $request->attributes->get('currency'));

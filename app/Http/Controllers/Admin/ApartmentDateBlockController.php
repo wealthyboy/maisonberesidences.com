@@ -4,10 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Apartment;
+use App\Jobs\SyncCloudbedsRoomBlocks;
 use App\Models\ApartmentDateBlock;
+use App\Services\CloudbedsRoomBlockService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 use Illuminate\View\View;
 
 class ApartmentDateBlockController extends Controller
@@ -55,8 +59,34 @@ class ApartmentDateBlockController extends Controller
             ->with('status', 'The selected apartments have been blocked for those dates.');
     }
 
+    public function syncCloudbeds(CloudbedsRoomBlockService $service): RedirectResponse
+    {
+        try {
+            $created = $service->ensureWebhookSubscriptions();
+            SyncCloudbedsRoomBlocks::dispatch(500);
+
+            return redirect()
+                ->route('admin.date-blocks.index')
+                ->with('status', 'Cloudbeds block notifications are connected. A 500-day room-block reconciliation has been queued.'.($created > 0 ? ' '.$created.' webhook subscription(s) were added.' : ' Existing webhook subscriptions were reused.'));
+        } catch (Throwable $exception) {
+            Log::error('Cloudbeds room-block connection failed.', [
+                'message' => $exception->getMessage(),
+            ]);
+
+            return redirect()
+                ->route('admin.date-blocks.index')
+                ->withErrors(['cloudbeds' => 'Cloudbeds blocks could not be connected: '.$exception->getMessage()]);
+        }
+    }
+
     public function destroy(ApartmentDateBlock $dateBlock): RedirectResponse
     {
+        if ($dateBlock->isCloudbedsManaged()) {
+            return redirect()
+                ->route('admin.date-blocks.index')
+                ->withErrors(['cloudbeds' => 'This block is managed by Cloudbeds. Remove it in Cloudbeds and Maison Be will update automatically.']);
+        }
+
         $dateBlock->delete();
 
         return redirect()
