@@ -75,9 +75,8 @@ class ApartmentSearchController extends Controller
                 $residences = $this->combineCloudbedsWithLocalApartments($roomTypes, $localApartments);
 
                 // Cloudbeds remains the live inventory authority, but Maison Be's
-                // own Date Blocks must also be honoured. This makes manual blocks
-                // useful again and lets mirrored Cloudbeds room-block webhooks
-                // remove blocked residences from the search results immediately.
+                // local admin Date Blocks are an absolute override. If any selected
+                // stay night overlaps a local block, do not render that residence.
                 if ($checkin && $checkout) {
                     $residences = $residences
                         ->reject(function (array $residence) use ($checkin, $checkout): bool {
