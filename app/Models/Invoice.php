@@ -69,4 +69,9 @@ class Invoice extends Model
     {
         return $this->hasOne(GuestCheckIn::class);
     }
+
+    public function checkoutIdentityDocument()
+    {
+        return $this->hasOne(CheckoutIdentityDocument::class);
+    }
 }

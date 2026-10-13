@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\SendReservationIdentityDocument;
 use App\Jobs\SyncReservationToCloudbeds;
 use App\Mail\ReservationReceiptMail;
 use App\Models\AdditionalService;
@@ -17,6 +18,7 @@ class PaystackBookingService
 {
     public function __construct(
         private readonly PaystackService $paystack,
+        private readonly CheckoutIdentityService $identityDocuments,
     ) {}
 
     public function processReference(string $reference, array $event = []): Invoice
@@ -76,6 +78,12 @@ class PaystackBookingService
             }
 
             $apartment = Apartment::query()->findOrFail((int) data_get($booking, 'apartment_id'));
+            $document = $this->identityDocuments->requireForPayment($reference, $apartment->id);
+            // The webhook and browser callback may both have read no invoice
+            // before this upload lock. Reuse the invoice created by the winner.
+            if ($document->invoice_id) {
+                return Invoice::query()->whereKey($document->invoice_id)->where('payment_reference', $reference)->firstOrFail();
+            }
             $checkin = Carbon::parse((string) data_get($booking, 'from'))->startOfDay();
             $checkout = Carbon::parse((string) data_get($booking, 'to'))->startOfDay();
 
@@ -118,6 +126,7 @@ class PaystackBookingService
             ]);
 
             $nights = max(1, (int) data_get($booking, 'length_of_stay', $checkin->diffInDays($checkout)));
+            $document->update(['invoice_id' => $invoice->id]);
 
             $invoice->invoiceItems()->create([
                 'apartment_id' => $apartment->id,
@@ -165,6 +174,17 @@ class PaystackBookingService
 
         $this->queueCloudbedsSync($invoice);
         $this->sendReceipt($invoice);
+        try {
+            $this->identityDocuments->sendForInvoice($invoice);
+        } catch (\Throwable $exception) {
+            // A temporary email failure must not undo a successful booking.
+            Log::error('Reservation ID email failed; retry requested.', ['invoice_id' => $invoice->id]);
+            try {
+                SendReservationIdentityDocument::dispatch($invoice->id)->afterCommit();
+            } catch (\Throwable $queueException) {
+                Log::critical('Reservation ID email retry could not be queued.', ['invoice_id' => $invoice->id]);
+            }
+        }
 
         return $invoice->fresh(['invoiceItems.apartment.property', 'serviceItems']);
     }

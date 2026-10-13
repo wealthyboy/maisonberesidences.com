@@ -9,8 +9,10 @@ use App\Services\ApartmentQuoteService;
 use App\Services\CloudbedsApiService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PeakPeriodPricingTest extends TestCase
@@ -20,6 +22,7 @@ class PeakPeriodPricingTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Storage::fake('local');
         config(['cloudbeds.api.key' => null]);
         Cache::put('currency.usd-ngn', 1500);
         Http::fake(['*' => Http::response(['rates' => ['NGN' => 1500]])]);
@@ -197,6 +200,7 @@ class PeakPeriodPricingTest extends TestCase
             'checkin' => '2027-03-10', 'checkout' => '2027-03-12',
             'first_name' => 'Test', 'last_name' => 'Guest', 'email' => 'guest@example.com',
             'country_code' => '+234', 'phone_country' => 'NG', 'phone' => '8012345678', 'country' => 'Nigeria',
+            'identity_document' => UploadedFile::fake()->image('guest-id.jpg'),
         ])->assertOk()
             ->assertJsonPath('payment.metadata.booking.accommodation_subtotal', 600000)
             ->assertJsonPath('payment.amount', 60000000);

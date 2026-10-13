@@ -9,6 +9,7 @@ use App\Services\AdditionalServiceQuoteService;
 use App\Services\ApartmentQuoteService;
 use App\Services\CouponService;
 use App\Services\CloudbedsApiService;
+use App\Services\CheckoutIdentityService;
 use App\Services\CurrencyService;
 use App\Services\PaystackBookingService;
 use App\Services\PaystackService;
@@ -30,6 +31,7 @@ class ReservationController extends Controller
         private readonly PaystackBookingService $paystackBookings,
         private readonly CloudbedsApiService $cloudbeds,
         private readonly VatService $vat,
+        private readonly CheckoutIdentityService $identityDocuments,
     ) {}
 
     public function create(Request $request, Apartment $apartment): View|RedirectResponse
@@ -100,6 +102,9 @@ class ReservationController extends Controller
             'services' => ['nullable', 'array'],
             'services.*' => ['nullable', 'integer', 'min:0', 'max:20'],
             'guests' => ['nullable', 'integer', 'min:1', 'max:'.max(1, (int) ($apartment->max_adults ?: 20))],
+            'identity_document' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:8192'],
+        ], [
+            'identity_document.required' => 'Upload your ID before proceeding to payment.',
         ]);
 
         $phoneCountries = $this->phoneCountries();
@@ -437,7 +442,7 @@ class ReservationController extends Controller
             ],
         ];
 
-        return [
+        $payment = [
             'key' => $this->paystack->publicKey(),
             'email' => $data['email'],
             'amount' => (int) round($paystackChargeTotal * 100),
@@ -448,6 +453,12 @@ class ReservationController extends Controller
             'last_name' => $data['last_name'],
             'metadata' => $metadata,
         ];
+
+        // Keep the upload server-side, bound to this payment reference. Never
+        // include document contents, names or storage paths in gateway metadata.
+        $this->identityDocuments->storeForPayment($reference, $apartment, $data['identity_document']);
+
+        return $payment;
     }
 
     private function phoneCountries(): array

@@ -105,7 +105,7 @@
             @endif
 
             <div class="checkout-layout" data-checkout-panel>
-                <form class="checkout-form" method="post" action="{{ route('reservations.store', $apartment) }}">
+                <form class="checkout-form" method="post" action="{{ route('reservations.store', $apartment) }}" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="checkin" value="{{ $stay['checkin']->toDateString() }}">
                     <input type="hidden" name="checkout" value="{{ $stay['checkout']->toDateString() }}">
@@ -153,6 +153,12 @@
                                         required
                                     >
                                 </span>
+                            </label>
+                            <label class="checkout-field-wide">
+                                Upload your ID (required)
+                                <input type="file" name="identity_document" accept="image/jpeg,image/png,application/pdf" required data-checkout-id>
+                                <small class="checkout-id-note">Upload a clear passport, national ID or driver's licence. JPG, PNG or PDF, maximum 8 MB. Your ID is sent separately to the reservations team after payment.</small>
+                                @error('identity_document')<span class="checkout-error">{{ $message }}</span>@enderror
                             </label>
                         </div>
                     </section>
@@ -386,6 +392,7 @@
 
                     try {
                         const body = new FormData(form);
+                        body.delete('identity_document');
 
                         const response = await fetch('{{ route('reservations.coupon', $apartment) }}', {
                             method: 'POST',
@@ -427,6 +434,12 @@
                 const panels = document.querySelectorAll('[data-checkout-panel]');
 
                 if (!form || !submit || !label) return;
+
+                const identityDocument = form.querySelector('[data-checkout-id]');
+                identityDocument?.addEventListener('change', () => {
+                    const file = identityDocument.files[0];
+                    identityDocument.setCustomValidity(file && file.size > 8 * 1024 * 1024 ? 'Your ID must be no larger than 8 MB.' : '');
+                });
 
                 const setStatus = (message = '') => {
                     if (status) status.textContent = message;

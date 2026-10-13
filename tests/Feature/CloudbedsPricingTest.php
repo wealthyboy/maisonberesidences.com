@@ -11,8 +11,10 @@ use App\Services\CloudbedsApiService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Factory;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use RuntimeException;
 use Tests\TestCase;
@@ -24,6 +26,7 @@ class CloudbedsPricingTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Storage::fake('local');
         config(['cloudbeds.api.key' => 'cloudbeds-test-key', 'cloudbeds.api.property_id' => 'property-1', 'cloudbeds.api.base_url' => 'https://api.cloudbeds.com/api/v1.3']);
         Cache::put('currency.usd-ngn', 1500);
         Http::preventStrayRequests();
@@ -176,6 +179,7 @@ class CloudbedsPricingTest extends TestCase
             'checkin' => '2027-03-10', 'checkout' => '2027-03-12', 'guests' => 1,
             'first_name' => 'Test', 'last_name' => 'Guest', 'email' => 'test@example.com',
             'phone_country' => 'NG', 'phone' => '8012345678',
+            'identity_document' => UploadedFile::fake()->image('guest-id.jpg'),
         ])->assertOk()->assertJsonPath('payment.amount', 118260000)
             ->assertJsonPath('payment.metadata.booking.rate_source', 'cloudbeds');
     }
@@ -342,6 +346,7 @@ class CloudbedsPricingTest extends TestCase
         $this->postJson(route('reservations.store', $apartment), [
             'checkin' => '2027-03-10', 'checkout' => '2027-03-12', 'guests' => 3,
             'first_name' => 'Test', 'last_name' => 'Guest', 'email' => 'test@example.com', 'phone_country' => 'NG', 'phone' => '8012345678',
+            'identity_document' => UploadedFile::fake()->image('guest-id.jpg'),
         ])->assertOk()->assertJsonPath('payment.amount', 124200000)->assertJsonPath('payment.metadata.booking.guests', 3);
     }
 
@@ -355,6 +360,7 @@ class CloudbedsPricingTest extends TestCase
         $this->postJson(route('reservations.store', $apartment), [
             'checkin' => '2027-03-10', 'checkout' => '2027-03-12', 'guests' => 1,
             'first_name' => 'Test', 'last_name' => 'Guest', 'email' => 'test@example.com', 'phone_country' => 'NG', 'phone' => '8012345678',
+            'identity_document' => UploadedFile::fake()->image('guest-id.jpg'),
         ])->assertStatus(503)->assertJsonMissingPath('payment');
         $this->assertDatabaseCount('invoices', 0);
     }

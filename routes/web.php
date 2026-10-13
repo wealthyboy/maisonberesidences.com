@@ -3,8 +3,8 @@
 use App\Http\Controllers\Admin\ApartmentDateBlockController;
 use App\Http\Controllers\Admin\CurrencyRateController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\ModuleController;
 use App\Http\Controllers\Admin\MinimumStayPeriodController;
+use App\Http\Controllers\Admin\ModuleController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\QueueTestController;
 use App\Http\Controllers\Admin\UploadController;

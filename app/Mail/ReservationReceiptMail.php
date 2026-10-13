@@ -12,7 +12,11 @@ class ReservationReceiptMail extends Mailable
     use Queueable;
     use SerializesModels;
 
-    public function __construct(public Invoice $invoice) {}
+    public function __construct(public Invoice $invoice)
+    {
+        // Every receipt includes concierge, regardless of the sending path.
+        $this->bcc('concierge@maisonberesidences.com');
+    }
 
     public function build(): self
     {

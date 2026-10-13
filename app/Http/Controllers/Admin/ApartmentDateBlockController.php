@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Apartment;
 use App\Jobs\SyncCloudbedsRoomBlocks;
+use App\Models\Apartment;
 use App\Models\ApartmentDateBlock;
 use App\Models\MinimumStayPeriod;
 use App\Services\CloudbedsRoomBlockService;
@@ -12,8 +12,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Throwable;
 use Illuminate\View\View;
+use Throwable;
 
 class ApartmentDateBlockController extends Controller
 {

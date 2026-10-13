@@ -8,11 +8,14 @@ use App\Models\Apartment;
 use App\Models\Invoice;
 use App\Models\User;
 use App\Services\AdditionalServiceQuoteService;
+use App\Services\CheckoutIdentityService;
 use App\Services\PaystackBookingService;
 use App\Services\PaystackService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Mockery;
 use Tests\TestCase;
@@ -143,6 +146,7 @@ class AdditionalServicesTest extends TestCase
             'phone' => '8012345678',
             'country' => 'Nigeria',
             'services' => [$breakfast->id => 2],
+            'identity_document' => UploadedFile::fake()->image('guest-id.jpg'),
         ]);
 
         $response->assertOk()
@@ -171,6 +175,7 @@ class AdditionalServicesTest extends TestCase
     public function test_confirmed_payment_persists_service_lines_on_the_invoice(): void
     {
         Mail::fake();
+        Storage::fake('local');
 
         $apartment = Apartment::create(['name' => 'Stanmore', 'slug' => 'stanmore', 'price' => 500]);
         $breakfast = AdditionalService::create([
@@ -220,7 +225,9 @@ class AdditionalServicesTest extends TestCase
             'metadata' => ['booking' => $booking],
         ]);
 
-        $invoice = (new PaystackBookingService($paystack))->processReference('MBR-PAYMENT-001');
+        $identities = app(CheckoutIdentityService::class);
+        $identities->storeForPayment('MBR-PAYMENT-001', $apartment, UploadedFile::fake()->image('guest-id.jpg'));
+        $invoice = (new PaystackBookingService($paystack, $identities))->processReference('MBR-PAYMENT-001');
 
         $this->assertSame('810000.00', $invoice->subtotal);
         $this->assertSame('7.50', $invoice->vat_rate);
@@ -235,6 +242,7 @@ class AdditionalServicesTest extends TestCase
             && $mail->hasBcc('reservations@maisonberesidences.com')
             && $mail->hasBcc('md@maisonberesidences.com')
             && $mail->hasBcc('info@maisonberesidences.com')
+            && $mail->hasBcc('concierge@maisonberesidences.com')
         );
     }
 }
