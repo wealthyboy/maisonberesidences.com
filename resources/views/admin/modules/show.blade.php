@@ -284,7 +284,7 @@
                 @if ($isPeakPeriods && $model)
                     <div class="mt-5 grid gap-4 md:grid-cols-4">
                         <div class="rounded-md border border-zinc-200 p-4">
-                            <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Price increase</dt>
+                            <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Default increase</dt>
                             <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ number_format((float) ($model->increase_percent ?? $model->discount), 2) }}%</dd>
                         </div>
                         <div class="rounded-md border border-zinc-200 p-4">
@@ -299,6 +299,14 @@
                             <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">Days limit</dt>
                             <dd class="mt-2 text-sm font-semibold text-zinc-950">{{ $model->days_limit ?? 'None' }}</dd>
                         </div>
+                    </div>
+                    <div class="mt-5 rounded-md border border-zinc-200 p-4">
+                        <h3 class="text-sm font-semibold text-zinc-900">Apartment-specific nightly prices ({{ $model->price_currency ?? 'USD' }})</h3>
+                        @forelse($apartments->filter(fn ($apartment) => isset(($model->apartment_prices ?? [])[$apartment->id])) as $apartment)
+                            <div class="mt-3 flex flex-wrap justify-between gap-2 border-b border-zinc-100 pb-2 text-sm"><span>{{ $apartment->name }}</span><strong>{{ $model->price_currency ?? 'USD' }} {{ number_format((float) $model->apartment_prices[$apartment->id], 2) }} / night</strong></div>
+                        @empty
+                            <p class="mt-2 text-sm text-zinc-500">No apartment-specific prices. The default percentage increase applies.</p>
+                        @endforelse
                     </div>
                 @elseif ($isVouchers && $model)
                     <div class="mt-5 grid gap-4 md:grid-cols-4">
@@ -516,7 +524,7 @@
                             @endif
                             <th class="px-5 py-3">{{ $isCustomers ? 'Customer' : ($isReservations ? 'Guest' : ($isVouchers ? 'Code' : 'Name')) }}</th>
                             <th class="px-5 py-3">{{ $isCustomers ? 'Contact' : ($isReservations ? 'Stay' : ($isVouchers ? 'Discount' : ($isPeakPeriods ? 'Date range' : 'Status'))) }}</th>
-                            <th class="px-5 py-3">{{ $isCustomers ? 'Reservations' : ($isReservations ? 'Total' : ($isVouchers ? 'Usage' : ($isPeakPeriods ? 'Increase' : 'Updated'))) }}</th>
+                            <th class="px-5 py-3">{{ $isCustomers ? 'Reservations' : ($isReservations ? 'Total' : ($isVouchers ? 'Usage' : ($isPeakPeriods ? 'Pricing' : 'Updated'))) }}</th>
                             @if ($isCustomers)
                                 <th class="px-5 py-3">Last reservation</th>
                             @endif
@@ -626,7 +634,12 @@
                                         @elseif ($isVouchers)
                                             {{ $recordItem->used_count }}{{ $recordItem->limits ? ' / '.$recordItem->limits : '' }}
                                         @elseif ($isPeakPeriods)
-                                            {{ number_format((float) ($recordItem->increase_percent ?? $recordItem->discount), 2) }}%
+                                            @if(count($recordItem->apartment_prices ?? []))
+                                                <strong>{{ count($recordItem->apartment_prices) }} {{ Illuminate\Support\Str::plural('apartment', count($recordItem->apartment_prices)) }} · {{ $recordItem->price_currency ?? 'USD' }}</strong>
+                                                @if((float) ($recordItem->increase_percent ?? $recordItem->discount) > 0)<div class="mt-1 text-xs">Default increase: {{ number_format((float) ($recordItem->increase_percent ?? $recordItem->discount), 2) }}%</div>@endif
+                                            @else
+                                                {{ number_format((float) ($recordItem->increase_percent ?? $recordItem->discount), 2) }}%
+                                            @endif
                                         @else
                                             {{ $recordItem->updated_at->format('M j, Y') }}
                                         @endif

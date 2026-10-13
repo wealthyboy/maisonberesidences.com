@@ -30,6 +30,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Throwable;
 
@@ -914,7 +916,10 @@ class ModuleController extends Controller
     {
         $data = $request->validate([
             'name' => ['nullable', 'string', 'max:255'],
-            'discount' => ['required', 'numeric', 'min:0.01', 'max:1000'],
+            'discount' => ['nullable', 'numeric', 'min:0', 'max:1000'],
+            'price_currency' => ['nullable', Rule::in(['USD', 'NGN'])],
+            'apartment_prices' => ['nullable', 'array'],
+            'apartment_prices.*' => ['nullable', 'numeric', 'decimal:0,2', 'min:0.01', 'max:999999999.99'],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'days_limit' => ['nullable', 'integer', 'min:0'],
@@ -923,14 +928,36 @@ class ModuleController extends Controller
 
         $startDate = Carbon::parse($data['start_date'])->startOfDay();
         $endDate = Carbon::parse($data['end_date'])->endOfDay();
+        $prices = collect($data['apartment_prices'] ?? ($peakPeriod?->apartment_prices ?? []))
+            ->filter(fn ($price): bool => filled($price))
+            ->map(fn ($price): string => number_format((float) $price, 2, '.', ''))
+            ->all();
+        $apartmentIds = Apartment::query()->pluck('id')->map(fn ($id): string => (string) $id)->all();
+
+        foreach (array_keys($prices) as $apartmentId) {
+            if (! in_array((string) $apartmentId, $apartmentIds, true)) {
+                throw ValidationException::withMessages([
+                    'apartment_prices' => 'Select existing apartments for peak-period prices.',
+                ]);
+            }
+        }
+
+        $increase = (float) ($data['discount'] ?? 0);
+        if ($prices === [] && $increase <= 0) {
+            throw ValidationException::withMessages([
+                'apartment_prices' => 'Enter at least one apartment price or a percentage increase.',
+            ]);
+        }
         $name = filled($data['name'] ?? null)
             ? $data['name']
             : 'Peak period '.$startDate->format('M j').' - '.$endDate->format('M j, Y');
 
         return [
             'name' => $name,
-            'discount' => $data['discount'],
-            'increase_percent' => $data['discount'],
+            'discount' => $increase,
+            'increase_percent' => $increase,
+            'apartment_prices' => $prices,
+            'price_currency' => $data['price_currency'] ?? $peakPeriod?->price_currency ?? 'USD',
             'start_date' => $startDate,
             'end_date' => $endDate,
             'days_limit' => $data['days_limit'] ?? null,

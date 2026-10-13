@@ -22,6 +22,7 @@ class ApartmentQuoteService
         $nights = $checkin && $checkout ? max($checkin->diffInDays($checkout), 1) : 1;
         $peakNights = 0;
         $peakExtraUsd = 0.0;
+        $ngnRate = null;
 
         if ($checkin && $checkout) {
             $hasActiveFlag = Schema::hasColumn('peak_periods', 'is_active');
@@ -36,9 +37,37 @@ class ApartmentQuoteService
                 ->get();
 
             foreach (CarbonPeriod::create($checkin, '1 day', $checkout->copy()->subDay()) as $night) {
-                $increase = (float) $periods
-                    ->filter(fn (PeakPeriod $period): bool => $night->betweenIncluded($period->start_date, $period->end_date))
-                    ->max($increaseColumn);
+                $nightPeriods = $periods
+                    ->filter(fn (PeakPeriod $period): bool => $night->betweenIncluded($period->start_date, $period->end_date));
+                $specificPrices = [];
+
+                foreach ($nightPeriods as $period) {
+                    $price = ($period->apartment_prices ?? [])[$apartment->id] ?? null;
+                    if ($price === null) {
+                        continue;
+                    }
+
+                    $priceUsd = (float) $price;
+                    if ($period->price_currency === 'NGN') {
+                        $ngnRate ??= ($currency['code'] ?? 'USD') === 'NGN'
+                            ? (float) $currency['rate']
+                            : (float) $this->currencies->paystackCurrency()['rate'];
+                        $priceUsd /= max(0.000001, $ngnRate);
+                    }
+                    $specificPrices[] = $priceUsd;
+                }
+
+                if ($specificPrices !== []) {
+                    // A fixed apartment rate replaces, rather than stacks on,
+                    // percentage increases. Keep the existing highest-rate
+                    // behaviour when more than one period covers this night.
+                    $peakNights++;
+                    $peakExtraUsd += max($specificPrices) - $baseNightlyUsd;
+
+                    continue;
+                }
+
+                $increase = (float) $nightPeriods->max($increaseColumn);
 
                 if ($increase > 0) {
                     $peakNights++;
@@ -48,7 +77,9 @@ class ApartmentQuoteService
         }
 
         $totalUsd = ($baseNightlyUsd * $nights) + $peakExtraUsd;
-        $nightly = $this->currencies->convertFromUsd($baseNightlyUsd, $currency);
+        // Use the stay's average nightly rate so displayed prices and checkout
+        // totals agree when a stay contains both regular and peak nights.
+        $nightly = $this->currencies->convertFromUsd($totalUsd / $nights, $currency);
         $total = $this->currencies->convertFromUsd($totalUsd, $currency);
 
         $quote = [

@@ -17,6 +17,8 @@ class PeakPeriod extends Model
         'discount',
         'days_limit',
         'is_active',
+        'apartment_prices',
+        'price_currency',
     ];
 
     protected function casts(): array
@@ -28,6 +30,7 @@ class PeakPeriod extends Model
             'discount' => 'decimal:2',
             'days_limit' => 'integer',
             'is_active' => 'boolean',
+            'apartment_prices' => 'array',
         ];
     }
 }
