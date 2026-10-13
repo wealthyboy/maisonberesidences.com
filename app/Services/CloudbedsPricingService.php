@@ -43,6 +43,7 @@ class CloudbedsPricingService
                     'short_name' => (string) ($record['roomTypeNameShort'] ?? ''),
                     'rate_id' => (string) ($record['rateID'] ?? ''),
                     'total' => (float) $total,
+                    'nightly_rates' => $this->nightlyRates($record, $checkin->toDateString(), $checkout->toDateString()),
                     'currency' => $property['currency'],
                 ];
             }
@@ -54,5 +55,28 @@ class CloudbedsPricingService
         }
 
         return $rate;
+    }
+
+    private function nightlyRates(array $record, string $checkin, string $checkout): array
+    {
+        $rates = [];
+        $hasSupplements = ! is_numeric($record['roomRate'] ?? null)
+            || abs((float) ($record['totalRate'] ?? 0) - (float) $record['roomRate']) > 0.005;
+        foreach ((array) ($record['roomRateDetailed'] ?? $record['detailedRates'] ?? []) as $day) {
+            if (! is_array($day)) {
+                continue;
+            }
+            $date = (string) ($day['date'] ?? '');
+            $amount = $day['totalRate'] ?? (! $hasSupplements ? ($day['rate'] ?? $day['roomRate'] ?? null) : null);
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) && $date >= $checkin && $date < $checkout
+                && is_numeric($amount) && is_finite((float) $amount) && (float) $amount >= 0) {
+                if (array_key_exists($date, $rates)) {
+                    return [];
+                }
+                $rates[$date] = (float) $amount;
+            }
+        }
+
+        return $rates;
     }
 }

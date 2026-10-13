@@ -89,13 +89,23 @@
 </label>
 
 <label class="block">
-    <span class="text-sm font-semibold text-zinc-700">Price per/night</span>
+    <span class="text-sm font-semibold text-zinc-700">Site nightly rate (USD)</span>
     <input type="number" step="0.01" min="0" name="room_price" value="{{ old('room_price', $model->price ?? '') }}" class="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-[#d9b44a] focus:ring-2 focus:ring-[#d9b44a]/20">
 </label>
+
+<div class="rounded-md border border-[#d9b44a]/40 bg-[#d9b44a]/10 p-4 lg:col-span-2">
+    <label class="flex cursor-pointer items-center gap-3 text-sm font-semibold text-[#222052]">
+        <input type="hidden" name="price_override_active" value="0">
+        <input type="checkbox" name="price_override_active" value="1" @checked(old('price_override_active', $model?->price_override_active ?? false)) class="h-4 w-4 rounded border-zinc-300 text-[#222052]">
+        Use site nightly rate instead of Cloudbeds
+    </label>
+    <p class="mt-2 text-sm leading-6 text-zinc-600">When active, the USD site rate above replaces Cloudbeds pricing for this apartment. Active peak-period prices take priority on their dates, then local Discounts apply. Turn this off to return automatically to Cloudbeds outside peak periods. Availability still comes from Cloudbeds.</p>
+</div>
 
 <label class="block">
     <span class="text-sm font-semibold text-zinc-700">Sale Price</span>
     <input type="number" step="0.01" min="0" name="room_sale_price" value="{{ old('room_sale_price', $model->sale_price ?? '') }}" class="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-[#d9b44a] focus:ring-2 focus:ring-[#d9b44a]/20">
+    <span class="mt-1 block text-xs text-zinc-500">Legacy standalone pricing only. For Cloudbeds and site overrides, manage sale campaigns under Discounts.</span>
 </label>
 
 <label class="block">

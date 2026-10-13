@@ -10,7 +10,7 @@
 @section('content')
     <section class="mx-auto max-w-4xl rounded-md border border-zinc-200 bg-white p-5 shadow-sm">
         <form method="post" action="{{ $mode === 'edit' ? route('admin.promotions.update', $promotion) : route('admin.promotions.store') }}" class="grid gap-5 lg:grid-cols-2" data-promotion-form>
-            <p class="rounded-md border border-[#d9b44a]/40 bg-[#d9b44a]/10 p-4 text-sm lg:col-span-2">For Cloudbeds-fed apartments, discounts apply to the current Cloudbeds rate for the selected stay. Cloudbeds base and seasonal prices are not changed. Fixed sale prices apply only when lower than that live rate.</p>
+            <p class="rounded-md border border-[#d9b44a]/40 bg-[#d9b44a]/10 p-4 text-sm lg:col-span-2">Discounts apply after resolving active peak-period prices, apartment site overrides and Cloudbeds rates for the selected stay. Cloudbeds master rates are not changed. Fixed sale prices apply only when lower than the resolved rate.</p>
             @csrf
             @if ($mode === 'edit') @method('put') @endif
 

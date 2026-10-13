@@ -2,7 +2,7 @@
     <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-zinc-500">Peak period details</h3>
 </div>
 @if(filled(config('cloudbeds.api.key')))
-    <p class="rounded-md border border-[#d9b44a]/40 bg-[#d9b44a]/10 p-4 text-sm lg:col-span-2">Cloudbeds controls base and peak-period prices for this website. These local peak-price overrides are not applied to Cloudbeds-fed rates. Set seasonal rates in Cloudbeds and use <a class="font-semibold underline" href="{{ route('admin.promotions.index') }}">Discounts</a> to apply a local sale.</p>
+    <p class="rounded-md border border-[#d9b44a]/40 bg-[#d9b44a]/10 p-4 text-sm lg:col-span-2">Active peak prices below override Cloudbeds for the booked nights in this range. Outside this range, each apartment uses its active site override or returns to Cloudbeds. Local <a class="font-semibold underline" href="{{ route('admin.promotions.index') }}">Discounts</a> apply afterward. Cloudbeds availability and master rates are not changed.</p>
 @endif
 
 <label class="block lg:col-span-2">
@@ -23,6 +23,7 @@
 <label class="block">
     <span class="text-sm font-semibold text-zinc-700">Days limit</span>
     <input type="number" name="days_limit" value="{{ old('days_limit', $model->days_limit ?? '') }}" min="0" step="1" placeholder="Optional" class="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-[#d9b44a] focus:ring-2 focus:ring-[#d9b44a]/20">
+    <span class="mt-1 block text-xs text-zinc-500">Minimum-night booking restrictions are managed separately under Calendar Rules.</span>
 </label>
 
 <label class="block">
@@ -55,7 +56,7 @@
     <div class="mt-4 overflow-x-auto rounded-md border border-zinc-200">
         <table class="w-full text-left text-sm">
             <thead class="bg-zinc-50 text-xs font-semibold uppercase tracking-[0.1em] text-zinc-500">
-                <tr><th class="px-4 py-3">Apartment</th><th class="px-4 py-3">Normal rate (USD / night)</th><th class="px-4 py-3">Peak price / night (<span data-peak-price-currency-label>{{ old('price_currency', $model->price_currency ?? 'USD') }}</span>)</th></tr>
+                <tr><th class="px-4 py-3">Apartment</th><th class="px-4 py-3">Site rate (USD / night)</th><th class="px-4 py-3">Peak price / night (<span data-peak-price-currency-label>{{ old('price_currency', $model->price_currency ?? 'USD') }}</span>)</th></tr>
             </thead>
             <tbody class="divide-y divide-zinc-200">
                 @forelse($apartments as $apartment)

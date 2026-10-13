@@ -413,6 +413,8 @@ class ReservationController extends Controller
             'apartment_id' => $apartment->id,
             'guests' => max(1, (int) $request->input('guests', 1)),
             'rate_source' => $paymentQuote['rate_source'] ?? 'local',
+            'pricing_sources' => $paymentQuote['pricing_sources'] ?? ['local'],
+            'pricing_breakdown' => $paymentQuote['pricing_breakdown'] ?? [],
             'source_rate_id' => $paymentQuote['source_rate_id'] ?? null,
             'source_room_type_id' => $paymentQuote['source_room_type_id'] ?? null,
             'source_currency' => $paymentQuote['source_currency'] ?? null,

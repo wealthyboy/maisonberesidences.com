@@ -16,6 +16,7 @@ class Apartment extends Model
         'sort_order',
         'property_id',
         'price',
+        'price_override_active',
         'sale_price',
         'slug',
         'image',
@@ -50,6 +51,7 @@ class Apartment extends Model
     {
         return [
             'price' => 'decimal:2',
+            'price_override_active' => 'boolean',
             'sale_price' => 'decimal:2',
             'toilets' => 'decimal:1',
             'allow' => 'boolean',

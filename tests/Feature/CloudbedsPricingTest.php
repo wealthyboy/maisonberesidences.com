@@ -33,11 +33,11 @@ class CloudbedsPricingTest extends TestCase
         $this->fakeRates();
     }
 
-    public function test_cloudbeds_total_is_used_instead_of_local_prices_and_peak_overrides(): void
+    public function test_cloudbeds_total_is_used_when_site_override_is_off_and_peak_period_is_inactive(): void
     {
         $apartment = $this->apartment();
         $apartment->update(['sale_price' => 10]);
-        PeakPeriod::create(['name' => 'Local peak', 'start_date' => '2027-03-10', 'end_date' => '2027-03-12', 'increase_percent' => 100, 'is_active' => true, 'apartment_prices' => [$apartment->id => '999.00']]);
+        PeakPeriod::create(['name' => 'Local peak', 'start_date' => '2027-03-10', 'end_date' => '2027-03-12', 'increase_percent' => 100, 'is_active' => false, 'apartment_prices' => [$apartment->id => '999.00']]);
         $quote = $this->quote($apartment);
         $this->assertSame(876.0, $quote['total_usd']);
         $this->assertSame(438.0, $quote['nightly']);

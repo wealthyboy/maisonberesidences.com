@@ -1053,6 +1053,7 @@ class ModuleController extends Controller
             'room_toilets' => ['nullable', 'in:1,1.5,2,2.5,3,3.5,4,4.5,5'],
             'room_max_adults' => ['nullable', 'integer', 'min:0', 'max:1000'],
             'room_price' => ['nullable', 'numeric', 'min:0'],
+            'price_override_active' => ['nullable', 'boolean'],
             'room_sale_price' => ['nullable', 'numeric', 'min:0'],
             'room_sale_price_expires' => ['nullable', 'date'],
             'price_mode' => ['nullable', 'in:per night,per week,per month,per year'],
@@ -1072,6 +1073,11 @@ class ModuleController extends Controller
         ]);
 
         $name = $data['room_name'];
+        $sitePrice = array_key_exists('room_price', $data) ? $data['room_price'] : $apartment?->price;
+        $overrideActive = (bool) ($data['price_override_active'] ?? $apartment?->price_override_active ?? false);
+        if ($overrideActive && (float) $sitePrice <= 0) {
+            throw ValidationException::withMessages(['room_price' => 'Enter a positive site nightly rate before activating its price override.']);
+        }
 
         return [
             'name' => $name,
@@ -1082,7 +1088,8 @@ class ModuleController extends Controller
             'size_sq_ft' => $data['room_size_sq_ft'] ?? null,
             'toilets' => $data['room_toilets'] ?? null,
             'max_adults' => $data['room_max_adults'] ?? null,
-            'price' => $data['room_price'] ?? null,
+            'price' => $sitePrice,
+            'price_override_active' => $overrideActive,
             'sale_price' => $data['room_sale_price'] ?? null,
             'sale_price_expires' => $data['room_sale_price_expires'] ?? null,
             'price_mode' => $data['price_mode'] ?? null,
