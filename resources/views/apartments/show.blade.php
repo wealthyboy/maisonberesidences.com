@@ -79,7 +79,11 @@
                 </article>
                 <aside class="apartment-booking-panel">
                     <p class="eyebrow">Reserve {{ $apartment->name }}</p>
-                    @if (data_get($apartment->stay_quote, 'has_promotion'))
+                    @if ($pricingError ?? null)
+                        <p class="apartment-availability-status is-error">{{ $pricingError }}</p>
+                    @elseif (!data_get($apartment->stay_quote, 'price_available', false))
+                        <p class="apartment-availability-status">Select your dates to see the current Cloudbeds price.</p>
+                    @elseif (data_get($apartment->stay_quote, 'has_promotion'))
                         <div class="apartment-show-promo">
                             <span class="apartment-show-promo-percent">Save {{ data_get($apartment->stay_quote, 'promotion.percentage') }}%</span>
                             @if (filled(data_get($apartment->stay_quote, 'promotion.promo_text')))

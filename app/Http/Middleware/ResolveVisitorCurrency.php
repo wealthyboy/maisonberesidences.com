@@ -18,7 +18,7 @@ class ResolveVisitorCurrency
         if (in_array($requestedCurrency, ['USD', 'NGN'], true)) {
             $request->session()->put('currency_preference', $requestedCurrency);
         } elseif ($requestedCurrency === 'AUTO') {
-            $request->session()->forget(['currency_preference', 'currency', 'currency_auto_resolved']);
+            $request->session()->forget(['currency_preference', 'currency', 'currency_auto_resolved', 'currency_auto_resolved_ip']);
         }
 
         if ($request->is('apartments/*/availability')) {

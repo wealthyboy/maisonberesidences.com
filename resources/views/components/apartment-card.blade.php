@@ -7,6 +7,7 @@
     'bookingLabel' => 'Book now',
     'showPrice' => true,
     'titleLink' => true,
+    'priceError' => null,
 ])
 
 @php
@@ -191,6 +192,7 @@
             <button type="button" data-card-modal-open aria-controls="{{ $modalId }}">More details <x-amenity-icon name="chevron-right" /></button>
         </div>
         <div class="residence-card-footer">
+            @if ($priceError)<p class="results-notice results-notice-error">{{ $priceError }}</p>@endif
             @if ($showPrice)
                 <div class="residence-card-rate">
                     <span class="residence-card-price {{ $promotion ? 'has-sale' : '' }}">

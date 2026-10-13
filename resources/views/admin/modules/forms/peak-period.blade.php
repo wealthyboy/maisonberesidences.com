@@ -1,6 +1,9 @@
 <div class="border-b border-zinc-200 pb-2 lg:col-span-2">
     <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-zinc-500">Peak period details</h3>
 </div>
+@if(filled(config('cloudbeds.api.key')))
+    <p class="rounded-md border border-[#d9b44a]/40 bg-[#d9b44a]/10 p-4 text-sm lg:col-span-2">Cloudbeds controls base and peak-period prices for this website. These local peak-price overrides are not applied to Cloudbeds-fed rates. Set seasonal rates in Cloudbeds and use <a class="font-semibold underline" href="{{ route('admin.promotions.index') }}">Discounts</a> to apply a local sale.</p>
+@endif
 
 <label class="block lg:col-span-2">
     <span class="text-sm font-semibold text-zinc-700">Name</span>

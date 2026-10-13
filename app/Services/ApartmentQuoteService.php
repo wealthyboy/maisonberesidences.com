@@ -13,10 +13,14 @@ class ApartmentQuoteService
     public function __construct(
         private readonly CurrencyService $currencies,
         private readonly PromotionService $promotions,
+        private readonly CloudbedsPricingService $cloudbedsPrices,
     ) {}
 
-    public function quote(Apartment $apartment, ?Carbon $checkin, ?Carbon $checkout, array $currency): array
+    public function quote(Apartment $apartment, ?Carbon $checkin, ?Carbon $checkout, array $currency, int $guests = 1): array
     {
+        if ($this->cloudbedsPrices->enabled()) {
+            return $this->cloudbedsQuote($apartment, $checkin, $checkout, $currency, $guests);
+        }
         $promotion = $this->promotions->activeFor($apartment);
         $baseNightlyUsd = $this->baseNightlyUsd($apartment, $promotion === null);
         $nights = $checkin && $checkout ? max($checkin->diffInDays($checkout), 1) : 1;
@@ -91,9 +95,43 @@ class ApartmentQuoteService
             'total_usd' => $totalUsd,
             'display_nightly' => $this->currencies->format($nightly, $currency),
             'display_total' => $this->currencies->format($total, $currency),
+            'rate_source' => 'local',
+            'price_available' => true,
         ];
 
         return $this->promotions->applyToQuote($apartment, $quote, $promotion);
+    }
+
+    private function cloudbedsQuote(Apartment $apartment, ?Carbon $checkin, ?Carbon $checkout, array $currency, int $guests): array
+    {
+        $nights = $checkin && $checkout ? max(1, (int) $checkin->diffInDays($checkout)) : 1;
+        $rate = $checkin && $checkout ? $this->cloudbedsPrices->forApartment($apartment, $checkin, $checkout, $guests) : null;
+        $totalUsd = (float) ($rate['total'] ?? 0);
+        if (($rate['currency'] ?? 'USD') === 'NGN') {
+            $ngnRate = ($currency['code'] ?? 'USD') === 'NGN' ? (float) $currency['rate'] : (float) $this->currencies->paystackCurrency()['rate'];
+            $totalUsd /= max(0.000001, $ngnRate);
+        }
+        $nightly = $this->currencies->convertFromUsd($totalUsd / $nights, $currency);
+        $total = $this->currencies->convertFromUsd($totalUsd, $currency);
+        $quote = [
+            'currency' => $currency,
+            'nights' => $nights,
+            'peak_nights' => 0,
+            'nightly' => $nightly,
+            'total' => $total,
+            'total_usd' => $totalUsd,
+            'display_nightly' => $this->currencies->format($nightly, $currency),
+            'display_total' => $this->currencies->format($total, $currency),
+            'rate_source' => 'cloudbeds',
+            'price_available' => $rate !== null,
+            'source_rate_id' => $rate['rate_id'] ?? null,
+            'source_room_type_id' => $rate['id'] ?? null,
+            'source_currency' => $rate['currency'] ?? null,
+        ];
+
+        // Cloudbeds owns the base and seasonal prices. Only the local Discounts
+        // rules apply afterward; local sale/peak fields never replace these rates.
+        return $this->promotions->applyToQuote($apartment, $quote);
     }
 
     private function baseNightlyUsd(Apartment $apartment, bool $allowLegacySale = true): float

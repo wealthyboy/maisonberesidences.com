@@ -20,6 +20,7 @@ class PeakPeriodPricingTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        config(['cloudbeds.api.key' => null]);
         Cache::put('currency.usd-ngn', 1500);
         Http::fake(['*' => Http::response(['rates' => ['NGN' => 1500]])]);
     }

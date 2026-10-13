@@ -59,10 +59,6 @@ class ApartmentSearchController extends Controller
                 ->orderBy('id')
                 ->get();
 
-            $localApartments->each(function (Apartment $apartment) use ($checkin, $checkout, $currency): void {
-                $apartment->setAttribute('stay_quote', $this->quotes->quote($apartment, $checkin, $checkout, $currency));
-            });
-
             try {
                 $roomTypes = $checkin && $checkout
                     ? collect($this->cloudbeds->availableRoomTypes(
@@ -73,6 +69,18 @@ class ApartmentSearchController extends Controller
                     ))
                     : collect($this->cloudbeds->roomTypes());
                 $residences = $this->combineCloudbedsWithLocalApartments($roomTypes, $localApartments);
+                foreach ($residences as $index => $residence) {
+                    $apartment = $residence['apartment'];
+                    try {
+                        $quote = $this->quotes->quote($apartment, $checkin, $checkout, $currency, max(1, (int) ($filters['guests'] ?? 1)));
+                        $apartment?->setAttribute('stay_quote', $quote);
+                        $residences[$index] = [...$residence, 'quote' => $quote];
+                    } catch (Throwable $exception) {
+                        Log::warning('Cloudbeds price could not be confirmed.', ['apartment_id' => $apartment?->id, 'message' => $exception->getMessage()]);
+                        $apartment?->setAttribute('stay_quote', null);
+                        $residences[$index] = [...$residence, 'quote' => null];
+                    }
+                }
 
                 // Cloudbeds remains the live inventory authority, but Maison Be's
                 // local admin Date Blocks are an absolute override. If any selected
@@ -126,9 +134,16 @@ class ApartmentSearchController extends Controller
         $currency = $request->attributes->get('currency');
 
         $apartment->load(['images', 'property', 'attributes.parent']);
-        $apartment->setAttribute('stay_quote', $this->quotes->quote($apartment, $checkin, $checkout, $currency));
+        $pricingError = null;
+        try {
+            $apartment->setAttribute('stay_quote', $this->quotes->quote($apartment, $checkin, $checkout, $currency, max(1, (int) ($filters['guests'] ?? 1))));
+        } catch (Throwable $exception) {
+            $apartment->setAttribute('stay_quote', null);
+            $pricingError = 'Live prices could not be confirmed. Please try another date or contact Maison Be.';
+            Log::warning('Cloudbeds apartment price unavailable.', ['apartment_id' => $apartment->id, 'message' => $exception->getMessage()]);
+        }
 
-        return view('apartments.show', compact('apartment', 'filters', 'currency'));
+        return view('apartments.show', compact('apartment', 'filters', 'currency', 'pricingError'));
     }
 
     public function availability(Request $request, Apartment $apartment): JsonResponse
@@ -185,208 +200,47 @@ class ApartmentSearchController extends Controller
 
     private function combineCloudbedsWithLocalApartments(Collection $roomTypes, Collection $localApartments): Collection
     {
-        $localIndex = [];
+        $matchedIds = [];
+        $residences = collect();
 
-        foreach ($localApartments as $apartment) {
-            foreach ($this->apartmentMatchKeys($apartment) as $key) {
-                if ($key !== '' && ! isset($localIndex[$key])) {
-                    $localIndex[$key] = $apartment;
-                }
+        // Availability, quoting and checkout all use the same mapping rules.
+        // Local records own every presentation field and the public card order.
+        // Reserve explicit ID mappings before name-only matches can claim them.
+        foreach ($localApartments->sortBy(fn (Apartment $local): int => filled($local->apartment_id) ? 0 : 1) as $local) {
+            $roomType = $this->cloudbeds->matchApartment($local, $roomTypes->all());
+            if (! $roomType || blank($roomType['id'] ?? null)) {
+                continue;
+            }
+            $roomTypeId = (string) $roomType['id'];
+            if (isset($matchedIds[$roomTypeId])) {
+                Log::warning('Multiple local apartments match one Cloudbeds room type.', [
+                    'apartment_id' => $local->id, 'room_type_id' => $roomTypeId,
+                ]);
+                continue;
+            }
+
+            $apartment = clone $local;
+            // Bind this card's quote to the exact available room, even if the
+            // rates endpoint uses a different label. Never persist or rename it.
+            $apartment->setAttribute('cloudbeds_room_type_id', $roomTypeId);
+            $residences->push(['cloudbeds' => $roomType, 'apartment' => $apartment]);
+            $matchedIds[$roomTypeId] = true;
+        }
+
+        foreach ($roomTypes as $roomType) {
+            if (! isset($matchedIds[(string) ($roomType['id'] ?? '')])) {
+                Log::warning('Cloudbeds room type has no published local apartment mapping.', [
+                    'room_type_id' => $roomType['id'] ?? null,
+                ]);
             }
         }
 
-        return $roomTypes
-            ->unique(fn (array $roomType): string => $this->roomTypeIdentity($roomType))
-            ->map(function (array $roomType) use ($localApartments, $localIndex): array {
-                $candidateKeys = $this->roomTypeMatchKeys($roomType);
-                $apartment = null;
-
-                foreach ($candidateKeys as $candidate) {
-                    if (isset($localIndex[$candidate])) {
-                        $apartment = $localIndex[$candidate];
-                        break;
-                    }
-                }
-
-                if (! $apartment) {
-                    $apartment = $localApartments->first(function (Apartment $local) use ($candidateKeys): bool {
-                        foreach ($this->apartmentMatchKeys($local) as $localKey) {
-                            foreach ($candidateKeys as $candidate) {
-                                if (strlen($candidate) < 4 || strlen($localKey) < 4) {
-                                    continue;
-                                }
-
-                                if (str_contains($localKey, $candidate) || str_contains($candidate, $localKey)) {
-                                    return true;
-                                }
-                            }
-                        }
-
-                        return false;
-                    });
-                }
-
-                // Cloudbeds exposes the penthouse inconsistently depending on the
-                // endpoint: sometimes as "Pen", sometimes as "Penthouse", and
-                // sometimes as "BELVEDERE - Penthouse". Its public Maison Be
-                // presentation data already lives on the local Belvedere record,
-                // so bind those Cloudbeds identities to that record explicitly.
-                if (! $apartment && $this->isPenthouseRoomType($roomType)) {
-                    $apartment = $localApartments->first(function (Apartment $local): bool {
-                        return collect($this->apartmentMatchKeys($local))->contains(function (string $key): bool {
-                            return str_contains($key, 'belvedere') || str_contains($key, 'penthouse');
-                        });
-                    });
-                }
-
-                if ($apartment && $this->isPenthouseRoomType($roomType)) {
-                    // Do not mutate the original collection model because another
-                    // Cloudbeds room type may also map to the same local record.
-                    $apartment = clone $apartment;
-                    $apartment->setAttribute('name', $this->penthouseDisplayName($roomType));
-                }
-
-                return [
-                    'cloudbeds' => $roomType,
-                    'apartment' => $apartment,
-                ];
-            })
-            // Cloudbeds decides which room types are available, but the public
-            // Maison Be card order must always follow the order configured in
-            // the local Apartments admin. Matched local apartments therefore
-            // sort by sort_order (then id as a deterministic tie-breaker).
-            // Any Cloudbeds room without a local Maison Be match is kept after
-            // the locally configured apartments.
-            ->sort(function (array $left, array $right): int {
-                $leftApartment = $left['apartment'] ?? null;
-                $rightApartment = $right['apartment'] ?? null;
-
-                if ($leftApartment && $rightApartment) {
-                    $sortOrder = ((int) $leftApartment->sort_order) <=> ((int) $rightApartment->sort_order);
-
-                    if ($sortOrder !== 0) {
-                        return $sortOrder;
-                    }
-
-                    return ((int) $leftApartment->id) <=> ((int) $rightApartment->id);
-                }
-
-                if ($leftApartment) {
-                    return -1;
-                }
-
-                if ($rightApartment) {
-                    return 1;
-                }
-
-                return 0;
-            })
-            ->values();
-    }
-
-
-    private function isPenthouseRoomType(array $roomType): bool
-    {
-        $keys = collect($this->roomTypeMatchKeys($roomType));
-
-        return $keys->contains(function (string $key): bool {
-            return in_array($key, ['pen', 'penthouse', 'belvederepenthouse'], true)
-                || str_contains($key, 'penthouse');
-        });
-    }
-
-    private function penthouseDisplayName(array $roomType): string
-    {
-        foreach (['full_name', 'name', 'short_name'] as $field) {
-            $value = trim((string) ($roomType[$field] ?? ''));
-
-            if ($value !== '' && str_contains(strtolower($value), 'penthouse')) {
-                return $value;
-            }
-        }
-
-        return 'BELVEDERE - Penthouse';
-    }
-
-    private function roomTypeMatchKeys(array $roomType): array
-    {
-        return collect([
-            $roomType['name'] ?? null,
-            $roomType['full_name'] ?? null,
-            $roomType['short_name'] ?? null,
-        ])
-            ->filter(fn ($value): bool => is_string($value) && trim($value) !== '')
-            ->flatMap(fn (string $value): array => $this->nameVariants($value))
-            ->map(fn (string $value): string => $this->normalizeName($value))
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
-    }
-
-    private function apartmentMatchKeys(Apartment $apartment): array
-    {
-        return collect([
-            $apartment->name,
-            $apartment->slug,
-            $apartment->apartment_id,
-        ])
-            ->filter(fn ($value): bool => is_string($value) && trim($value) !== '')
-            ->flatMap(fn (string $value): array => $this->nameVariants($value))
-            ->map(fn (string $value): string => $this->normalizeName($value))
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
-    }
-
-    private function nameVariants(string $value): array
-    {
-        $value = trim($value);
-        $variants = [$value];
-
-        $withoutBrand = preg_replace('/\s+(?:at|@)\s+maison\s*be(?:\s+residences?)?\s*$/i', '', $value) ?? $value;
-        $withoutBrand = preg_replace('/\s*[-|:]\s*maison\s*be(?:\s+residences?)?\s*$/i', '', $withoutBrand) ?? $withoutBrand;
-        $withoutBrand = preg_replace('/^maison\s*be(?:\s+residences?)?\s*[-|:]\s*/i', '', $withoutBrand) ?? $withoutBrand;
-
-        if (trim($withoutBrand) !== '') {
-            $variants[] = trim($withoutBrand);
-        }
-
-        $tokens = preg_split('/[^a-z0-9]+/i', strtolower($withoutBrand)) ?: [];
-        $ignored = ['at', 'maison', 'be', 'residence', 'residences', 'apartment', 'apartments', 'suite', 'suites', 'room', 'rooms'];
-        $core = implode('', array_filter($tokens, fn (string $token): bool => $token !== '' && ! in_array($token, $ignored, true)));
-
-        if ($core !== '') {
-            $variants[] = $core;
-        }
-
-        // Cloudbeds getRooms returns the Maison Be penthouse as the physical
-        // room label "Pen". Treat it as an alias of the public room type so
-        // it maps to the existing BELVEDERE - Penthouse apartment record.
-        $normalized = $this->normalizeName($withoutBrand);
-        if (in_array($normalized, ['pen', 'penthouse', 'belvederepenthouse'], true)) {
-            $variants[] = 'BELVEDERE - Penthouse';
-            $variants[] = 'Penthouse';
-            $variants[] = 'Pen';
-        }
-
-        return array_values(array_unique($variants));
-    }
-
-    private function roomTypeIdentity(array $roomType): string
-    {
-        $keys = $this->roomTypeMatchKeys($roomType);
-
-        return $keys[0] ?? ('id:'.(string) ($roomType['id'] ?? ''));
-    }
-
-    private function normalizeName(string $value): string
-    {
-        $value = strtolower(trim($value));
-        $value = preg_replace('/^the\s+/', '', $value) ?? $value;
-
-        return preg_replace('/[^a-z0-9]+/', '', $value) ?? '';
+        // Unmapped API rooms must not replace the uploaded cards with generic
+        // photos or amenities. Publish a matching local record before listing it.
+        return $residences->sortBy(fn (array $residence): array => [
+            (int) $residence['apartment']->sort_order,
+            (int) $residence['apartment']->id,
+        ])->values();
     }
 
     private function inventoryLimits(): array

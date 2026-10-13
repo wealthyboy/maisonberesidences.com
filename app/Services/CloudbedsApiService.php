@@ -13,6 +13,56 @@ use Throwable;
 
 class CloudbedsApiService
 {
+    private ?array $pricingProperty = null;
+
+    public function pricingProperty(): array
+    {
+        if ($this->pricingProperty !== null) {
+            return $this->pricingProperty;
+        }
+
+        $response = $this->request()->get($this->baseUrl().'/getHotels', ['pageSize' => 100]);
+        $response->throw();
+        if ($response->json('success') === false) {
+            throw new RuntimeException('Cloudbeds property information could not be confirmed.');
+        }
+        $properties = collect((array) $response->json('data', []))->filter(fn ($property): bool => is_array($property));
+        $configuredId = trim((string) config('cloudbeds.api.property_id'));
+        $property = $configuredId !== ''
+            ? $properties->first(fn (array $property): bool => (string) ($property['propertyID'] ?? $property['hotelID'] ?? '') === $configuredId)
+            : null;
+        // A single-property API key is unambiguous even when no numeric
+        // property ID (or an old booking-engine code) was configured locally.
+        $property ??= $properties->count() === 1 ? $properties->first() : null;
+        $id = (string) ($property['propertyID'] ?? $property['hotelID'] ?? '');
+        $currency = strtoupper((string) (data_get($property, 'propertyCurrency.currencyCode') ?? data_get($property, 'hotelCurrency.currencyCode') ?? data_get($property, 'currencyCode')));
+        if ($id === '' || ! in_array($currency, ['USD', 'NGN'], true)) {
+            throw new RuntimeException('Cloudbeds property and pricing currency must be confirmed before quoting.');
+        }
+
+        return $this->pricingProperty = ['id' => $id, 'currency' => $currency];
+    }
+
+    public function ratePlansForStay(string $checkin, string $checkout, int $adults = 1): array
+    {
+        $property = $this->pricingProperty();
+        $response = $this->request()->get($this->baseUrl().'/getRatePlans', [
+            'propertyIDs' => $property['id'],
+            'startDate' => $checkin,
+            'endDate' => $checkout,
+            'adults' => max(1, $adults),
+            'children' => 0,
+            'detailedRates' => 'true',
+            'includePromoCode' => 'false',
+        ]);
+        $response->throw();
+        if ($response->json('success') === false || ! is_array($response->json('data'))) {
+            throw new RuntimeException('Live Cloudbeds rates could not be confirmed. Please try again.');
+        }
+
+        return $response->json('data');
+    }
+
     public function roomTypes(): array
     {
         $cacheSeconds = max(60, (int) config('cloudbeds.api.cache_seconds', 300));
@@ -199,6 +249,23 @@ class CloudbedsApiService
     public function matchApartment(Apartment $apartment, ?array $roomTypes = null): ?array
     {
         $roomTypes ??= $this->roomTypes();
+        if (filled($apartment->cloudbeds_room_type_id)) {
+            foreach ($roomTypes as $roomType) {
+                if ((string) ($roomType['id'] ?? '') === (string) $apartment->cloudbeds_room_type_id) {
+                    return $roomType;
+                }
+            }
+
+            return null;
+        }
+        if (filled($apartment->apartment_id)) {
+            foreach ($roomTypes as $roomType) {
+                $ids = array_map('strval', (array) ($roomType['room_type_ids'] ?? [$roomType['id'] ?? '']));
+                if (in_array((string) $apartment->apartment_id, $ids, true)) {
+                    return $roomType;
+                }
+            }
+        }
         $apartmentKeys = $this->matchKeys([
             $apartment->name,
             $apartment->slug,
@@ -1013,7 +1080,7 @@ class CloudbedsApiService
                 if ($key !== '') {
                     $keys[] = $key;
 
-                    if (in_array($key, ['pen', 'penthouse', 'belvederepenthouse'], true)) {
+                    if (in_array($key, ['pen', 'penthouse', 'belvedere', 'belvederepenthouse'], true)) {
                         $keys[] = 'belvederepenthouse';
                         $keys[] = 'penthouse';
                         $keys[] = 'pen';

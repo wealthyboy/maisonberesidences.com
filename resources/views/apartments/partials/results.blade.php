@@ -23,10 +23,10 @@
                     :filters="$filters"
                     :link-url="$bookingUrl"
                     :booking-label="$hasStayDates ? 'Reserve now' : 'Check availability'"
-                    :show-price="$hasStayDates"
+                    :show-price="$hasStayDates && data_get($residence['apartment']->stay_quote, 'price_available', false)"
+                    :booking-enabled="!$hasStayDates || data_get($residence['apartment']->stay_quote, 'price_available', false)"
+                    :price-error="$hasStayDates && !$residence['apartment']->stay_quote ? 'Live prices could not be confirmed. Please try again.' : null"
                 />
-            @else
-                @include('apartments.partials.cloudbeds-room-card', ['roomType' => $residence['cloudbeds']])
             @endif
         @endforeach
     </div>

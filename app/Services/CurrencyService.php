@@ -30,16 +30,6 @@ class CurrencyService
             return $this->context($preferredCurrency, 'Manual selection');
         }
 
-        $resolvedCurrency = $request->session()->get('currency');
-
-        if (
-            $request->session()->get('currency_auto_resolved') === true
-            && is_array($resolvedCurrency)
-            && in_array(strtoupper((string) ($resolvedCurrency['code'] ?? '')), ['USD', 'NGN'], true)
-        ) {
-            return $resolvedCurrency;
-        }
-
         $countryCode = $this->countryCodeFromHeaders($request);
 
         if ($countryCode !== '') {
@@ -47,6 +37,20 @@ class CurrencyService
         }
 
         $visitorIp = $this->visitorIp($request);
+        $resolvedCurrency = $request->session()->get('currency');
+
+        if (
+            $request->session()->get('currency_auto_resolved') === true
+            && $request->session()->get('currency_auto_resolved_ip') === $visitorIp
+            && is_array($resolvedCurrency)
+            && in_array(strtoupper((string) ($resolvedCurrency['code'] ?? '')), ['USD', 'NGN'], true)
+        ) {
+            // Cache the location, not the conversion rate. Refreshed API rates
+            // and admin FX adjustments must reach visitors with existing sessions.
+            return $this->context(strtoupper($resolvedCurrency['code']), $resolvedCurrency['country'] ?? null);
+        }
+
+        $request->session()->put('currency_auto_resolved_ip', $visitorIp);
 
         // Private and reserved addresses cannot be geolocated meaningfully.
         if (! filter_var($visitorIp, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {

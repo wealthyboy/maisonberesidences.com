@@ -52,7 +52,12 @@ class ReservationController extends Controller
             ])->with('booking_error', 'This apartment is not available for the selected stay.');
         }
 
-        $quote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $request->attributes->get('currency'));
+        try {
+            $quote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $request->attributes->get('currency'), max(1, (int) $request->input('guests', 1)));
+        } catch (\Throwable $exception) {
+            return redirect()->route('apartments.index', $request->only('checkin', 'checkout', 'guests'))
+                ->with('booking_error', 'Live prices could not be confirmed. Please try again before booking.');
+        }
         $additionalServices = $this->serviceQuotes->availableFor($apartment, $quote['currency']);
         $vat = [
             'rate' => 0.0,
@@ -94,6 +99,7 @@ class ReservationController extends Controller
             'coupon_code' => ['nullable', 'string', 'max:40'],
             'services' => ['nullable', 'array'],
             'services.*' => ['nullable', 'integer', 'min:0', 'max:20'],
+            'guests' => ['nullable', 'integer', 'min:1', 'max:'.max(1, (int) ($apartment->max_adults ?: 20))],
         ]);
 
         $phoneCountries = $this->phoneCountries();
@@ -159,7 +165,15 @@ class ReservationController extends Controller
                 ->with('booking_error', 'That residence is no longer available for the selected stay.');
         }
 
-        $quote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $request->attributes->get('currency'));
+        try {
+            $quote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $request->attributes->get('currency'), max(1, (int) ($data['guests'] ?? 1)));
+        } catch (\Throwable $exception) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Live prices could not be confirmed. Please try again before paying.'], 503);
+            }
+
+            return back()->withErrors(['stay' => 'Live prices could not be confirmed. Please try again before paying.'])->withInput();
+        }
         $servicesQuote = $this->serviceQuotes->quoteSelection($apartment, $data['services'] ?? [], $quote['currency']);
 
         try {
@@ -212,7 +226,7 @@ class ReservationController extends Controller
         ]);
 
         try {
-            $quote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $request->attributes->get('currency'));
+            $quote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $request->attributes->get('currency'), max(1, (int) $request->input('guests', 1)));
             $coupon = $this->coupons->apply($data['coupon_code'] ?? null, $quote['total'], $quote['currency']);
             $servicesQuote = $this->serviceQuotes->quoteSelection($apartment, $data['services'] ?? [], $quote['currency']);
             $vat = [
@@ -303,6 +317,7 @@ class ReservationController extends Controller
         $validated = $request->validate([
             'checkin' => ['nullable', 'date', 'after_or_equal:today'],
             'checkout' => ['nullable', 'date', 'after:checkin', new MinimumStay($request->input('checkin'))],
+            'guests' => ['nullable', 'integer', 'min:1', 'max:20'],
         ]);
 
         if (! filled($validated['checkin'] ?? null) || ! filled($validated['checkout'] ?? null)) {
@@ -312,6 +327,7 @@ class ReservationController extends Controller
         return [
             'checkin' => Carbon::parse($validated['checkin'])->startOfDay(),
             'checkout' => Carbon::parse($validated['checkout'])->startOfDay(),
+            'guests' => (int) ($validated['guests'] ?? 1),
         ];
     }
 
@@ -328,7 +344,7 @@ class ReservationController extends Controller
     {
         $reference = $this->nextPaymentReference();
         $invoiceNumber = $this->nextInvoiceNumber();
-        $paymentQuote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $this->currencies->paystackCurrency());
+        $paymentQuote = $this->quotes->quote($apartment, $stay['checkin'], $stay['checkout'], $this->currencies->paystackCurrency(), max(1, (int) $request->input('guests', 1)));
         $paymentCoupon = $this->coupons->apply($coupon['code'], $paymentQuote['total'], $paymentQuote['currency']);
         $serviceQuantities = collect($servicesQuote['items'])
             ->mapWithKeys(fn (array $item) => [$item['additional_service_id'] => $item['quantity']])
@@ -390,6 +406,11 @@ class ReservationController extends Controller
             'from' => $stay['checkin']->toDateString(),
             'to' => $stay['checkout']->toDateString(),
             'apartment_id' => $apartment->id,
+            'guests' => max(1, (int) $request->input('guests', 1)),
+            'rate_source' => $paymentQuote['rate_source'] ?? 'local',
+            'source_rate_id' => $paymentQuote['source_rate_id'] ?? null,
+            'source_room_type_id' => $paymentQuote['source_room_type_id'] ?? null,
+            'source_currency' => $paymentQuote['source_currency'] ?? null,
             'apartment_name' => $apartment->name,
             'services' => $paymentServices['items'],
             'page_url' => url()->previous() ?: route('reservations.create', [
