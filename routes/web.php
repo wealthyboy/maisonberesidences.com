@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ApartmentDateBlockController;
 use App\Http\Controllers\Admin\CurrencyRateController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ModuleController;
+use App\Http\Controllers\Admin\MinimumStayPeriodController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\QueueTestController;
 use App\Http\Controllers\Admin\UploadController;
@@ -65,6 +66,9 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     Route::post('apartments/reorder', [ModuleController::class, 'reorderApartments'])->name('apartments.reorder');
     Route::post('apartments/{record}/duplicate', [ModuleController::class, 'duplicateApartment'])->name('apartments.duplicate');
     Route::get('date-blocks', [ApartmentDateBlockController::class, 'index'])->name('date-blocks.index');
+    Route::post('minimum-stays', [MinimumStayPeriodController::class, 'store'])->name('minimum-stays.store');
+    Route::put('minimum-stays/{minimumStayPeriod}', [MinimumStayPeriodController::class, 'update'])->name('minimum-stays.update');
+    Route::delete('minimum-stays/{minimumStayPeriod}', [MinimumStayPeriodController::class, 'destroy'])->name('minimum-stays.destroy');
     Route::post('date-blocks', [ApartmentDateBlockController::class, 'store'])->name('date-blocks.store');
     Route::post('date-blocks/cloudbeds/sync', [ApartmentDateBlockController::class, 'syncCloudbeds'])->name('date-blocks.cloudbeds.sync');
     Route::delete('date-blocks/{dateBlock}', [ApartmentDateBlockController::class, 'destroy'])->name('date-blocks.destroy');

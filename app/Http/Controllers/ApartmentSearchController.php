@@ -7,6 +7,7 @@ use App\Models\Image;
 use App\Rules\MinimumStay;
 use App\Services\ApartmentQuoteService;
 use App\Services\CloudbedsApiService;
+use App\Services\MinimumStayService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,6 +21,7 @@ class ApartmentSearchController extends Controller
     public function __construct(
         private readonly ApartmentQuoteService $quotes,
         private readonly CloudbedsApiService $cloudbeds,
+        private readonly MinimumStayService $minimumStays,
     ) {}
 
     public function index(Request $request): View
@@ -47,6 +49,7 @@ class ApartmentSearchController extends Controller
             && $checkout;
 
         $cloudbedsError = null;
+        $minimumStayNotices = [];
         $residences = collect();
 
         if (! $deferResults || $request->ajax()) {
@@ -69,6 +72,19 @@ class ApartmentSearchController extends Controller
                     ))
                     : collect($this->cloudbeds->roomTypes());
                 $residences = $this->combineCloudbedsWithLocalApartments($roomTypes, $localApartments);
+                if ($checkin && $checkout) {
+                    $residences = $residences->reject(function (array $residence) use ($checkin, $checkout, &$minimumStayNotices): bool {
+                        $apartment = $residence['apartment'];
+                        $minimum = $this->minimumStays->minimumNightsFor($checkin, $checkout, $apartment);
+                        if ($checkin->diffInDays($checkout) < $minimum) {
+                            $minimumStayNotices[] = $apartment->name.' requires a minimum of '.$minimum.' nights for these dates.';
+
+                            return true;
+                        }
+
+                        return false;
+                    })->values();
+                }
                 foreach ($residences as $index => $residence) {
                     $apartment = $residence['apartment'];
                     try {
@@ -105,7 +121,7 @@ class ApartmentSearchController extends Controller
         }
 
         if ($request->ajax()) {
-            return view('apartments.partials.results', compact('residences', 'filters', 'currency', 'cloudbedsError'));
+            return view('apartments.partials.results', compact('residences', 'filters', 'currency', 'cloudbedsError', 'minimumStayNotices'));
         }
 
         $menuImage = Image::query()
@@ -116,7 +132,7 @@ class ApartmentSearchController extends Controller
             ->inRandomOrder()
             ->value('image');
 
-        return view('apartments.index', compact('residences', 'filters', 'currency', 'menuImage', 'cloudbedsError', 'deferResults'));
+        return view('apartments.index', compact('residences', 'filters', 'currency', 'menuImage', 'cloudbedsError', 'deferResults', 'minimumStayNotices'));
     }
 
     public function show(Request $request, Apartment $apartment): View
@@ -125,7 +141,7 @@ class ApartmentSearchController extends Controller
 
         $filters = $request->validate([
             'checkin' => ['nullable', 'required_with:checkout', 'date', 'after_or_equal:today'],
-            'checkout' => ['nullable', 'required_with:checkin', 'date', 'after:checkin', new MinimumStay($request->input('checkin'))],
+            'checkout' => ['nullable', 'required_with:checkin', 'date', 'after:checkin', new MinimumStay($request->input('checkin'), apartment: $apartment)],
             'guests' => ['nullable', 'integer', 'min:1', 'max:'.$limits['guests']],
             'rooms' => ['nullable', 'integer', 'min:1', 'max:'.$limits['rooms']],
         ]);
@@ -160,7 +176,7 @@ class ApartmentSearchController extends Controller
 
         $data = $request->validate([
             'checkin' => ['required', 'date', 'after_or_equal:today'],
-            'checkout' => ['required', 'date', 'after:checkin', new MinimumStay($request->input('checkin'))],
+            'checkout' => ['required', 'date', 'after:checkin', new MinimumStay($request->input('checkin'), apartment: $apartment)],
             'guests' => ['nullable', 'integer', 'min:1', 'max:'.$maxGuests],
         ]);
         $checkin = Carbon::parse($data['checkin'])->startOfDay();

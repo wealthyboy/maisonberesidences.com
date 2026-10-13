@@ -199,7 +199,7 @@
                         const response = await fetch(url, {
                             method: 'GET',
                             headers: {
-                                'Accept': 'text/html',
+                                'Accept': 'application/json',
                                 'X-Requested-With': 'XMLHttpRequest',
                             },
                             signal: requestController.signal,

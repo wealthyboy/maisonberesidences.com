@@ -3,13 +3,15 @@
     'checkout' => '',
     'class' => 'booking-dates',
     'required' => false,
+    'apartment' => null,
 ])
 
 @php
     $pickerId = 'date-picker-'.\Illuminate\Support\Str::random(8);
+    $minimumStayRules = app(\App\Services\MinimumStayService::class)->calendarRulesFor($apartment);
 @endphp
 
-<div class="{{ $class }}" data-date-range-picker @if($required) data-date-range-required @endif>
+<div class="{{ $class }}" data-date-range-picker data-minimum-stays='@json($minimumStayRules)' @if($required) data-date-range-required @endif>
     <div class="date-fields">
         <button class="date-trigger" type="button" aria-expanded="false" aria-controls="{{ $pickerId }}" data-date-trigger data-date-field="checkin">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>
@@ -50,13 +52,6 @@
             const parseDate = (value) => value ? new Date(`${value}T00:00:00`) : null;
             const formatDate = (date) => new Intl.DateTimeFormat('en-NG', { day: 'numeric', month: 'short' }).format(date);
             const isSameDate = (first, second) => first && second && isoDate(first) === isoDate(second);
-            const minimumCheckout = (start) => {
-                const minimum = new Date((start || today).getTime());
-                minimum.setDate(minimum.getDate() + 1);
-                return minimum;
-            };
-            const minimumStayMessage = 'Check-out must be after check-in.';
-
             window.initDateRangePickers = () => document.querySelectorAll('[data-date-range-picker]').forEach((root) => {
                 if (root.dataset.dateRangeReady) return;
                 root.dataset.dateRangeReady = 'true';
@@ -69,6 +64,34 @@
                 const summary = root.querySelector('[data-calendar-summary]');
                 const checkin = root.querySelector('[data-checkin-input]');
                 const checkout = root.querySelector('[data-checkout-input]');
+                const minimumStayRules = JSON.parse(root.dataset.minimumStays || '[]');
+                const nightsBetween = (start, end) => Math.round((Date.UTC(end.getFullYear(), end.getMonth(), end.getDate()) - Date.UTC(start.getFullYear(), start.getMonth(), start.getDate())) / 86400000);
+                const requiredNights = (start, end) => {
+                    if (!start || !end || end <= start) return 1;
+                    const arrival = isoDate(start);
+                    const departure = isoDate(end);
+                    return minimumStayRules.reduce((minimum, rule) => rule.starts_on < departure && rule.ends_on >= arrival
+                        ? Math.max(minimum, Number(rule.minimum_nights)) : minimum, 1);
+                };
+                const minimumCheckout = (start) => {
+                    const arrival = start || today;
+                    let minimum = new Date(arrival.getTime());
+                    minimum.setDate(minimum.getDate() + 1);
+                    // Extending the stay can enter a stricter period, so resolve
+                    // until the earliest qualifying checkout stops moving.
+                    for (let pass = 0; start && pass <= minimumStayRules.length; pass += 1) {
+                        const candidate = new Date(arrival.getTime());
+                        candidate.setDate(candidate.getDate() + requiredNights(arrival, minimum));
+                        if (candidate <= minimum) break;
+                        minimum = candidate;
+                    }
+                    return minimum;
+                };
+                const validCheckout = (start, end) => start && end && end > start && nightsBetween(start, end) >= requiredNights(start, end);
+                const minimumStayMessage = (start, end) => {
+                    const nights = requiredNights(start, end || minimumCheckout(start));
+                    return nights > 1 ? `The minimum stay for these dates is ${nights} nights.` : 'Check-out must be after check-in.';
+                };
                 let startDate = parseDate(checkin.value);
                 let endDate = parseDate(checkout.value);
                 let displayedMonth = new Date((startDate || today).getFullYear(), (startDate || today).getMonth(), 1);
@@ -86,11 +109,14 @@
                     for (let day = 1; day <= dayCount; day += 1) {
                         const date = new Date(year, month, day);
                         const classNames = ['calendar-day'];
-                        if (date < today) classNames.push('is-disabled');
+                        const invalidCheckout = activeField === 'checkout' && startDate && !validCheckout(startDate, date);
+                        const disabled = date < today || invalidCheckout;
+                        if (disabled) classNames.push('is-disabled');
                         if (isSameDate(date, startDate)) classNames.push('is-start');
                         if (isSameDate(date, endDate)) classNames.push('is-end');
                         if (startDate && endDate && date > startDate && date < endDate) classNames.push('is-range');
-                        days += `<button type="button" class="${classNames.join(' ')}" data-date="${isoDate(date)}" ${date < today ? 'disabled' : ''}>${day}</button>`;
+                        const hint = invalidCheckout ? ` title="${minimumStayMessage(startDate, date)}"` : '';
+                        days += `<button type="button" class="${classNames.join(' ')}" data-date="${isoDate(date)}"${hint} ${disabled ? 'disabled' : ''}>${day}</button>`;
                     }
 
                     return `<section class="calendar-month"><h3>${title}</h3>${days}</div></section>`;
@@ -101,6 +127,7 @@
                     checkout.value = endDate ? isoDate(endDate) : '';
                     const earliestCheckout = minimumCheckout(startDate);
                     checkout.min = isoDate(earliestCheckout);
+                    checkout.setCustomValidity(startDate && endDate && !validCheckout(startDate, endDate) ? minimumStayMessage(startDate, endDate) : '');
                     checkinLabel.textContent = startDate ? formatDate(startDate) : 'Check-in';
                     checkoutLabel.textContent = endDate ? formatDate(endDate) : 'Check-out';
                 };
@@ -108,9 +135,11 @@
                 const render = () => {
                     const next = new Date(displayedMonth.getFullYear(), displayedMonth.getMonth() + 1, 1);
                     months.innerHTML = renderMonth(displayedMonth) + renderMonth(next);
-                    instruction.textContent = activeField === 'checkout' ? 'Select check-out' : 'Select check-in';
+                    const minimum = startDate ? requiredNights(startDate, endDate || minimumCheckout(startDate)) : 1;
+                    const minimumHint = minimum > 1 ? ` Minimum stay: ${minimum} nights.` : '';
+                    instruction.textContent = (activeField === 'checkout' ? 'Select check-out' : 'Select check-in') + minimumHint;
                     summary.textContent = startDate
-                        ? (endDate ? `${formatDate(startDate)} - ${formatDate(endDate)}` : `Check-in selected: ${formatDate(startDate)}. Select check-out.`)
+                        ? (endDate ? `${formatDate(startDate)} - ${formatDate(endDate)}${minimumHint}` : `Check-in selected: ${formatDate(startDate)}. Select check-out.${minimumHint}`)
                         : 'Select your arrival date';
                 };
 
@@ -140,14 +169,14 @@
                     const date = parseDate(selected.dataset.date);
                     if (activeField === 'checkin') {
                         startDate = date;
-                        if (endDate && endDate < minimumCheckout(startDate)) endDate = null;
+                        if (endDate && !validCheckout(startDate, endDate)) endDate = null;
                         activeField = 'checkout';
                     } else if (!startDate) {
                         startDate = date;
                         endDate = null;
                         activeField = 'checkout';
-                    } else if (date < minimumCheckout(startDate)) {
-                        window.alert(minimumStayMessage);
+                    } else if (!validCheckout(startDate, date)) {
+                        window.alert(minimumStayMessage(startDate, date));
                         return;
                     } else {
                         endDate = date;
@@ -180,11 +209,11 @@
                     if (!root.hasAttribute('data-date-range-required')) return;
 
                     const validStart = startDate && startDate >= today;
-                    const validEnd = endDate && startDate && endDate >= minimumCheckout(startDate);
+                    const validEnd = validCheckout(startDate, endDate);
                     if (validStart && validEnd) return;
 
                     event.preventDefault();
-                    if (validStart && endDate) window.alert(minimumStayMessage);
+                    if (validStart && endDate) window.alert(minimumStayMessage(startDate, endDate));
                     activeField = validStart ? 'checkout' : 'checkin';
                     openPicker(activeField);
                 });

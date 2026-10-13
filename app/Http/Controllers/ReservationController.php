@@ -39,7 +39,7 @@ class ReservationController extends Controller
                 ->with('booking_error', 'This apartment is currently unavailable for booking.');
         }
 
-        $stay = $this->stay($request);
+        $stay = $this->stay($request, $apartment);
 
         if (! $stay) {
             return redirect()->route('apartments.index')->with('booking_error', 'Choose check-in and check-out dates before reserving a residence.');
@@ -80,7 +80,7 @@ class ReservationController extends Controller
                 ->with('booking_error', 'This apartment is currently unavailable for booking.');
         }
 
-        $stay = $this->stay($request);
+        $stay = $this->stay($request, $apartment);
 
         if (! $stay && $request->expectsJson()) {
             return response()->json(['message' => 'Choose valid check-in and check-out dates.'], 422);
@@ -209,7 +209,7 @@ class ReservationController extends Controller
             return response()->json(['message' => 'This apartment is currently unavailable for booking.'], 422);
         }
 
-        $stay = $this->stay($request);
+        $stay = $this->stay($request, $apartment);
 
         if (! $stay) {
             return response()->json(['message' => 'Choose valid check-in and check-out dates first.'], 422);
@@ -312,11 +312,11 @@ class ReservationController extends Controller
         ]);
     }
 
-    private function stay(Request $request): ?array
+    private function stay(Request $request, Apartment $apartment): ?array
     {
         $validated = $request->validate([
             'checkin' => ['nullable', 'date', 'after_or_equal:today'],
-            'checkout' => ['nullable', 'date', 'after:checkin', new MinimumStay($request->input('checkin'))],
+            'checkout' => ['nullable', 'date', 'after:checkin', new MinimumStay($request->input('checkin'), apartment: $apartment)],
             'guests' => ['nullable', 'integer', 'min:1', 'max:20'],
         ]);
 

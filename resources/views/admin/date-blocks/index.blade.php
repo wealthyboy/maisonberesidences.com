@@ -1,7 +1,7 @@
-@extends('admin.layouts.app', ['title' => 'Date Blocks'])
+@extends('admin.layouts.app', ['title' => 'Calendar Rules'])
 
 @section('eyebrow', 'Availability')
-@section('heading', 'Date blocks')
+@section('heading', 'Calendar rules')
 
 @section('content')
     <div class="space-y-6">
@@ -32,6 +32,42 @@
                     </button>
                 </form>
             </div>
+        </section>
+
+        <section class="rounded-md border border-zinc-200 bg-white p-5 shadow-sm" id="minimum-stay-rules">
+            <p class="text-sm font-semibold uppercase tracking-[0.14em] text-[#b28b2f]">Minimum stays</p>
+            <h2 class="mt-2 text-xl font-semibold text-zinc-950">Set a minimum number of nights for peak dates</h2>
+            <p class="mt-2 max-w-3xl text-sm leading-6 text-zinc-600">For example, require at least 4 nights during December. The rule applies if any booked night falls in the selected range. Apartments remain bookable for qualifying stays, and Cloudbeds prices are unchanged. If rules overlap, the highest minimum applies.</p>
+            @include('admin.date-blocks.minimum-stay-form', ['period' => null])
+        </section>
+
+        <section class="overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm">
+            <div class="border-b border-zinc-200 px-5 py-4">
+                <h2 class="text-lg font-semibold text-zinc-950">Minimum-stay rules</h2>
+            </div>
+            @forelse ($minimumStayPeriods as $period)
+                <article class="border-b border-zinc-100 px-5 py-4 last:border-b-0">
+                    <div class="flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                            <strong class="text-zinc-950">{{ $period->title }}</strong>
+                            <span class="ml-2 rounded-full bg-[#222052]/10 px-2.5 py-1 text-xs font-semibold text-[#222052]">Minimum {{ $period->minimum_nights }} {{ \Illuminate\Support\Str::plural('night', $period->minimum_nights) }}</span>
+                            <span class="ml-2 text-xs font-semibold {{ $period->is_active ? 'text-emerald-700' : 'text-zinc-500' }}">{{ $period->is_active ? 'Active' : 'Inactive' }}</span>
+                            <p class="mt-2 text-sm text-zinc-600">{{ $period->starts_on->format('d M Y') }} – {{ $period->ends_on->format('d M Y') }} (booked nights)</p>
+                            <p class="mt-1 text-xs text-zinc-500">{{ $period->applies_to_all ? 'All apartments' : $period->apartments->pluck('name')->implode(', ') }}</p>
+                        </div>
+                        <form method="post" action="{{ route('admin.minimum-stays.destroy', $period) }}" onsubmit="return confirm('Remove this minimum-stay rule? Date blocks will not change.')">
+                            @csrf @method('delete')
+                            <button type="submit" class="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50">Remove rule</button>
+                        </form>
+                    </div>
+                    <details class="mt-3" @if((string) old('minimum_rule_id') === (string) $period->id) open @endif>
+                        <summary class="cursor-pointer text-sm font-semibold text-[#222052]">Edit rule</summary>
+                        @include('admin.date-blocks.minimum-stay-form', ['period' => $period])
+                    </details>
+                </article>
+            @empty
+                <p class="px-5 py-6 text-sm text-zinc-500">No minimum-stay rules yet. The standard minimum is 1 night.</p>
+            @endforelse
         </section>
 
         <section class="rounded-md border border-zinc-200 bg-white p-5 shadow-sm">
@@ -153,10 +189,21 @@
 @push('scripts')
     <script>
         document.querySelector('[data-select-all-apartments]')?.addEventListener('click', (event) => {
-            const checkboxes = [...document.querySelectorAll('input[name="apartment_ids[]"]')];
+            const checkboxes = [...event.currentTarget.closest('form').querySelectorAll('input[name="apartment_ids[]"]')];
             const shouldSelect = checkboxes.some((checkbox) => !checkbox.checked);
             checkboxes.forEach((checkbox) => checkbox.checked = shouldSelect);
             event.currentTarget.textContent = shouldSelect ? 'Clear all' : 'Select all';
+        });
+        document.querySelectorAll('[data-minimum-stay-form]').forEach((form) => {
+            const scope = form.querySelector('[data-minimum-scope]');
+            const apartments = form.querySelector('[data-minimum-apartments]');
+            scope.addEventListener('change', () => apartments.hidden = scope.value === 'all');
+            form.querySelector('[data-minimum-select-all]').addEventListener('click', (event) => {
+                const checkboxes = [...apartments.querySelectorAll('input[type="checkbox"]')];
+                const shouldSelect = checkboxes.some((checkbox) => !checkbox.checked);
+                checkboxes.forEach((checkbox) => checkbox.checked = shouldSelect);
+                event.currentTarget.textContent = shouldSelect ? 'Clear all' : 'Select all';
+            });
         });
     </script>
 @endpush

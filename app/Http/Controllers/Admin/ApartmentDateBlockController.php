@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Apartment;
 use App\Jobs\SyncCloudbedsRoomBlocks;
 use App\Models\ApartmentDateBlock;
+use App\Models\MinimumStayPeriod;
 use App\Services\CloudbedsRoomBlockService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,6 +21,7 @@ class ApartmentDateBlockController extends Controller
     {
         return view('admin.date-blocks.index', [
             'apartments' => Apartment::query()->orderBy('sort_order')->orderBy('name')->get(),
+            'minimumStayPeriods' => MinimumStayPeriod::query()->with('apartments:id,name')->orderByDesc('starts_on')->get(),
             'dateBlocks' => ApartmentDateBlock::query()
                 ->with(['apartments:id,name', 'creator:id,name'])
                 ->orderByDesc('ends_on')

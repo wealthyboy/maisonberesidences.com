@@ -2,6 +2,10 @@
     <p class="results-notice results-notice-error">{{ session('booking_error') }}</p>
 @endif
 
+@foreach ($minimumStayNotices ?? [] as $notice)
+    <p class="results-notice">{{ $notice }}</p>
+@endforeach
+
 @if ($cloudbedsError)
     <p class="results-notice results-notice-error">{{ $cloudbedsError }}</p>
 @elseif ($residences->isEmpty())

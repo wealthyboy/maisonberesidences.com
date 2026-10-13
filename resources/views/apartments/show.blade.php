@@ -99,7 +99,7 @@
                     @endif
                     @if ($apartment->allow)
                         <form action="{{ route('apartments.availability', $apartment) }}" class="apartment-availability-form" data-availability-form>
-                            <x-date-range-picker class="availability-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" required />
+                            <x-date-range-picker class="availability-date-range" :checkin="$filters['checkin'] ?? ''" :checkout="$filters['checkout'] ?? ''" :apartment="$apartment" required />
                             <label>Guests<input type="number" name="guests" min="1" max="{{ $apartment->max_adults ?: 20 }}" value="{{ $filters['guests'] ?? 1 }}"></label>
                             <button type="submit" data-availability-action>Check availability</button>
                         </form>

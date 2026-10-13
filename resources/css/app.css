@@ -149,6 +149,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .calendar-day.is-disabled { color: #b9b7b0; cursor: not-allowed; }
 .calendar-day.is-range { background: #efe6d1; }
 .calendar-day.is-start, .calendar-day.is-end { border-radius: 50%; color: #fff; background: var(--deep); }
+.calendar-day:disabled:not(.is-start) { opacity: .45; cursor: not-allowed; }
 .calendar-footer { display: flex; margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--dark-line); color: var(--soft-ink); align-items: center; justify-content: space-between; gap: 1rem; font-size: .71rem; }
 .calendar-footer button { padding: 0; border: 0; color: var(--deep); background: transparent; font-weight: 600; text-decoration: underline; }
 .guest-picker[hidden] { display: none !important; }
@@ -391,6 +392,7 @@ body.menu-open, body.gallery-modal-open { overflow: hidden; }
 .apartment-booking-panel .apartment-availability-form button { width: 100%; min-height: 50px; border-radius: 8px; box-shadow: 0 12px 26px rgba(24,38,74,.14); }
 .apartment-booking-panel .availability-date-range .date-picker { right: 0; left: auto; width: min(560px, calc(100vw - 2rem)); max-width: calc(100vw - 2rem); padding: 1.15rem; }
 .apartment-booking-panel .availability-date-range .calendar-months { gap: .95rem; }
+.apartment-booking-panel:has(.date-picker:not([hidden])) { z-index: 130; }
 .apartment-booking-panel .availability-date-range .calendar-toolbar { margin-bottom: 1rem; }
 .apartment-booking-panel .availability-date-range .calendar-control { width: 2.4rem; min-height: 0; height: 2.4rem; padding: 0; border: 1px solid var(--dark-line); border-radius: 50%; box-shadow: none; }
 .apartment-booking-panel .availability-date-range .calendar-day,
